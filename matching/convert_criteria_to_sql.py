@@ -36,3 +36,11 @@ class CriterionConverter():
         items_str = ', '.join(quote(x) for x in items)
         return f"""{heading} ({items_str})"""
 
+    def convert_ecog(self, cond):
+        """make ecog to a between
+        eg: 0-1 -> between 0 and 1
+        """
+        cond = cond.strip()
+        low, high = [int(x) for x in cond.split('-')]
+        return f"""BETWEEN {low} and {high}"""
+

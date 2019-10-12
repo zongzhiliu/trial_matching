@@ -13,3 +13,6 @@ def test_convert_histology():
 
 def test_convert_histology_error():
     assert obj.convert_histology('(A, D)') == """IN ('A', 'D')"""
+
+def test_convert_ecog():
+    assert obj.convert_ecog('0 - 1 ') == """BETWEEN 0 and 1"""
