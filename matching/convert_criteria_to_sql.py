@@ -8,6 +8,10 @@ import warnings
 def quote(x):
     return f"'{x}'"
 
+def to_between(cond, func):
+    low, high = [func(x) for x in cond.split('-')]
+    return f"""BETWEEN {low} and {high}"""
+
 class CriterionConverter():
     config = dict(
         histology={'small cell carcinoma', 'squamou cell carcinoma', 'carcinoid'}
@@ -42,5 +46,14 @@ class CriterionConverter():
         """
         cond = cond.strip()
         low, high = [int(x) for x in cond.split('-')]
-        return f"""BETWEEN {low} and {high}"""
+        return to_between(cond, int)
 
+    def convert_age(self, cond):
+        """make age to a between or >=
+        """
+        cond = cond.strip()
+        if cond.startswith('>='):
+            low = int(cond[2:])
+            return f""">= {low}"""
+        else: #between
+            return to_between(cond, int)

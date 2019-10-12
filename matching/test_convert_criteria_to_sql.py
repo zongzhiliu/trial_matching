@@ -16,3 +16,7 @@ def test_convert_histology_error():
 
 def test_convert_ecog():
     assert obj.convert_ecog('0 - 1 ') == """BETWEEN 0 and 1"""
+
+def test_convert_age():
+    assert obj.convert_age('18 - 80') == """BETWEEN 18 and 80"""
+    assert obj.convert_age('>=18') == """>= 18"""
