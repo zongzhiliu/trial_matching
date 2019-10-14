@@ -57,3 +57,29 @@ class CriterionConverter():
             return f""">= {low}"""
         else: #between
             return to_between(cond, int)
+
+    def convert_stage_or_status(self, cond):
+        """ stage OR status
+        """
+        cond = cond.strip()
+        if '-' in cond:
+            raise NotImplementedError('range of stage to be implemented later')
+
+        if ';' not in cond:
+            raise ValueError('stage and status need to be seperated by a ";"')
+
+        stage_part, status_part = [x.strip() for x in cond.split(';')]
+        if not stage_part:
+            stage_sql = '0'
+        else:
+            stage_pieces = '|'.join(x.strip().upper() for x in stage_part.split(','))
+            stage_sql = f"""upper(stage) ~ '^({stage_pieces})'"""
+
+        if not status_part:
+            status_sql = '0'
+        else:
+            status_pieces = ', '.join(quote(x.strip().lower()) for x in status_part.split(','))
+            status_sql = f"""lower(status) IN ({status_pieces})"""
+        return f"""{stage_sql} OR {status_sql}"""
+        
+
