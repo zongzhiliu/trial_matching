@@ -23,7 +23,8 @@ def test_convert_age():
     assert obj.convert_age('>=18') == """>= 18"""
 
 def test_convert_stage_or_status__only_stage():
-    assert obj.convert_stage_or_status('VI;') == """upper(stage) ~ '^(VI)' OR 0"""
+    assert obj.convert_stage_or_status('IV') == """upper(stage) ~ '^(IV)' OR 0"""
+    assert obj.convert_stage_or_status('IV;') == """upper(stage) ~ '^(IV)' OR 0"""
     assert obj.convert_stage_or_status('III,IV;') == r"""upper(stage) ~ '^(III|IV)' OR 0"""
 
 def test_convert_stage_or_status__both():
@@ -37,4 +38,8 @@ def test_convert_stage_or_status__error():
         obj.convert_stage_or_status('IB-IIIA;')
 
     with pytest.raises(ValueError) as e:
-        obj.convert_stage_or_status('III')
+        obj.convert_stage_or_status('VI')
+
+    with pytest.raises(ValueError) as e:
+        obj.convert_stage_or_status('recurrent')
+

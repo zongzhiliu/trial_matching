@@ -12,6 +12,9 @@ def to_between(cond, func):
     low, high = [func(x) for x in cond.split('-')]
     return f"""BETWEEN {low} and {high}"""
 
+def is_valid_stage(x):
+    return x.startswith(('I', 'II', 'III', 'IV'))
+
 class CriterionConverter():
     config = dict(
         histology={'small cell carcinoma', 'squamou cell carcinoma', 'carcinoid'}
@@ -65,21 +68,30 @@ class CriterionConverter():
         if '-' in cond:
             raise NotImplementedError('range of stage to be implemented later')
 
+        # split into stage and status part
         if ';' not in cond:
-            raise ValueError('stage and status need to be seperated by a ";"')
+            stage_part = cond.strip()
+            status_part = ''
+        else:
+            stage_part, status_part = [x.strip() for x in cond.split(';')]
 
-        stage_part, status_part = [x.strip() for x in cond.split(';')]
+        # construct stage sql
         if not stage_part:
             stage_sql = '0'
         else:
-            stage_pieces = '|'.join(x.strip().upper() for x in stage_part.split(','))
-            stage_sql = f"""upper(stage) ~ '^({stage_pieces})'"""
+            stage_pieces = [x.strip().upper() for x in stage_part.split(',')]
+            for x in stage_pieces:
+                if not is_valid_stage(x):
+                    raise ValueError(f'{x} is not a valid stage!')
+            stage_str = '|'.join(stage_pieces)
+            stage_sql = f"""upper(stage) ~ '^({stage_str})'"""
 
+        # construct status sql
         if not status_part:
             status_sql = '0'
         else:
             status_pieces = ', '.join(quote(x.strip().lower()) for x in status_part.split(','))
             status_sql = f"""lower(status) IN ({status_pieces})"""
+
         return f"""{stage_sql} OR {status_sql}"""
-        
 
