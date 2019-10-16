@@ -1,0 +1,5 @@
+pytest
+docopt
+tqdm
+pandas
+toml

@@ -1,9 +1,12 @@
 import pytest
-import convert_criteria_to_sql as modu
+#import sys, pathlib
+#sys.path.insert(0, str(pathlib.Path('..').resolve()))
+import matching.convert_criteria_to_sql as modu
 
 class TestConverter(modu.CriterionConverter):
     config = dict(
-        histology = {'A', 'B', 'C'}
+        histology = {'A', 'B', 'C'},
+        stage = {'I', 'II', 'III', 'IV', 'limited', 'extensive'},
     )
 
 obj = TestConverter()

@@ -38,7 +38,7 @@ class CriterionConverter():
         items = [x.strip() for x in items_raw.split(',')]
         for x in items:
             if not x in valids:
-                warnings.warn(f'{x} not in valids: {valids}')
+                warnings.warn(f'{x} not a valid histology: {valids}')
 
         items_str = ', '.join(quote(x) for x in items)
         return f"""{heading} ({items_str})"""
@@ -48,7 +48,6 @@ class CriterionConverter():
         eg: 0-1 -> between 0 and 1
         """
         cond = cond.strip()
-        low, high = [int(x) for x in cond.split('-')]
         return to_between(cond, int)
 
     def convert_age(self, cond):
