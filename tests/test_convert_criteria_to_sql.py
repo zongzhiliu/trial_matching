@@ -36,10 +36,10 @@ def test_convert_stage_or_status__both():
 def test_convert_stage_or_status__only_status():
     assert obj.convert_stage_or_status(';recurrent') == r"""0 OR lower(status) IN ('recurrent')"""
 
-def test_convert_stage_or_status__error():
-    with pytest.raises(NotImplementedError) as e:
-        obj.convert_stage_or_status('IB-IIIA;')
+def test_convert_stage_or_status__range():
+    assert  obj.convert_stage_or_status('IB-IIIA;') == r"""upper(stage) ~ '^(I[B-C]|II([A-C]|$)|IIIA)' OR 0"""
 
+def test_convert_stage_or_status__error():
     with pytest.raises(ValueError) as e:
         obj.convert_stage_or_status('VI')
 

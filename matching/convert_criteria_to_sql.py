@@ -64,8 +64,8 @@ class CriterionConverter():
         """ stage OR status
         """
         cond = cond.strip()
-        if '-' in cond:
-            raise NotImplementedError('range of stage to be implemented later')
+        #if '-' in cond:
+        #    raise NotImplementedError('range of stage to be implemented later')
 
         # split into stage and status part
         if ';' not in cond:
