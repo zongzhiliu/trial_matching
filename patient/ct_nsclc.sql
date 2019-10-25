@@ -1,67 +1,204 @@
+
 set search_path=dev_patient_clinical_lca;
+create schema ct_nsclc;
+set search_path=ct_nsclc;
+
 
 /****
  * NSCLC
+ * Input: cplus_from_aplus, 
+ * resource.sema4_msdwpts_deceased_dates_2019_05_07
  */
 --create view cohort_filters.v_nsclc_histology as
-select histology, h.histologic_type_name, count(*)
-from cancer_dx d
-join resource.cplus_histology_types_2019_04_03 h on d.histology=h.icd_o_code
+select histologic_icdo, histologic_type_name, count(*)
+from cplus_from_aplus.cancer_diagnoses cd
+join prod_references.histologic_types h using (histologic_type_id, cancer_type_id)
 join cplus_from_aplus.person_mrns using (person_id)
-where histology !~ '804[1-5]/3'
-group by histology, h.histologic_type_name
+join cplus_from_aplus.cancer_types using (cancer_type_id)
+where cancer_type_name='LCA' and histologic_icdo !~ '804[1-5]/3' --small cell
+group by histologic_icdo, histologic_type_name
 ;
 
-drop table if exists _dx;
-create temporary table _dx as
-	--select histologic_type_name, icd_o_code, count(distinct mrn)
-	select cd.*, histologic_type_name, mrn
-	from dev_patient_clinical_lca.cancer_dx cd
+--cohort: use all the histology_types (including lung cancer, unknown) for now, ask for feed back later.
+-- person_id, histology, stage, dob, gender
+drop table cohort;
+create table ct_nsclc.cohort as
+	select distinct person_id
+	, histologic_icdo, histologic_type_name as histology
+	, overall_stage stage
+	, regexp_substr(stage, '^(I|II|III|IV)') stage_base
+	, regexp_substr(stage, '[A-C].*') stage_ext
+	, date_of_birth::date as date_of_birth
+	, gender_name gender
+	from cplus_from_aplus.cancer_diagnoses cd
+	join prod_references.histologic_types h using (histologic_type_id, cancer_type_id)
 	join cplus_from_aplus.person_mrns using (person_id)
-	left join resource.sema4_msdwpts_deceased_dates_2019_05_07 dd using (mrn)
-	join resource.cplus_histology_types_2019_04_03 h
-		on cd.histology=h.icd_o_code
-	where icd_o_code !~ '804[1-5]/3' and deceased_date is null
+	join cplus_from_aplus.cancer_types using (cancer_type_id)
+    join cplus_from_aplus.people using (person_id)
+    join cplus_from_aplus.genders using (gender_id)
+	where cancer_type_name='LCA' and histologic_icdo !~ '804[1-5]/3' --small cell
+		and date_of_death is null
 ;
---select count(*), count(distinct mrn), count(distinct person_id) from _dx;
- --3072	3072 3059
---create table cohort_filters.nsclc_dx as select * from _dx;
+select count(*) from ct_nsclc.cohort;
+ -- 3170
+select count(distinct person_id) from cohort;
+ -- 3068
 
-
-/****
- * Age
- */
-
---select count(distinct mrn)
-create temporary table _age as
-select mrn, floor(datediff(day, birth_date, current_date)/365.25) as age_now
-from dev_patient_clinical_lca.demographics
-join _dx using (mrn)
-; --3509
---create table cohort_filters.nsclc_age as select * from _age;
-
-select ar.name, count(distinct mrn)
-from cohort_filters.age_range ar
-join _age a
-on a.age_now between ar.age_start and ar.age_end
-group by ar.name
-order by ar.name
+create table demo as
+select distinct person_id, date_of_birth dob, gender
+from ct_nsclc.cohort
 ;
+
+create table demo_lca as
+select distinct person_id, date_of_birth, gender_name, date_of_death
+from cplus_from_aplus.cancer_diagnoses cd
+--join cplus_from_aplus.cancer_types using (cancer_type_id)
+join cplus_from_aplus.people p using (person_id)
+join cplus_from_aplus.genders g using (gender_id)
+where cd.status != 'deleted' and p.status != 'deleted'
+	and cancer_type_id=1 --and cancer_type_name='LCA'
+;
+select count(*) from demo_lca;
+
+show search_path;
+select count(*) from demo;
+ -- 3068
+
+-- allowed values for LCA stages
+SELECT distinct value
+from cplus_from_aplus.accepted_values
+where cancer_type_id=1
+	and record_type='CancerDiagnosis'
+	and attribute_name='overall_stage'
+order by value
+;
+
+select 0 or 0 or '' in ('a', 'b');
+--performance: to be simplified later
+create temporary table _last_performance as 
+select person_id, ecog_ps, karnofsky_pct
+from demo
+left join (select *, row_number() over (partition by person_id
+	order by performance_score_date desc, ecog_ps)
+	from cplus_from_aplus.performance_scores) using (person_id)
+where row_number=1 or row_number is null
+;
+
+alter table _last_performance add column karnofsky_ps int;
+update _last_performance
+set karnofsky_ps=tmp.karnofsky_ps
+from (select person_id, k.ecog_ps as karnofsky_ps
+	from _last_performance
+	join cohort_filters.karnofsky_to_ecog k using (karnofsky_pct)
+) as tmp
+where _last_performance.person_id=tmp.person_id;
+
+alter table _last_performance add column last_performance int;
+update _last_performance set last_performance=nvl(ecog_ps, karnofsky_ps)
+where true;
+
+select last_performance, count(*) 
+from _last_performance
+group by last_performance
+order by last_performance;
+
+create table last_performance as select * from _last_performance;
+select * from last_performance;
+
+-- lot
+create table max_lot as
+select person_id, mrn, nvl(max(nvl(lot,0)),0) max_lot
+from demo
+join cplus_from_aplus.person_mrns using (person_id)
+left join dev_patient_clinical_lca.line_of_therapy using (mrn)
+group by person_id, mrn
+;
+
+set search_path=ct_nsclc;
+drop table patient_attr;
+create table ct_nsclc.patient_attr as
+select person_id, histology
+, stage
+, case stage_base when '' then NULL else stage_base end as stage_base
+, case stage_ext when '' then NULL else stage_ext end as stage_ext
+, case stage_ext when '' then NULL else stage_base+stage_ext end as stage_full
+, '' as status --mock for now
+, gender, (datediff(day, date_of_birth, current_date)/365.25)::int age
+, last_performance ecog
+, nvl(l.max_lot, 0) max_lot
+from cohort
+left join last_performance using (person_id)
+left join max_lot l using (person_id)
+;
+select * from patient_attr;
+
+select * from max_lot;
+select * from _ex_match;
 
 /***
- * last follow up date: note_date of the last progress note, suggested by meng
+ * Mutations
  */
-create temporary table _last_followup as
-select mrn, max(n.note_date) as last_progress_note_date
-from _dx d
-join dev_patient_info_lca.notes_v11 n using (mrn)
-where note_type_simple='Progress'
-group by mrn
-;
-select count(*) from _last_followup
-where datediff(month, last_progress_note_date, current_date) < 12
-; --2784, 943
 
+set search_path=cplus_from_aplus;
+select gene, listagg(distinct hgvs_p, ' |') pdot
+from variant_occurrences
+join target_genes using (target_gene_id)
+group by gene
+;
+select gene, exon, variant_type, listagg(distinct hgvs_p, ' |') pdot
+from variant_occurrences
+join target_genes using (target_gene_id)
+where variant_type != 'SNV' and is_clinically_significant and gene in ('EGFR', 'ERBB2')
+group by gene, exon, variant_type
+;
+
+
+
+
+select * from _ex_match where person_id=17987;
+show search_path;
+select NULL+'sd';
+create table ct_match (trial_id text, person_id text
+, age BOOL
+, ecog BOOL
+);
+insert into ct_match
+select 340378 as trial_id, person_id
+            , age >= 18 as age
+            , ecog BETWEEN 0 and 1 as ecog
+            from ct_nsclc._patient_attr
+            ;
+select case stage_base when '' then NULL else stage_base end stage_base
+select stage_base
+from patient_attr;
+
+select count(*) from patient_attr;
+select * from patient_attr;
+-- 3170
+create table ct_nsclc.patient_attr as
+select * 
+, case stage_ext when '' then NULL else stage_base+stage_ext end stage_full
+, '' as status  
+from ct_nsclc._patient_attr order by person_id;
+
+/***
+ * test matching
+ */
+
+select person_id
+, nvl(age, 0) between 18 and 100 as age
+, nvl(ecog, 0) between 0 and 1 as ecog
+, nvl(max_lot, 0)>=1 as has_previous_lot
+, stage_full between 'IB' and 'IVA' or 'I' < stage_base and stage_base < 'IV'  as stage
+  from ct_nsclc.patient_attr
+;
+
+
+select histology, histologic_icdo, count(*)
+from ct_nsclc.cohort
+group by histology, histologic_icdo
+order by histology, histologic_icdo
+;
 /******
  * Performance
  */
@@ -95,10 +232,54 @@ order by last_performance;
 drop table cohort_filters.sclc_last_performance;
 create table cohort_filters.sclc_last_performance as select * from _last_performance;
 
+
+
+/****
+ * demo
+ */
+--select count(distinct mrn)
+create table ct_nsclc._demo as
+select person_id, gender_name gender, date_of_birth::date birth_date
+, floor(datediff(day, birth_date, current_date)/365.25) as age_now
+from cplus_from_aplus.people
+join _dx using (person_id)
+join cplus_from_aplus.genders using (gender_id)
+; --3509
+select count(*) from _demo;
+--create table cohort_filters.nsclc_age as select * from _age;
+
+select ar.name, count(distinct mrn)
+from cohort_filters.age_range ar
+join _age a
+on a.age_now between ar.age_start and ar.age_end
+group by ar.name
+order by ar.name
+;
+
+/***
+ * last follow up date: note_date of the last progress note, suggested by meng
+ */
+create table ct_nsclc._last_followup as
+select mrn, max(n.note_date) as last_progress_note_date
+from _dx d
+join dev_patient_info_lca.notes_v11 n using (mrn)
+where note_type_simple='Progress'
+group by mrn
+;
+select count(*) from _last_followup
+where datediff(month, last_progress_note_date, current_date) < 12
+; --2784, 943
+
+
+
 /******
  * Treatment
  */
 -- filter by treatment: whether or not intended to treat lung cancer
+select mrn, listagg(distinct drugname, ',')
+from dev_patient_clinical_lca.line_of_therapy
+group by mrn
+;
 create temporary table _treatment as
 select mrn, cancer_drug, age_in_days as last_ageday, modality
 from (select *, row_number() over (
@@ -378,3 +559,45 @@ select datediff(day,  current_date, primary_completion_date::DATE) pc_days_left
 from ct_nsclc_trialtrove
 where pc_days_left<60
 ;
+
+/***
+* make check boxs
+*/
+set search_path=ct_nsclc;
+create table age_checks as
+select person_id, age, age>=12 as age_ge_12, age>=18 as age_ge_18, age>=22 as age_ge_22
+from patient_attr
+;
+
+create table stage_checks as
+select person_id, stage --, stage_unknown
+, stage_base='I' as stage_I, stage_full like 'IA%' as stage_IA, stage_full like 'IB%' as stageIB
+, stage_base='II' as stage_II, stage_full like 'IIA%' as stage_IIA, stage_full like 'IIB%' as stage_IIB
+, stage_base='III' as stage_III, stage_full like 'IIIA%' as stage_IIIA, stage_full like '%IIIB' as stage_IIIB, stage_full like '%IIIC' as stage_IIIC
+, stage_base='IV' as stage_IV, stage_full like '%IVA' as stage_IVA, stage_full like '%IVB' as stage_IVB
+from patient_attr
+;
+show search_path;
+select * from stage_checks;
+
+create table histology_checks as
+select person_id, histology
+, True as both, histology in ('Squamous Cell Carcinoma') squamous, histology not in ('Squamous Cell Carcinoma') as non_squamous
+from patient_attr
+;
+select * from histology_checks;
+
+create table ecog_checks as
+select person_id, ecog
+, ecog=0 as ecog_0, ecog<=1 as ecog_le_1, ecog<=2 as ecog_le_2
+from patient_attr
+;
+select * from ecog_checks;
+
+create table lot_checks as
+select person_id, nvl(max_lot, 0) lot
+, lot=0 as lot_none, lot<=1 as lot_any, lot=1 as lot_1, lot=2 as lot_2, lot=3 as lot_3, lot>=4 as lot_ge_4
+from max_lot
+;
+select * from lot_checks;
+select * from patient_attr;

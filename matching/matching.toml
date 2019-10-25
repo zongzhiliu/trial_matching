@@ -1,0 +1,35 @@
+outdir = 'tmp'
+comment_char = '##' #anything after ## will be ignored
+
+#to calc age_now and condition/treatment within __ days
+current_date = 2019-09-01
+patient_schema = 'ct_nsclc'
+patient_attr_table = 'patient_attr'
+
+# assign T/F when the match is null
+[default_match]
+histology = false
+age = false
+stage = true
+ecog = true
+lot = false
+required_meds = false
+prohibited_meds = true
+
+#map element text to standard, to be moved to database later
+[mapping]
+[mapping.histology]
+'squamous cell' = ['Squamous Cell Carcinoma',
+    'Squamous Cell Carcinoma In Situ',
+    'Squamous Cell Carcinoma, Clear Cell Type',
+    'Squamous Cell Carcinoma, Keratinizing, NOS',
+    'Squamous Cell Carcinoma, Large Cell, Nonkerartinizing']
+
+# allowed values: later to use database
+[valids]
+histology = [
+    'a',
+    'b',
+    'c',
+]
+stage = ['I', 'II', 'III', 'IV', 'limited', 'extensive']
