@@ -1,5 +1,6 @@
 pytest
-docopt
-tqdm
+numpy
 pandas
 toml
+docopt
+tqdm

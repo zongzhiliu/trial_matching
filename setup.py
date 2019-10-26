@@ -3,7 +3,7 @@ with open('README.md') as f:
     readme = f.read()
 
 setup(
-    name='s4-trial-matching', version='0.1.0',
+    name='s4_trial_matching', version='0.1.0',
     description='Match the trial criteria to the patients',
     long_description=readme, long_description_content_type='text/markdown',
     author='Zongzhi Zachary Liu, Yun Mai',

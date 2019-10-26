@@ -49,16 +49,7 @@ select distinct person_id, date_of_birth dob, gender
 from ct_nsclc.cohort
 ;
 
-create table demo_lca as
-select distinct person_id, date_of_birth, gender_name, date_of_death
-from cplus_from_aplus.cancer_diagnoses cd
---join cplus_from_aplus.cancer_types using (cancer_type_id)
-join cplus_from_aplus.people p using (person_id)
-join cplus_from_aplus.genders g using (gender_id)
-where cd.status != 'deleted' and p.status != 'deleted'
-	and cancer_type_id=1 --and cancer_type_name='LCA'
-;
-select count(*) from demo_lca;
+
 
 show search_path;
 select count(*) from demo;
@@ -569,11 +560,12 @@ select person_id, age, age>=12 as age_ge_12, age>=18 as age_ge_18, age>=22 as ag
 from patient_attr
 ;
 
+drop table stage_checks;
 create table stage_checks as
 select person_id, stage --, stage_unknown
 , stage_base='I' as stage_I, stage_full like 'IA%' as stage_IA, stage_full like 'IB%' as stageIB
 , stage_base='II' as stage_II, stage_full like 'IIA%' as stage_IIA, stage_full like 'IIB%' as stage_IIB
-, stage_base='III' as stage_III, stage_full like 'IIIA%' as stage_IIIA, stage_full like '%IIIB' as stage_IIIB, stage_full like '%IIIC' as stage_IIIC
+, stage_base='III' as stage_III, stage_full like 'IIIA%' as stage_IIIA, stage_full like 'IIIB%' as stage_IIIB, stage_full like 'IIIC%' as stage_IIIC
 , stage_base='IV' as stage_IV, stage_full like '%IVA' as stage_IVA, stage_full like '%IVB' as stage_IVB
 from patient_attr
 ;
