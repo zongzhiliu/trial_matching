@@ -1,9 +1,15 @@
-
-set search_path=dev_patient_clinical_lca;
 create schema ct_nsclc;
 set search_path=ct_nsclc;
 
-
+alter table demo rename to demo_achieved_20191028;
+create table demo as
+select d.*
+from ct_lca.demo  d
+join ct_lca.histology using (person_id)
+where histologic_icdo ~ '804[1-5]/3'
+	-- and date_of_death is NULL
+;
+select count(*) from demo;
 /****
  * NSCLC
  * Input: cplus_from_aplus, 
@@ -586,10 +592,11 @@ from patient_attr
 ;
 select * from ecog_checks;
 
+set search_path=ct_nsclc;
+drop table lot_checks;
 create table lot_checks as
 select person_id, nvl(max_lot, 0) lot
-, lot=0 as lot_none, lot<=1 as lot_any, lot=1 as lot_1, lot=2 as lot_2, lot=3 as lot_3, lot>=4 as lot_ge_4
+, lot=0 as lot_none, lot>=1 as lot_any, lot=1 as lot_1, lot=2 as lot_2, lot=3 as lot_3, lot>=4 as lot_ge_4
 from max_lot
 ;
 select * from lot_checks;
-select * from patient_attr;
