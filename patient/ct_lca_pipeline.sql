@@ -179,25 +179,3 @@ select person_id, n_lot
 from lot
 ;
 
-set search_path=ct_lca;
-create table patient_attribute_lot as
-select person_id, n_lot as patient_value
-, attribute_id, attribute_group, attribute_name, value
-, case value when '0' then n_lot=0
-    when '1' then n_lot=1
-    when '2' then n_lot=2
-    when '3' then n_lot=3
-    when '>=4' then n_lot>=4
-    end as match
-from lot
-cross join attribute
-where attribute_group='line of therapy'
-;
--- check
-select *
-from (select *, row_number() over (partition by n_lot
-        order by person_id)
-    from lot_checks)
-where row_number=1
-order by n_lot
-;

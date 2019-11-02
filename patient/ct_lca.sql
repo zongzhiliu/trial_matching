@@ -275,3 +275,55 @@ from (select distinct lower(drug_name) drug_name, category
 left join ct.tmp_cancer_drug_category_flat1 using (drug_name)
 ;
 select * from resource.all_cancer_drugs_list_2019_10_07;
+
+/***
+* lot drugs
+*/
+show search_path;
+create table lot_drug as
+select person_id, drugname, max(agedays) as last_ageday
+from dev_patient_clinical_lca.line_of_therapy
+join cplus_from_aplus.person_mrns using (mrn)
+where lot>=1
+group by person_id, drugname
+;
+select * from lot_drug;
+
+create table ct.lca_lot_drug_moa_flat as
+select * from
+(select distinct(drugname) drug_name from lot_drug)
+left join
+ct.all_cancer_drug_moa_flat_y using (drug_name)
+;
+
+create table ct.lca_lot_drug_category as
+select drug_name, modality, moa
+, moa ~ 'PD_1' as pd_1
+, moa ~ 'PD_L' as pd_l
+, moa ~ 'CTLA_4' as ctla_4
+-- immune: no IL, OX_40
+, moa ~ 'EGFR_' as egfr
+, moa ~ 'ALK_' as alk
+, moa ~ 'ROS1_' as ros
+-- targeted: no PARP, RET, MET
+from ct.lca_lot_drug_moa_flat
+;
+
+drop table if exists p_lot_drugs;
+create table p_lot_drugs as
+select person_id, listagg(distinct drug_name, '| ') within group (order by drug_name) as lot_drugs
+, bool_or(modality ilike 'chemotherapy%') chemo
+, bool_or(drug_name ilike '%platin') platin
+, bool_or(modality ilike '%immunotherapy%') immuno
+, bool_or(pd_1) pd_1
+, bool_or(pd_l) pd_l
+, bool_or(ctla_4) ctla_4
+, bool_or(modality ilike '%targeted%') targeted
+, bool_or(egfr) egfr
+, bool_or(alk) alk
+, bool_or(ros) ros
+from lot_drug h
+join ct.lca_lot_drug_category m using (drug_name)
+group by person_id
+;
+select * from p_lot_drugs;
