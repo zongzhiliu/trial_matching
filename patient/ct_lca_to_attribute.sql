@@ -41,22 +41,22 @@ select person_id
 	when 'KRAS' then kras
 	when 'BRAF' then braf
 	when 'HER2' then erbb2
-	when 'Alk fusion' then alk
-	when 'ROS1 fusion' then ros
+	when 'Alk fusion' then lower(alk)
+	when 'ROS1 fusion' then lower(ros)
 	end as patient_value
 , attribute_id, attribute_group, attribute_name, value
 , case attribute_name || ', ' || value 
-	when 'EGFR, exon19 deletion' then egfr ~ 'Exon 19 Deletion'
-	when 'EGFR, L858R' then egfr ~ 'p.L858R'
-	when 'EGFR, T790M' then egfr ~ 'p.T790M'
-	when 'EGFR, yes' then egfr is not NULL
-	when 'KRAS, yes' then KRAS is not NULL
-	when 'KRAS, G12' then KRAS ~ 'p.G12\\D|Codon 12 '
-	when 'BRAF, yes' then BRAF is not NULL
-	when 'BRAF, V600' then BRAF ~ 'p.V600\\D'
-	when 'HER2, yes' then ERBB2 is not NULL
-	when 'ALK fusion, yes' then lower(ALK) ~ 'fusion'
-	when 'ROS1 fusion, yes' then lower(ROS) ~ 'fusion'	
+	when 'EGFR, yes' then patient_value is not NULL
+	when 'EGFR, exon19 deletion' then patient_value ~ 'Exon 19 Deletion'
+	when 'EGFR, L858R' then patient_value ~ 'p.L858R'
+	when 'EGFR, T790M' then patient_value ~ 'p.T790M'
+	when 'KRAS, yes' then patient_value is not NULL
+	when 'KRAS, G12' then patient_value ~ 'p.G12\\D|Codon 12 '	
+	when 'BRAF, yes' then patient_value is not NULL
+	when 'BRAF, V600' then patient_value ~ 'p.V600\\D'	
+	when 'HER2, yes' then patient_value is not NULL
+	when 'ALK fusion, yes' then patient_value ~ 'fusion'
+	when 'ROS1 fusion, yes' then patient_value ~ 'fusion'	
 	end as match
 from ct_lca._variant_listedgene_pivot
 cross join ct_lca.attribute
