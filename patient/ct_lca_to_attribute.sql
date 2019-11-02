@@ -33,75 +33,37 @@ select False and null;
 * mutations
 */
 -- make patient atrribute match
-drop table if exists ct_lca.patient_attribute_mutation_EGFR;
-create table ct_lca.patient_attribute_mutation_EGFR as
-select person_id, egfr as patient_value
+drop table if exists ct_lca.patient_attribute_mutation;
+create table ct_lca.patient_attribute_mutation as
+select person_id
+, case attribute_name
+	when 'EGFR' then egfr
+	when 'KRAS' then kras
+	when 'BRAF' then braf
+	when 'HER2' then erbb2
+	when 'Alk fusion' then alk
+	when 'ROS1 fusion' then ros
+	end as patient_value
 , attribute_id, attribute_group, attribute_name, value
-, case value when 'exon19 deletion' then egfr ~ 'Exon 19 Deletion'
-	when 'L858R' then egfr ~ 'p.L858R'
-	when 'T790M' then egfr ~ 'p.T790M'
-	when 'yes' then egfr is not NULL
+, case attribute_name || ', ' || value 
+	when 'EGFR, exon19 deletion' then egfr ~ 'Exon 19 Deletion'
+	when 'EGFR, L858R' then egfr ~ 'p.L858R'
+	when 'EGFR, T790M' then egfr ~ 'p.T790M'
+	when 'EGFR, yes' then egfr is not NULL
+	when 'KRAS, yes' then KRAS is not NULL
+	when 'KRAS, G12' then KRAS ~ 'p.G12\\D|Codon 12 '
+	when 'BRAF, yes' then BRAF is not NULL
+	when 'BRAF, V600' then BRAF ~ 'p.V600\\D'
+	when 'HER2, yes' then ERBB2 is not NULL
+	when 'ALK fusion, yes' then lower(ALK) ~ 'fusion'
+	when 'ROS1 fusion, yes' then lower(ROS) ~ 'fusion'	
 	end as match
 from ct_lca._variant_listedgene_pivot
 cross join ct_lca.attribute
-where attribute_group='mutation' and attribute_name='EGFR'
+where attribute_group='mutation'
 ;
-
-drop table if exists ct_lca.patient_attribute_mutation_KRAS;
-create table ct_lca.patient_attribute_mutation_KRAS as
-select person_id, KRAS as patient_value
-, attribute_id, attribute_group, attribute_name, value
-, case value when 'yes' then KRAS is not NULL
-	when 'G12' then KRAS ~ 'p.G12\\D|Codon 12 '
-	end as match
-from ct_lca._variant_listedgene_pivot
-cross join ct_lca.attribute
-where attribute_group='mutation' and attribute_name='KRAS'
-;
-
-drop table if exists ct_lca.patient_attribute_mutation_BRAF;
-create table ct_lca.patient_attribute_mutation_BRAF as
-select person_id, BRAF as patient_value
-, attribute_id, attribute_group, attribute_name, value
-, case value when 'yes' then BRAF is not NULL
-	when 'V600' then BRAF ~ 'p.V600\\D'
-	end as match
-from ct_lca._variant_listedgene_pivot
-cross join ct_lca.attribute
-where attribute_group='mutation' and attribute_name='BRAF'
-;
-
-drop table if exists ct_lca.patient_attribute_mutation_HER2;
-create table ct_lca.patient_attribute_mutation_HER2 as
-select person_id, ERBB2 as patient_value
-, attribute_id, attribute_group, attribute_name, value
-, case value when 'yes' then ERBB2 is not NULL
-	end as match
-from ct_lca._variant_listedgene_pivot
-cross join ct_lca.attribute
-where attribute_group='mutation' and attribute_name='HER2'
-;
-
-drop table if exists ct_lca.patient_attribute_mutation_ALK;
-create table ct_lca.patient_attribute_mutation_ALK as
-select person_id, ALK as patient_value
-, attribute_id, attribute_group, attribute_name, value
-, case value when 'yes' then lower(ALK) ~ 'fusion'
-	end as match
-from ct_lca._variant_listedgene_pivot
-cross join ct_lca.attribute
-where attribute_group='mutation' and attribute_name='ALK fusion'
-;
-
-drop table if exists ct_lca.patient_attribute_mutation_ROS;
-create table ct_lca.patient_attribute_mutation_ROS as
-select person_id, ROS as patient_value
-, attribute_id, attribute_group, attribute_name, value
-, case value when 'yes' then lower(ROS) ~ 'fusion'
-	end as match
-from ct_lca._variant_listedgene_pivot
-cross join ct_lca.attribute
-where attribute_group='mutation' and attribute_name='ROS1 fusion'
+select * from patient_attribute_mutation
+order by person_id, attribute_id
 ;
 
 /***
@@ -129,7 +91,6 @@ from (select *, row_number() over (partition by n_lot
 where row_number=1
 order by n_lot
 ;
-
 
 
 /***
