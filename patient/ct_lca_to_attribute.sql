@@ -1,8 +1,10 @@
+set search_path=ct_lca;
 /***
  * patient_attribute_stage
  */
-drop table if exists ct_lca.patient_attribute_stage;
-create table ct_lca.patient_attribute_stage as
+
+--drop table if exists ct_lca.patient_attribute_stage;
+create table ct_lca._p_a_stage as
 select person_id, stage as patient_value
 , attribute_id, attribute_group, attribute_name, value
 , case value when 'NA' then NULL
@@ -19,22 +21,23 @@ select person_id, stage as patient_value
 	 when 'IV' then stage_base='IV'
 	 when 'IVA' then stage_base='IV' and stage_ext like 'A%'
 	 when 'IVB' then stage_base='IV' and stage_ext like 'B%'
+	 when 'limited stage' then stage_base between 'I' and 'III'
+	 when 'extensive stage' then stage_base = 'IV'
 	end as match
 from ct_lca.stage
 cross join ct_lca.attribute
-where attribute_group='stage' --and attribute_name='stage'
+where attribute_group='stage' and attribute_name='stage'
 ;
 
-select * from ct_lca.patient_attribute_stage;
-select True and Null;
-select False and null;
+--select * from ct_lca._p_a_stage;
+
 
 /***
 * mutations
 */
 -- make patient atrribute match
-drop table if exists ct_lca.patient_attribute_mutation;
-create table ct_lca.patient_attribute_mutation as
+--drop table if exists ct_lca.patient_attribute_mutation;
+create table ct_lca._p_a_mutation as
 select person_id
 , case attribute_name
 	when 'EGFR' then egfr
@@ -62,28 +65,27 @@ from ct_lca._variant_listedgene_pivot
 cross join ct_lca.attribute
 where attribute_group='mutation'
 ;
-select * from patient_attribute_mutation
-order by person_id, attribute_id
-;
+--select * from _p_a_mutation order by person_id, attribute_id;
 
 /***
  * line_of_therapy
  */
-set search_path=ct_lca;
-create table patient_attribute_lot as
+--set search_path=ct_lca;
+create table _p_a_lot as
 select person_id, n_lot as patient_value
 , attribute_id, attribute_group, attribute_name, value
 , case value when '0' then n_lot=0
     when '1' then n_lot=1
     when '2' then n_lot=2
     when '3' then n_lot=3
-    when '>=4' then n_lot>=4
+    when '>=4' then n_lot>=4  -- to be fixed in attribute excel
     end as match
 from lot
 cross join attribute
-where attribute_group='line of therapy'
+where attribute_group='line of therapy' and attribute_name is null
 ;
--- check
+/*-- check
+select * from _p_a_lot;
 select *
 from (select *, row_number() over (partition by n_lot
         order by person_id)
@@ -91,33 +93,36 @@ from (select *, row_number() over (partition by n_lot
 where row_number=1
 order by n_lot
 ;
+*/
 
 
 /***
 * age from wen's age_of_now
 */
-select distinct age_of_now from ct_nsclc.patient_demo;
-set search_path=ct_lca;
-create table patient_attribute_age as
+--select distinct age_of_now from ct_nsclc.patient_demo;
+--set search_path=ct_lca;
+drop table if exists _p_a_age;
+create table _p_a_age as
 select person_id, age_of_now as patient_value
 , attribute_id, attribute_group, attribute_name, value
 , case value 
     when '>=12' then patient_value >=12
     when '>=18' then patient_value >=18
     when '>=20' then patient_value >=20
-    when '<=70' then patient_value <=70
+    when '<=75' then patient_value <=75
     end as match
 from ct_nsclc.patient_demo
 cross join attribute
-where attribute_group='age'
+where attribute_group='age' --attribute_name does not matter here
 ;
+select * from _p_a_age;
 
 /*** 
 * ecog from wen's ecog_final
 */
-select distinct ecog_latest from ct_nsclc.demo_lca_ecog_final;
-set search_path=ct_lca;
-create table patient_attribute_ecog as
+--select distinct ecog_latest from ct_nsclc.demo_lca_ecog_final;
+--set search_path=ct_lca;
+create table _p_a_ecog as
 select person_id, ecog_latest as patient_value
 , attribute_id, attribute_group, attribute_name, value
 , case value 
@@ -130,49 +135,39 @@ select person_id, ecog_latest as patient_value
     end as match
 from ct_nsclc.demo_lca_ecog_final
 cross join attribute
-where attribute_group='ecog'
+where attribute_group='ecog' and attribute_name='ecog'
 ;
-show search_path;
+--select * from _p_a_ecog;
+--show search_path;
+
 
 /***
- * lab from wen's nsclc.person_lab_attribute_mapping
+ * histology mapped
  */
-select * from ct_nsclc.person_lab_attribute_mapping;
-create table patient_attribute_lab as
-select person_id, value_to_compare as patient_value
-, attribute_id, attribute_group, attribute_name, value_rule as value
-, meet_attribute_rule as match
-from ct_nsclc.person_lab_attribute_mapping
-join attribute using (attribute_id)
-;
-
-/***
- * histology checks
- */
-set search_path=ct_lca;
-select * from histology join ct.lca_histology_category using (histology)
-;
-create table patient_attribute_histology as
+--set search_path=ct_lca;
+--select * from histology join ct.lca_histology_category using (histology);
+create table _p_a_histology as
 select person_id, h.histology as patient_value
 , attribute_id, attribute_group, attribute_name, value
-, case value 
-	when 'yes' then nsclc
-	when 'squamous non-small cell lung cancer' then nsclc and squamous
-	when 'non-squamous non-small cell lung cancer' then nsclc and non_squamous
+, case attribute_name || '; ' || value 
+	when 'non-small cell lung cancer; yes' then nsclc
+	when 'non-small cell lung cancer; squamous non-small cell lung cancer' then nsclc and squamous
+	when 'non-small cell lung cancer; non-squamous non-small cell lung cancer' then nsclc and non_squamous
+	when 'small cell lung cancer; yes' then sclc
     end as match
 from histology h
 join ct.lca_histology_category m using (histology)
 cross join attribute
 where attribute_group='histology'
 ;
+--select * from _p_a_histology;
 
 /***
  * drug therapies
  */
-set search_path=ct_lca;
-
-drop table if exists patient_attribute_chemotherapy;
-create table patient_attribute_chemotherapy as
+--set search_path=ct_lca;
+--drop table if exists patient_attribute_chemotherapy;
+create table _p_a_chemotherapy as
 select person_id, lot_drugs as patient_value
 , attribute_id, attribute_group, attribute_name, value
 , case nvl(attribute_name, '') || ', ' || value 
@@ -185,10 +180,10 @@ from p_lot_drugs
 cross join attribute
 where attribute_group='chemotherapy'
 ;
-select * from patient_attribute_chemotherapy;
+select * from _p_a_chemotherapy;
 
-drop table if exists patient_attribute_immunotherapy;
-create table patient_attribute_immunotherapy as
+--drop table if exists patient_attribute_immunotherapy;
+create table _p_a_immunotherapy as
 select person_id, lot_drugs as patient_value
 , attribute_id, attribute_group, attribute_name, value
 , case nvl(attribute_name, '') || ', ' || value 
@@ -207,15 +202,15 @@ from p_lot_drugs
 cross join attribute
 where attribute_group='immuotherapy' -- typo
 ;
-select * from patient_attribute_immunotherapy;
+--select * from _p_a_immunotherapy;
 
-drop table if exists patient_attribute_targetedtherapy;
-create table patient_attribute_targetedtherapy as
+--drop table if exists _p_a_targetedtherapy;
+create table _p_a_targetedtherapy as
 select person_id, lot_drugs as patient_value
 , attribute_id, attribute_group, attribute_name, value
 , case nvl(attribute_name, '') || ', ' || value 
 	when ', yes' then targeted
-	when 'all EGFR inhibitors, yes' then egfr
+	when 'EGFR inhibitor, yes' then egfr
 	when 'EGFR inhibitor, Afatinib' then patient_value ilike '%afatinib%'
 	when 'EGFR inhibitor, Gefitinib' then patient_value ilike '%gefitinib%'
 	when 'EGFR inhibitor, Erlotinib' then patient_value ilike '%erlotinib%'
@@ -223,122 +218,113 @@ select person_id, lot_drugs as patient_value
 	when 'EGFR inhibitor, Cetuximab' then patient_value ilike '%cetuximab%'
 	when 'ALK inhibitor, yes' then alk
 	when 'ALK inhibitor, Crizotinib' then patient_value ilike '%crizotinib%'
-	when 'RET inhibitor, yes' then false -- no drug found in lca
+	when 'ALK inhibitor, Alectinib' then patient_value ilike '%alectinib%'
+	when 'ALK inhibitor, Ceritinib' then patient_value ilike '%ceritinib%'
+	when 'RET inhibitor, yes' then patient_value ilike '%carbozantinib%' -- no ret_targeted defined yet
 	when 'RET inhibitor, Carbozantinib' then patient_value ilike '%carbozantinib%'
-	when 'PARP inhibitor, yes' then false -- no drug found in lca
-	when 'PARP inhibitor, Olaparib' then patient_value ilike '%Olaparib%'
-	when 'c-MET inhibitor, yes' then false -- no met drug found in lca
+	when 'PARP inhibitor, yes' then patient_value ilike '%olaparib%' -- no drug found in lca
+	when 'PARP inhibitor, Olaparib' then patient_value ilike '%olaparib%'
+	when 'c-MET inhibitor, yes' then patient_value ilike '%carbozantinib%' -- no met drug found in lca
+	when 'ROS1 inhibitor, yes' then ros
+	when 'BRAF inhibitor, yes' then patient_value ilike '%vemurafenib%' -- no category yet
+	when 'BRAF inhibitor, vemurafenib' then patient_value ilike '%vemurafenib%'
+	when 'RAF inhibitor, yes' then patient_value ilike '%sorafenib%'
+	when 'RAF inhibitor, sorafenib' then patient_value ilike '%sorafenib%'
+	when 'MEK inhibitor, yes' then NULL -- to be implemented later as a category
+	when 'MEK inhibitor, cobimetinib' then patient_value ilike '%cobimetinib%'
     end as match
 from p_lot_drugs
 cross join attribute
 where lower(attribute_group)='targeted therapy' -- typo
 ;
-select * from patient_attribute_targetedtherapy
-order by person_id, attribute_id;
-select * from p_lot_drugs;
+--select * from _p_a_targetedtherapy order by person_id, attribute_id;
+
+/***
+ * diseases
+ */
+-- CNS disease
+drop table if exists _p_a_cns_disease;
+create table _p_a_cns_disease as
+select person_id, NULL as patient_value
+, attribute_id, attribute_group, attribute_name, value
+, case attribute_name || '; ' || value
+	when 'Brain met; yes' then 
+		bool_or(icd_code ~ '^(C79\\.31|198\\.3)')
+	when 'Leptomeningeal; yes' then
+		bool_or(icd_code ~ '^(G93|348)')
+	when 'Carcinomatous meningitis; yes' then 
+		bool_or(icd_code ~ '^(C70\\.9|192\\.1)')
+	when 'Spinal cord compression; yes' then
+		bool_or(icd_code ~ '^(G95\\.20|336\\.9)')
+	end as match 
+from attribute
+cross join latest_icd
+where attribute_group='CNS Disease'
+group by attribute_id, person_id, attribute_group, attribute_name, value
+order by person_id, attribute_id
+;
+-- other disease
+create table _p_a_other_disease as
+select person_id, NULL as patient_value
+, attribute_id, attribute_group, attribute_name, value
+, case attribute_name || '; ' || value
+	when 'Other malignancy; yes' then 
+		bool_or(icd_code ~ '^(C|1[4-9]|20)' and icd_code !~ '^(C34|162)') -- all malignancies but lung
+	when 'Immunodeficiency/HIV infection; yes' then
+		bool_or(icd_code ~ '^(D84\\.9|279\\.3)')
+	when 'Cardiovascular disease; yes' then 
+		bool_or(icd_code ~ '^(I50)')
+	when 'Interstitial lung disease; yes' then
+		bool_or(icd_code ~ '^(J84)')
+	end as match 
+from attribute
+cross join latest_icd
+where attribute_group='Disease'
+group by attribute_id, person_id, attribute_group, attribute_name, value
+order by person_id, attribute_id
+;
+
+/***
+ * lab from wen's nsclc.person_lab_attribute_mapping
+ * lav_value vs unit converted to criteria as patient_value
+ */
+--select * from ct_lca.person_lab_attribute_mapping;
+drop table if exists _p_a_lab;
+create table _p_a_lab as
+select person_id, lab_value || ' vs ' || value_to_compare as patient_value
+, attribute_id, attribute_group, attribute_name, value_rule as value
+, meet_attribute_rule as match
+from ct_lca.person_lab_attribute_mapping
+--join attribute_old_20191107 using (attribute_id)
+join attribute using (attribute_id)
+;
+select * from _p_a_lab;
+
 /***
  * patient_attibute combined
  */ 
-create or replace view ct_lca.patient_attribute as
-	select person_id, attribute_id, match, patient_value::varchar from patient_attribute_age
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_ecog
-    union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_stage
-    union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_histology
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_lot
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_chemotherapy
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_immunotherapy
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_targetedtherapy
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_lab
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_mutation_egfr
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_mutation_alk
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_mutation_ros
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_mutation_kras
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_mutation_braf
-	union select person_id, attribute_id, match, patient_value::varchar from patient_attribute_mutation_her2
-order by person_id, attribute_id;
-select * from patient_attribute;
-
-/***
- * master_sheet trial checks + patient checks
- */
-create or replace view master_sheet as
-select trial_id, person_id, attribute_id
-, a.attribute_group, a.attribute_name, a.value
-, t.inclusion, t.exclusion, p.match patient_match, patient_value
-from attribute a
-join trial_attribute t using (attribute_id)
-join patient_attribute p using (attribute_id)
-order by trial_id, person_id, attribute_id
-;
-select * from master_sheet;
-
--- make into table for performance
-create table master_sheet_nsclc_20191102 as
-select m.* from master_sheet m 
-join ct_nsclc.demo using (person_id)
-;
-show search_path;
--- view master_sheet for order filtering and masking
-create or replace view v_master_sheet_nsclc_20191102 as
-select trial_id, person_id+3040 as person_id, attribute_id,
-attribute_group, attribute_name, value, inclusion, exclusion, patient_match, patient_value
-from master_sheet_nsclc_20191102
-order by trial_id, person_id, attribute_id
-;
-
-select * from v_master_sheet_nsclc_20191101;
--- view patient_attr for order filtering and masking
-create or replace view v_patient_attribute as
-select person_id+3040 as person_id, attribute_id, match patient_match, patient_value
-from patient_attribute
-join ct_nsclc.demo using (person_id)
+create or replace view v_p_a_combined as
+with p_a_combined as (
+	select person_id, attribute_id, match, patient_value::varchar from _p_a_age
+	union select person_id, attribute_id, match, patient_value::varchar from _p_a_ecog
+    union select person_id, attribute_id, match, patient_value::varchar from _p_a_stage
+    union select person_id, attribute_id, match, patient_value::varchar from _p_a_histology
+	union select person_id, attribute_id, match, patient_value::varchar from _p_a_lot
+	union select person_id, attribute_id, match, patient_value::varchar from _p_a_chemotherapy
+	union select person_id, attribute_id, match, patient_value::varchar from _p_a_immunotherapy
+	union select person_id, attribute_id, match, patient_value::varchar from _p_a_targetedtherapy
+	union select person_id, attribute_id, match, patient_value::varchar from _p_a_lab
+	union select person_id, attribute_id, match, patient_value::varchar from _p_a_cns_disease
+	union select person_id, attribute_id, match, patient_value::varchar from _p_a_other_disease
+)
+select person_id, attribute_id, match attribute_match, patient_value
+from p_a_combined
 order by person_id, attribute_id
 ;
-select * from  v_patient_attribute_nsclc_20191101;
 
-select * from trial_attribute
-order by trial_id, attribute_id
-;
+--select * from v_p_a_combined;
 
 
 
 
---17
-select count(distinct trial_id) from master_sheet_nsclc_20191101;
--- 2942
-select count (distinct person_id) from master_sheet_nsclc_20191101;
-select * from master_sheet_nsclc
-
-where person_id in (
-	select distinct person_id from master_sheet_nsclc order by person_id limit 10)
-order by trial_id, person_id, attribute_id;
-
-set search_path=ct_lca;
-select * from trial_attribute join attribute using (attribute_id);
-select * from trial_attribute order by trial_id, attribute_id;
-select pa.* from patient_attribute pa join ct_nsclc.demo using (person_id) order by person_id, attribute_id;
-
-/***
- * master_pivot
- */
-set search_path=ct_lca;
-create view masterpivot_nsclc as
-select *
-from ct_nsclc.demo
-left join histology using (person_id)
-left join stage using (person_id)
-left join lot using (person_id)
-left join last_lab_pivot using (person_id)
-left join _variant_listedgene_pivot using (person_id)
-order by person_id;
-
-
-
-
--- filtering for patients
-select distinct person_id from ct_lca.master_sheet_nsclc where trial_id='NCT03976323' 
-and attribute_group='stage' and inclusion='yes' and patient_match
-intersect
-select distinct person_id from ct_lca.master_sheet_nsclc where trial_id='NCT03976323' 
-and attribute_group='line of therapy' and inclusion='yes' and patient_match;
 

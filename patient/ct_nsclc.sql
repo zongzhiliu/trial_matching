@@ -1,6 +1,188 @@
 create schema ct_nsclc;
 set search_path=ct_nsclc;
+show search_path;
+/***
+ * cohort
+ */
+-- cohort: histology is sclc and not deceased.
+drop table if exists cohort;
+create table cohort as
+select distinct person_id
+from ct_lca.demo
+join ct_lca.histology using (person_id)
+join ct.lca_histology_category using (histology)
+where nsclc and date_of_death is NULL
+;
+-- select count(*) from cohort; --2775
 
+/***
+ * trial and attributes
+ */
+/*-- trial_atttibute: cleaning up
+-- check attribute_id
+select count(distinct attribute_id) from trial_attribute --204
+join ct.attribute using(attribute_id); --204
+-- check clusion
+select distinct inclusion, exclusion from trial_attribute;
+-- yerd
+--  yes
+
+create table trial_attribute_raw as select * from trial_attribute;
+update trial_attribute set exclusion='yes' where exclusion in ('yerd', ' yes'); --3
+update trial_attribute set exclusion=NULL where inclusion is not null;
+*/
+
+--drop table if exists attribute_used cascade;
+create table trial_attribute_used as
+select * from trial_attribute
+join ct.attribute using (attribute_id)
+where nvl(inclusion, exclusion) is not null
+and trial_id!='NCT03347838'
+;
+create view v_trial_attribute_used as
+select trial_id, attribute_id, inclusion, exclusion 
+from trial_attribute_used 
+order by trial_id, attribute_id
+;
+
+-- attribute_used
+create table attribute_used as
+select a.*
+from ct.attribute a
+where attribute_id in (select distinct attribute_id from trial_attribute_used)
+;
+create view v_attribute_used as
+select * from attribute_used order by attribute_id
+;
+
+
+/***
+ * patient attribute matching
+ */
+-- patient attribute
+drop table if exists patient_attribute cascade;
+create table patient_attribute as
+select person_id, attribute_id, attribute_match, patient_value
+from ct_lca.v_p_a_combined
+join attribute_used using (attribute_id)
+join cohort using (person_id)
+;
+create view v_patient_attribute as
+select person_id+3040 person_id, attribute_id, attribute_match, patient_value 
+from patient_attribute
+order by person_id, attribute_id
+;
+
+
+/***
+ * master_sheet
+ */
+create or replace view master_sheet as
+select trial_id, person_id, attribute_id
+, a.attribute_group, a.attribute_name, a.value
+, inclusion, exclusion, attribute_match, patient_value
+from attribute_used a
+join trial_attribute_used t using (attribute_id)
+join patient_attribute p using (attribute_id)
+order by trial_id, person_id, attribute_id
+;
+
+create or replace view v_master_sheet as
+select trial_id, person_id+3040 person_id
+, attribute_id, attribute_name, value
+, inclusion, exclusion
+, attribute_match, patient_value
+from master_sheet 
+;
+-- select count(distinct trial_id), count(distinct attribute_id) from v_trial_attribute_used;
+-- select count(distinct person_id),  count(distinct trial_id), count(distinct attribute_id) from v_master_sheet;
+
+
+
+select distinct trial_id from ct_nsclc.v_master_sheet -- where trial_id='NCT03347838';
+
+
+---old
+drop table if exists cohort;
+create table cohort as
+select distinct person_id
+from ct_lca.demo
+join ct_lca.histology using (person_id)
+join ct.lca_histology_category using (histology)
+where nsclc and date_of_death is NULL
+;
+--select count(*) from cohort; --2775
+
+drop table if exists patient_attribute cascade;
+create table patient_attribute as
+select *
+from ct_lca.v_p_a_combined
+join cohort using (person_id)
+;
+--select * from patient_attribute;
+
+create or replace view master_sheet as
+select trial_id, person_id, attribute_id
+, a.attribute_group, a.attribute_name, a.value
+, t.inclusion, t.exclusion, p.attribute_match, patient_value
+from ct_lca.attribute a
+join trial_attribute t using (attribute_id)
+join patient_attribute p using (attribute_id)
+order by trial_id, person_id, attribute_id
+;
+
+create or replace view v_master_sheet as
+select trial_id, person_id+3040 person_id
+, attribute_id, attribute_name, value
+, inclusion, exclusion
+, attribute_match, patient_value
+from master_sheet 
+where nvl(inclusion, exclusion) is not null
+;
+--select * from v_master_sheet;
+
+create or replace view v_trial_attribute as
+select *
+from trial_attribute
+where nvl(inclusion, exclusion) is not NULL
+;
+--select * from v_trial_attribute;
+--select count(distinct trial_id), count(distinct attribute_id) from v_trial_attribute;
+
+create or replace view v_patient_attribute as
+select person_id+3040 person_id, attribute_id, attribute_match, patient_value 
+from patient_attribute
+order by person_id, attribute_id
+;
+--select * from v_patient_attribute;
+--select count(distinct person_id), count(distinct trial_id), count(distinct attribute_id) from v_master_sheet;
+
+
+create or replace view v_demo_w_zip as
+select person_id+3040 as person_id, d.gender_name
+, date_trunc('month', d.date_of_birth)::date date_of_birth_truncated --, d.date_of_death::date
+, d.race_name, d.ethnicity_name, d.address_zip
+from ct_pca.demo_w_zip d
+join cohort using (person_id)
+order by person_id
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/********
+ * old
+ */
 alter table demo rename to demo_achieved_20191028;
 create table demo as
 select d.*
@@ -600,3 +782,4 @@ select person_id, nvl(max_lot, 0) lot
 from max_lot
 ;
 select * from lot_checks;
+*/

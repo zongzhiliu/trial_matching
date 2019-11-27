@@ -1,3 +1,10 @@
+/***
+input: 
+ ct.attribute: attribute library for all diseases
+ .trial_attribute: each trial matched to attributes
+ .attribute_crit: a subset of attributes used in any inc/exc of trials
+
+*/
 set search_path=ct_nsclc;
 create table ct_nsclc.cohort as
 	select distinct person_id

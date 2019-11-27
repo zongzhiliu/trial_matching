@@ -1,3 +1,12 @@
+/***
+input: 
+ ct.attribute: attribute library for all diseases
+ .trial_attribute: each trial matched to attributes
+ .attribute_crit: a subset of attributes used in any inc/exc of trials
+ .cohort: the person_ids of the disease cohort
+ .demo: person_id, dob, gender, ...
+
+*/
 set search_path=ct_lca;
 
 /***
@@ -16,61 +25,6 @@ where cd.status != 'deleted' and p.status != 'deleted'
 ;
 -- 5007
 select count(*) from demo;
-
-create table _all_labs as
-select l.*
-from demo
-join prod_msdw.all_labs l using (person_id)
-;
-
-create table _all_loinc as
-select distinct loinc_code, loinc_display_name, unit
-from _all_labs
-;
-
--- 163
-select * from _all_loinc;
-
-create table _labs as
-select distinct person_id, result_date::date, loinc_code, loinc_display_name, value_float, value_range_low, value_range_high, unit
-, source_value, source_unit
-from _all_labs a
-join ct.reference_lab using (loinc_code)
-where value_float is not null
-;
-
-drop table last_lab;
-create table last_lab as
-select person_id, result_date as last_date, loinc_code, loinc_display_name, value_float, unit
-from (select *, row_number() over (
-		partition by person_id, loinc_code
-		order by result_date desc nulls last, value_float desc nulls last)
-		from _labs)
-where row_number=1
-order by person_id, last_date, loinc_code
-;
---select * from last_lab order by person_id limit 10;
-
-
-create table last_lab_pivot as
-select person_id
-, max(case when loinc_code='1920-8' then value_float end) lab_ast
-, max(case when loinc_code='1742-6' then value_float end) lab_alt
-, max(case when loinc_code='1975-2' then value_float end) lab_total_bilirubin
-, max(case when loinc_code='1968-7' then value_float end) lab_direct_bilirubin
-, max(case when loinc_code='2160-0' then value_float end) lab_serum_creatinine
-, max(case when loinc_code='2164-2' then value_float end) lab_crcl
-, max(case when loinc_code='48462-3' then value_float end) lab_egfr
-, max(case when loinc_code='777-3' then value_float end) lab_platelets
-, max(case when loinc_code='26499-4' then value_float end) lab_anc
-, max(case when loinc_code='718-7' then value_float end) lab_hemoglobin
-, max(case when loinc_code='26464-8' then value_float end) lab_wbc
---, max(case when loinc_code='1558-6' then value_float end) lab_fpg
-from last_lab
-GROUP BY person_id
---order by person_id
---limit 100
-;
 
 /***
 * histology
@@ -177,5 +131,62 @@ select person_id, n_lot
 , n_lot=1 as lot_1, n_lot=2 as lot_2, n_lot=3 as lot_3
 , n_lot>=4 as lot_ge_4
 from lot
+;
+
+
+/***
+* old
+*/
+create table _all_labs as
+select l.*
+from demo
+join prod_msdw.all_labs l using (person_id)
+;
+
+create table _all_loinc as
+select distinct loinc_code, loinc_display_name, unit
+from _all_labs
+;
+
+-- 163
+create table _labs as
+select distinct person_id, result_date::date, loinc_code, loinc_display_name, value_float, value_range_low, value_range_high, unit
+, source_value, source_unit
+from _all_labs a
+join ct.reference_lab using (loinc_code)
+where value_float is not null
+;
+
+drop table last_lab;
+create table last_lab as
+select person_id, result_date as last_date, loinc_code, loinc_display_name, value_float, unit
+from (select *, row_number() over (
+		partition by person_id, loinc_code
+		order by result_date desc nulls last, value_float desc nulls last)
+		from _labs)
+where row_number=1
+order by person_id, last_date, loinc_code
+;
+--select * from last_lab order by person_id limit 10;
+
+
+create table last_lab_pivot as
+select person_id
+, max(case when loinc_code='1920-8' then value_float end) lab_ast
+, max(case when loinc_code='1742-6' then value_float end) lab_alt
+, max(case when loinc_code='1975-2' then value_float end) lab_total_bilirubin
+, max(case when loinc_code='1968-7' then value_float end) lab_direct_bilirubin
+, max(case when loinc_code='2160-0' then value_float end) lab_serum_creatinine
+, max(case when loinc_code='2164-2' then value_float end) lab_crcl
+, max(case when loinc_code='48462-3' then value_float end) lab_egfr
+, max(case when loinc_code='777-3' then value_float end) lab_platelets
+, max(case when loinc_code='26499-4' then value_float end) lab_anc
+, max(case when loinc_code='718-7' then value_float end) lab_hemoglobin
+, max(case when loinc_code='26464-8' then value_float end) lab_wbc
+--, max(case when loinc_code='1558-6' then value_float end) lab_fpg
+from last_lab
+GROUP BY person_id
+--order by person_id
+--limit 100
 ;
 
