@@ -1,8 +1,10 @@
 # https://aact.ctti-clinicaltrials.org/snapshots
 # https://dataschool.com/learn-sql/how-to-start-a-postgresql-server-on-mac-os-x/
 # Note that: PGPORT is used with starting server and psql
+#brew install postgres
 export PGPORT=5432
 pg_ctl -D /usr/local/var/postgres start
+#pg_ctl -D /usr/local/var/postgres stop
 psql aact_back -U zongzhiliu
 
 echo 'set search_path=ctgov;' > _export_each_table_to_csv.sql

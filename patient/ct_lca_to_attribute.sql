@@ -54,12 +54,12 @@ select person_id
 	when 'EGFR, L858R' then patient_value ~ 'p.L858R'
 	when 'EGFR, T790M' then patient_value ~ 'p.T790M'
 	when 'KRAS, yes' then patient_value is not NULL
-	when 'KRAS, G12' then patient_value ~ 'p.G12\\D|Codon 12 '	
+	when 'KRAS, G12' then patient_value ~ 'p.G12\\D|Codon 12 '
 	when 'BRAF, yes' then patient_value is not NULL
 	when 'BRAF, V600' then patient_value ~ 'p.V600\\D'	
 	when 'HER2, yes' then patient_value is not NULL
 	when 'ALK fusion, yes' then patient_value ~ 'fusion'
-	when 'ROS1 fusion, yes' then patient_value ~ 'fusion'	
+	when 'ROS1 fusion, yes' then patient_value ~ 'fusion'
 	end as match
 from ct_lca._variant_listedgene_pivot
 cross join ct_lca.attribute
@@ -298,7 +298,8 @@ from ct_lca.person_lab_attribute_mapping
 --join attribute_old_20191107 using (attribute_id)
 join attribute using (attribute_id)
 ;
-select * from _p_a_lab;
+--set search
+select distinct attribute_id,attribute_name, value from ct_lca._p_a_lab;
 
 /***
  * patient_attibute combined

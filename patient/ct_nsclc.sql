@@ -1,6 +1,5 @@
 create schema ct_nsclc;
-set search_path=ct_nsclc;
-show search_path;
+set search_path=ct_nsclc; show search_path;
 /***
  * cohort
  */
@@ -102,6 +101,122 @@ from master_sheet
 select distinct trial_id from ct_nsclc.v_master_sheet -- where trial_id='NCT03347838';
 
 
+
+/***
+ * master crit match
+ */
+--drop table trial_crit_used;
+create table trial_crit_used as
+select trial_id, crit_id
+, bool_or(inclusion is not null) inclusive
+, case when inclusive then FALSE
+	else bool_or(exclusion is not null)
+	end as exclusive
+from trial_attribute_used
+join crit_attribute_used using (attribute_id)
+group by trial_id, crit_id
+order by trial_id, crit_id
+;
+
+-- select * from trial_crit_used where inclusive is false and exclusive is false;
+create view trial_crit_used_summary as
+select trial_id
+, sum(inclusive::int) trial_inclusions
+, sum(exclusive::int) trial_exclusions
+from trial_crit_used
+group by trial_id
+;
+
+create or replace view _crit_attribute_match as
+select trial_id, person_id, crit_id, crit_name, attribute_id
+--, a.attribute_group, a.attribute_name
+, a.value
+, inclusion, exclusion, attribute_match--, patient_value
+from crit_attribute_used a
+join trial_attribute_used t using (attribute_id)
+join patient_attribute p using (attribute_id)
+order by trial_id, person_id, attribute_id
+;
+
+--alter table crit_pass rename to crit_pass_old_20191208;
+create table crit_pass as
+select trial_id, person_id, crit_id
+, inclusive --listagg(distinct inclusion, ', ') inclusions
+, exclusive --listagg(distinct exclusion, ', ') exclusions
+, bool_or(attribute_match) crit_match
+, case when inclusive then crit_match
+	else not crit_match end as crit_pass
+from _crit_attribute_match
+join trial_crit_used using (trial_id, crit_id)
+group by trial_id, person_id, crit_id, inclusive, exclusive
+;
+
+--drop table crit_pass_summary cascade;
+create table crit_pass_summary as
+select trial_id, person_id, trial_inclusions, trial_exclusions
+, bool_and(crit_pass) as all_passed_aggressive
+, bool_and(nvl(crit_pass, False)) as all_passed_conservative
+, sum((inclusive and crit_match is not null)::int) inclusive_extracted
+, sum((inclusive and nvl(crit_match, false))::int) inclusive_passes
+, sum((exclusive and crit_match is not null)::int) exclusive_extracted
+, sum((exclusive and nvl(not crit_match, false))::int) exclusive_passes
+from crit_pass
+join trial_crit_used_summary using (trial_id)
+group by trial_id, person_id, trial_inclusions, trial_exclusions
+;
+--show search_path;
+--drop view trial2patients;
+create or replace view trial2patients as
+	select trial_id
+	, sum(all_passed_aggressive::int) patients_passed_aggressive
+	, sum(all_passed_conservative::int) patients_passed_conservative
+	from crit_pass_summary
+	group by trial_id
+	order by patients_passed_aggressive desc, patients_passed_conservative desc
+;
+
+drop view patient2trials;
+create or replace view patient2trials as
+	select person_id, sum(all_passed::int) trials
+	from crit_pass_summary
+	group by person_id
+	order by trials desc
+;
+
+
+create view mount_sinai_crit_pass_summary as
+	select facility as mount_sinai_facility
+	, cps.*
+	from crit_pass_summary cps
+	left join (
+		select nct_id as trial_id, facility 
+		from ctgov.v_mount_sinai_nsclc_trials) ms using (trial_id)
+	order by person_id, mount_sinai_facility, trial_id
+;
+
+create or replace view mount_sinai_trials_passed as
+	select * from mount_sinai_crit_pass_summary
+	where all_passed and mount_sinai_facility is not null
+;
+
+/*** qc
+select * from master_sheet where person_id=165 and trial_id='NCT03916627';
+select t
+with tmp as (
+select 'a' x 
+union select NULL
+)
+select listagg(x, ', ') from tmp;
+*/
+
+
+
+
+
+
+
+
+
 ---old
 drop table if exists cohort;
 create table cohort as
@@ -161,12 +276,13 @@ order by person_id, attribute_id
 create or replace view v_demo_w_zip as
 select person_id+3040 as person_id, d.gender_name
 , date_trunc('month', d.date_of_birth)::date date_of_birth_truncated --, d.date_of_death::date
-, d.race_name, d.ethnicity_name, d.address_zip
-from ct_pca.demo_w_zip d
+, case when d.race_name='Not Reported' then 'Unknown' else d.race_name end as race_name 
+, d.ethnicity_name, d.address_zip
+from ct_lca.demo_w_zip d
 join cohort using (person_id)
 order by person_id
 ;
-
+--select count(*) from ct_nsclc.v_demo_w_zip;
 
 
 
