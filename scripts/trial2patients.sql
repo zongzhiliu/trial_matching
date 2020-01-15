@@ -1,4 +1,4 @@
-SET search_path=ct_nsclc;
+SET search_path=ct_sclc;
 /***
  * trial and attributes
  */
@@ -7,12 +7,12 @@ drop table if exists trial_attribute_used cascade;
 create table trial_attribute_used as
 select  nct_id as trial_id
 , attribute_id, inclusion, exclusion
-from trial_attribute_raw_20200106
+from trial_attribute_raw_20200111 -- raw data
 where nvl(inclusion, exclusion) is not null
 order by trial_id, attribute_id
 ;
 
--- attribute_used
+-- attribute_used, to be deprecated!
 drop table if exists attribute_used cascade;
 create table attribute_used as
 select attribute_id, count(*) trials
@@ -27,9 +27,9 @@ create table crit_attribute_used as
 select crit_id
 , crit_name, must_have_data_for_matching
 , attribute_id
-, attribute_group, attribute_name, value
-, trials
-from crit_attribute_20200106
+, c.attribute_group, c.attribute_name, c.value
+--, trials
+from ct.crit_attribute_raw_20200111 c -- raw data
 join attribute_used using (attribute_id)
 ;
 
@@ -61,8 +61,7 @@ order by crits desc, attributes desc
 
 
 /*qc
-select count(*) from trial_attribute_used; --3482
-select count(*) from attribute_used; --135
+select count(*) from trial_attribute_used; --3482, 3398
 select count(*) from crit_attribute_used; --135 good
 select count(*) from crit_used; --80
  */
@@ -110,7 +109,7 @@ from master_sheet
 -- select count(distinct trial_id), count(distinct attribute_id) from v_trial_attribute_used;
 -- select count(distinct person_id),  count(distinct trial_id), count(distinct attribute_id) from v_master_sheet;
 --select distinct trial_id from ct_nsclc.v_master_sheet -- where trial_id='NCT03347838';
-
+/*
 -- report number of implemented and data extracted attributes for each trial
 create or replace view v_trial_consolidated_crits as
 select trial_id
@@ -142,7 +141,7 @@ select c.*
 from v_trial_crits_summary c
 join ctgov.eligibilities on trial_id=nct_id
 ;
-
+*/
 
 
 
@@ -168,7 +167,7 @@ from tmp
 join crit_attribute_used using (crit_id)
 join trial_attribute_used using (trial_id, attribute_id) 
 where inclusive=exclusive
-order by trial_id, attribute_id
+order by crit_id, trial_id, attribute_id
 */
 select trial_id, crit_id, inclusive
 , case when inclusive then false else exclusive end as exclusive 
@@ -207,6 +206,7 @@ select count(*) from _crit_attribute_match; --6737660
 select count(*) from master_sheet where nvl(inclusion, exclusion) is not null; --6737660
 select count(*) from master_sheet join crit_attribute_used using (attribute_id) join trial_crit_used using (trial_id, crit_id);
 */
+drop table _master_sheet_with_crit;
 create table _master_sheet_with_crit as
 select trial_id, person_id
 , attribute_id, inclusion attr_inclusion, exclusion attr_exclusion
@@ -249,44 +249,54 @@ select crit_pass_aggressive, crit_pass_conservative, crit_pass_balanced, count(*
 from crit_pass_no_nulls
 group by crit_pass_aggressive, crit_pass_conservative, crit_pass_balanced
 ;*/
-select * from crit_pass_no_nulls;
+--select * from crit_pass_no_nulls;
 drop table crit_pass_summary cascade;
 create table crit_pass_summary as
 select trial_id, person_id, trial_inclusions, trial_exclusions
-, bool_and(crit_pass) as all_passed_aggressive
-, bool_and(nvl(crit_pass, False)) as all_passed_conservative
-, bool_and(case must_have_data_for_matching 
-	when 'yes' then nvl(crit_pass, False)
-	when 'no' then nvl(crit_pass, False)
-	end) all_passed_balanced
+, bool_and(crit_pass_aggressive) as all_passed_aggressive
+, bool_and(crit_pass_conservative) as all_passed_conservative
+, bool_and(crit_pass_balanced) as all_passed_balanced
 , sum((crit_inclusive and crit_match is not null)::int) inclusive_extracted
 , sum((crit_inclusive and nvl(crit_match, false))::int) inclusive_passes
 , sum((crit_exclusive and crit_match is not null)::int) exclusive_extracted
 , sum((crit_exclusive and nvl(not crit_match, false))::int) exclusive_passes
-from crit_pass
+from crit_pass_no_nulls
 join trial_crit_used_summary using (trial_id)
-join crit_used using (crit_id)
+--join crit_used using (crit_id)
 group by trial_id, person_id, trial_inclusions, trial_exclusions
 ;
+/*
 --select * from crit_pass_summary;
 select all_passed_aggressive, all_passed_conservative, all_passed_balanced, count(*)
 from crit_pass_summary
 group by all_passed_aggressive, all_passed_conservative, all_passed_balanced
 ;
 --select crit_id, must_have_data_for_matching from crit_attribute_used group by crit_id, must_have_data_for_matching
-
+*/
 --show search_path;
 --drop view trial2patients;
 create or replace view trial2patients as
 	select trial_id
 	, sum(all_passed_aggressive::int) patients_passed_aggressive
+	, sum(all_passed_balanced::int) patients_passed_balanced
 	, sum(all_passed_conservative::int) patients_passed_conservative
 	from crit_pass_summary
 	group by trial_id
-	order by patients_passed_aggressive desc, patients_passed_conservative desc
+	order by patients_passed_aggressive desc, patients_passed_balanced desc
 ;
-select distinct must_have_data_for_matching from crit_attribute_used;
+--select distinct must_have_data_for_matching from crit_attribute_used;
+select trial_id, person_id, attribute_id
+attribute_inclusion, attr_exclusion, attribute_match
+crit_id, crit_inclusive, crit_exclusive, crit_match, crit_pass
+patients_passed_balanced
 
+from _master_sheet_with_crit
+join crit_pass_no_nulls using (crit_id, trial_id, person_id)
+join crit_pass_summary using (trial_id, person_id)
+join trial2patients using (trial_id)
+where patients_passed_balanced > 300 and all_passed_balanced
+order by trial_id, person_id, attribute_id
+;
 
 
 
