@@ -40,11 +40,10 @@ def _each_total(pc, sizes):
 def get_size_and_total(df):
     """return size (number of nodes) and total (sum of node values) of each branch (row).
 
-    df: a data frame with tree_number and pc, it should be sorted using tree_number.
+    df: a data frame with tree_number and pc, it will be sorted using tree_number.
         tree_number: the node name, need to be the same number of characters at the same level
         pc: the value (patient count) for each node.
     """
-    df = df.sort_values(by='tree_number')
     size = list(_each_size(df['tree_number'].values))
     total = list(_each_total(df['pc'].values, size))
     return size, total
@@ -52,6 +51,7 @@ def get_size_and_total(df):
 def main(incsv, outcsv):
     #breakpoint()
     df = pd.read_csv(incsv, index_col=0)
+    df = df.sort_values(by='tree_number')
     size, total = get_size_and_total(df)
     df['branch_size'] = size
     df['branch_total'] = total

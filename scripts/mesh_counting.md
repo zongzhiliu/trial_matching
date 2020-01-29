@@ -17,5 +17,5 @@ tmp[tmp.MeSH_code.isin(sele)]
 ```
 # counting each branch
 ```
-python /Users/zongzhiliu/git/trial_matching/scripts/mesh_counting.py <Top50trial_mesh_pc.csv > Top50trial_mesh_pc_branch_total.csv
+!python /Users/zongzhiliu/git/trial_matching/scripts/mesh_counting.py <Top50trial_mesh_pc.csv > Top50trial_mesh_pc_branch_total.csv
 ```
