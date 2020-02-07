@@ -18,7 +18,7 @@ def test_each_ancestor():
     assert list(mm.each_ancestor('a.b.c')) == ['a.b', 'a', 'root']
 
 def test_main_d3_tree():
-    incsv = 'out.test_mesh_counting.csv'
+    incsv = 'test_s3_tree.csv'
     with open('treeData.js', 'w') as outjs:
         mm.main_d3_tree(incsv, outjs)
     sp.call('open test_mesh_counting.html', shell=True)

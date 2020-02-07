@@ -1,0 +1,37 @@
+index,tree_number,mesh_term,pc,branch_size,branch_total
+14489,C01.252,Bacterial Infections,1998,16,4144
+2299,C01.252.400,Gram-Negative Bacterial Infections,0,4,7
+7031,C01.252.400.625.391,Gonorrhea,0,1,0
+10700,C01.252.400.625.549,Meningococcal Infections,7,1,7
+9916,C01.252.400.739,Pseudomonas Infections,0,1,0
+1074,C01.252.410.040.552.846,Tuberculosis,0,2,1128
+9490,C01.252.410.040.552.846.899,"Tuberculosis, Pulmonary",1128,1,1128
+10004,C01.252.410.222,Clostridium Infections,1,1,1
+9240,C01.252.410.868.820,Staphylococcal Skin Infections,0,1,0
+4491,C01.252.410.890.670,Pneumococcal Infections,0,2,0
+8536,C01.252.410.890.670.750,"Pneumonia, Pneumococcal",0,1,0
+4408,C01.252.620.550,"Pneumonia, Pneumococcal",0,1,0
+16540,C01.252.810.401,Gonorrhea,0,1,0
+6428,C01.252.825,"Skin Diseases, Bacterial",0,3,1010
+5551,C01.252.825.420,Hidradenitis Suppurativa,1010,1,1010
+9152,C01.252.825.770,Staphylococcal Skin Infections,0,1,0
+16811,C01.539,Infection,0,16,123078
+17070,C01.539.160.762,Spondylitis,84,1,84
+9494,C01.539.218,Coinfection,0,1,0
+13131,C01.539.221,Communicable Diseases,0,1,0
+18602,C01.539.463,Intraabdominal Infections,0,1,0
+10540,C01.539.739,Respiratory Tract Infections,61830,1,61830
+12693,C01.539.757,Sepsis,4457,1,4457
+9156,C01.539.778.281.401,Gonorrhea,0,1,0
+16814,C01.539.800,"Skin Diseases, Infectious",0,5,8002
+12781,C01.539.800.130,Cellulitis,6992,1,6992
+9497,C01.539.800.720,"Skin Diseases, Bacterial",0,3,1010
+12519,C01.539.800.720.420,Hidradenitis Suppurativa,1010,1,1010
+13646,C01.539.800.720.770,Staphylococcal Skin Infections,0,1,0
+12520,C01.539.830.200,Cellulitis,6992,1,6992
+14081,C01.539.830.499,Hidradenitis Suppurativa,1010,1,1010
+17075,C01.539.895,Urinary Tract Infections,40703,1,40703
+12696,C01.703,Mycoses,769,4,990
+13304,C01.703.080,Aspergillosis,210,1,210
+2586,C01.703.980,Zygomycosis,5,2,11
+8369,C01.703.980.600,Mucormycosis,6,1,6
