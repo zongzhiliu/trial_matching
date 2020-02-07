@@ -48,6 +48,23 @@ def get_size_and_total(df):
     total = list(_each_total(df['pc'].values, size))
     return size, total
 
+## supporting json tree presentation
+def new_node(name, parent=None, children=None):
+    return dict(name=name, parent=parent,
+        children=(children if children else []))
+
+def each_ancestor(key):
+    pair = key.rsplit('.', 1)
+    while len(pair)==2:
+        yield pair[0]
+        pair = pair[0].rsplit('.', 1)
+    yield 'root'
+
+def find_parent(key, nodes):
+    for k in each_ancestor(key):
+        if k in nodes:
+            return nodes[k]
+
 def main(incsv, outcsv):
     #breakpoint()
     df = pd.read_csv(incsv, index_col=0)
@@ -56,6 +73,32 @@ def main(incsv, outcsv):
     df['branch_size'] = size
     df['branch_total'] = total
     df.to_csv(outcsv)
+
+    #tree data json file
+    df = pd.read_csv('out.test_mesh_counting.csv', index_col=0)
+    # initate all the nodes
+    nodes = {}
+    nodes['root'] = new_node('root')
+    for i, row in df.iterrows():
+        nodes[row['tree_number']] = new_node(
+            name=f"""{row['tree_number']}: {row['branch_total']}""")
+
+    # find the parents
+    for key, node in nodes.items():
+        if key == 'root':
+            continue
+        parent = find_parent(key, nodes)
+        parent['children'].append(node)
+        node['parent'] = parent['name']
+
+    import json
+    for key, node in nodes.items():
+        if not node['children']:
+            del node['children']
+
+    print(json.dumps(nodes['root']))
+
+    # 
 
 if __name__ == '__main__':
     import sys

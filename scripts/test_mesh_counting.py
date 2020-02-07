@@ -14,6 +14,9 @@ def test_get_branch_size():
 def test_each_total():
     assert list(mm.each_total(df)) == exp_total
 
+def test_each_ancestor():
+    assert list(mm.each_ancestor('a.b.c')) == ['a.b', 'a', 'root']
+
 def test__main():
     res=df
     res['total'] = list(mm.each_total(df))
