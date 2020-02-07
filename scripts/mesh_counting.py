@@ -65,17 +65,14 @@ def find_parent(key, nodes):
         if k in nodes:
             return nodes[k]
 
-def main(incsv, outcsv):
-    #breakpoint()
-    df = pd.read_csv(incsv, index_col=0)
-    df = df.sort_values(by='tree_number')
-    size, total = get_size_and_total(df)
-    df['branch_size'] = size
-    df['branch_total'] = total
-    df.to_csv(outcsv)
-
+def main_d3_tree(incsv, outjs):
     #tree data json file
-    df = pd.read_csv('out.test_mesh_counting.csv', index_col=0)
+    #incsv = 'out.test_mesh_counting.csv'
+    #outjs = open('out.treeData.js', 'w')
+    if isinstance(outjs, str):
+        outjs = open(outjs, 'w')
+
+    df = pd.read_csv(incsv, index_col=0)
     # initate all the nodes
     nodes = {}
     nodes['root'] = new_node('root')
@@ -83,7 +80,7 @@ def main(incsv, outcsv):
         nodes[row['tree_number']] = new_node(
             name=f"""{row['tree_number']}: {row['branch_total']}""")
 
-    # find the parents
+    # add the parent-children
     for key, node in nodes.items():
         if key == 'root':
             continue
@@ -96,9 +93,18 @@ def main(incsv, outcsv):
         if not node['children']:
             del node['children']
 
-    print(json.dumps(nodes['root']))
+    outjs.write('treeData = ')
+    json.dump([nodes['root']], outjs)
 
-    # 
+def main(incsv, outcsv):
+    #breakpoint()
+    df = pd.read_csv(incsv, index_col=0)
+    df = df.sort_values(by='tree_number')
+    size, total = get_size_and_total(df)
+    df['branch_size'] = size
+    df['branch_total'] = total
+    df.to_csv(outcsv)
+
 
 if __name__ == '__main__':
     import sys

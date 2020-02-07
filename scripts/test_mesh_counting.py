@@ -1,6 +1,6 @@
 #from mesh_counting import *
 import mesh_counting as mm
-import io, pandas as pd
+import io, pandas as pd, subprocess as sp
 
 df = pd.DataFrame([['C01', 1], ['C01.002', 2], ['C01.123', 123],
                 ['D01', 1]], columns=['tree_number', 'pc'])
@@ -17,11 +17,16 @@ def test_each_total():
 def test_each_ancestor():
     assert list(mm.each_ancestor('a.b.c')) == ['a.b', 'a', 'root']
 
+def test_main_d3_tree():
+    incsv = 'out.test_mesh_counting.csv'
+    with open('treeData.js', 'w') as outjs:
+        mm.main_d3_tree(incsv, outjs)
+    sp.call('open test_mesh_counting.html', shell=True)
+
 def test__main():
     res=df
     res['total'] = list(mm.each_total(df))
     print (res)
-
 
 
 def test_get_size_and_total():
