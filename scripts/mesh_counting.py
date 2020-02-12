@@ -1,4 +1,6 @@
 import pandas as pd
+import json
+from itertools import islice
 from deprecation import deprecated
 
 def get_branch_size(nodes):
@@ -49,9 +51,11 @@ def get_size_and_total(df):
     return size, total
 
 ## supporting json tree presentation
-def new_node(name, parent=None, children=None):
-    return dict(name=name, parent=parent,
-        children=(children if children else []))
+def new_node(name):
+    """contruct a tree node with a dict.
+    """
+    return dict(name=name,
+        parent=None, children=list())
 
 def each_ancestor(key):
     pair = key.rsplit('.', 1)
@@ -66,33 +70,29 @@ def find_parent(key, nodes):
             return nodes[k]
 
 def main_d3_tree(incsv, outjs):
-    #tree data json file
-    #incsv = 'out.test_mesh_counting.csv'
-    #outjs = open('out.treeData.js', 'w')
-    if isinstance(outjs, str):
-        outjs = open(outjs, 'w')
+    """output a js file with treeData.
 
+    - incsv: a csv file with [tree_number, branch_total, ...]
+    - outjs: a writable stream
+    """
     df = pd.read_csv(incsv, index_col=0)
+
     # initate all the nodes
-    nodes = {}
-    nodes['root'] = new_node('root')
+    nodes = dict(root = new_node('root'))
     for i, row in df.iterrows():
         nodes[row['tree_number']] = new_node(
             name=f"""{row['tree_number']}: {row['branch_total']}""")
 
     # add the parent-children
-    for key, node in nodes.items():
-        if key == 'root':
-            continue
+    for key, node in islice(nodes.items(), 1, None): #skip the root
         parent = find_parent(key, nodes)
         parent['children'].append(node)
         node['parent'] = parent['name']
 
-    import json
+    # write to the js file
     for key, node in nodes.items():
         if not node['children']:
             del node['children']
-
     outjs.write('treeData = ')
     json.dump([nodes['root']], outjs)
 
