@@ -34,13 +34,6 @@ load_into_db_schema_some_csvs.py rimsdw ct_nsclc crit_attribute_raw_20200111.csv
 ```trial2patient.sql
 ```
 
-## prepatient patient level tables in ct_lca (no change)
-```ct_lca.sql
-stage
-_variant_listed_gene_pivot
-lot
-patient_demo
-```
 
 ## perform attribute matching in ct_lca (no change)
 ```ct_lca_to_attribute.sql
@@ -74,6 +67,13 @@ _p_a_lab #ok from person_lab_attribute_mapping
 * trial2patient.pptx
 ```
 
+## 20200212 regenerate patient level tables in ct_lca
+```ct_lca.sql
+stage
+_variant_listed_gene_pivot
+lot
+patient_demo
+```
 
 
 

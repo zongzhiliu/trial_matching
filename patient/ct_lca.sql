@@ -1,28 +1,36 @@
-create schema ct_lca;
+/***
+ * create the patient info tables from Lung cancer LCA patients from cplus if possible
+ * 2020-02-18 refresh
+ */
+--create schema ct_lca;
 set search_path=ct_lca;
+show search_path;
 
+/***
 create table attribute as
 select * from ct.attribute
 where attribute_id between 1 and 204
-;
+; */
 
 /***
  * demo
  */
+drop if exists table demo;
 create table demo as
 select distinct person_id, date_of_birth, gender_name, date_of_death, race_name, ethnicity_name
+--select count(*)
 from cplus_from_aplus.cancer_diagnoses cd
---join cplus_from_aplus.cancer_types using (cancer_type_id)
-join cplus_from_aplus.people p using (person_id)
-join cplus_from_aplus.genders g using (gender_id)
-join cplus_from_aplus.races r using (race_id)
-join cplus_from_aplus.ethnicities using (ethnicity_id)
-where cd.status != 'deleted' and p.status != 'deleted'
-	and cancer_type_id=1 --and cancer_type_name='LCA'
+join cplus_from_aplus.cancer_types using (cancer_type_id)
+join prod_references.people p using (person_id)
+join prod_references.genders g using (gender_id)
+join prod_references.races r using (race_id)
+join prod_references.ethnicities using (ethnicity_id)
+where nvl(cd.status, '') != 'deleted' and nvl(p.status, '') != 'deleted' --fixed with nvl
+	and cancer_type_name='LCA'
 ;
 
 --select count(*) from demo; 
-	--5007
+	--5007 --5614
 
 /***
  * stage: 
@@ -34,9 +42,9 @@ select person_id, overall_stage stage
 	, regexp_substr(stage, '^[0IV]+[A-C].*') stage_full
 from demo
 left join cplus_from_aplus.cancer_diagnoses cd using (person_id)
-where cd.status != 'deleted'
+where nvl(cd.status, '') != 'deleted'
 ;
-
+drop table stage cascade;
 create table stage as
 select person_id, stage
 , case when stage_base='' then NULL else stage_base end stage_base
@@ -44,35 +52,72 @@ select person_id, stage
 , case when stage_full='' then NULL else stage_full end stage_full
 from _stage
 ;
-/*
-drop table if exists stage_checks;
-create table stage_checks as
-select person_id, stage --, stage_unknown
-, stage_base='I' as stage_I
-, stage_base='I' and stage_ext like 'A%' as stage_IA
-, stage_base='I' and stage_ext like 'B%' as stage_IB
-, stage_base='II' as stage_II
-, stage_base='II' and stage_ext like 'A%' as stage_IIA
-, stage_base='II' and stage_ext like 'B%' as stage_IIB
-, stage_base='III' as stage_III
-, stage_base='III' and stage_ext like 'A%' as stage_IIIA
-, stage_base='III' and stage_ext like 'B%' as stage_IIIB
-, stage_base='III' and stage_ext like 'C%' as stage_IIIC
-, stage_base='IV' as stage_IV
-, stage_base='IV' and stage_ext like 'A%' as stage_IVA
-, stage_base='IV' and stage_ext like 'B%' as stage_IVB
-from stage
+
+
+/***
+ * vital
+ */
+
+create table vital as
+select distinct person_id
+	, age_in_days
+    , procedure_role
+    , procedure_description
+    , context_procedure_code
+    , context_name
+    , value
+    , unit_of_measure
+from demo 
+join prod_references.person_mrns using (person_id)
+join dev_patient_info_lca.vitals on (medical_record_number=mrn) --{cancer_type}
 ;
-select * from stage_checks limit 10;
-*/
+--select count(distinct person_id) from vital; -- 5310
 
 
+/***
+ * performance: no conversions
+ */
+create table latest_ecog as 
+select person_id, ecog_ps
+, performance_score_date::date as performance_score_date
+from (select *, row_number() over (
+		partition by person_id
+		order by performance_score_date desc nulls last, ecog_ps) --tie-breaker: best performance
+	from cplus_from_aplus.performance_scores
+	join demo using (person_id)
+	where ecog_ps is not null)
+where row_number=1 
+;
+
+create table latest_karnofsky as 
+select person_id, karnofsky_pct
+, performance_score_date::date as performance_score_date
+from (select *, row_number() over (
+		partition by person_id
+		order by performance_score_date desc nulls last, -karnofsky_pct) --tie-breaker: best performance
+	from cplus_from_aplus.performance_scores
+	join demo using (person_id)
+	where karnofsky_pct is not null)
+where row_number=1 
+;
 
 /***
 * mutations
 */
-set search_path=ct_lca;
-drop table if exists ct_lca._variant_significant;
+/** not working yet
+create table _variant_significant as
+select distinct person_id, tissue_collection_date::date
+, genetic_test_name, gene
+, variant_type, alteration --, exon
+select count(*) --distinct person_id)
+from demo
+join cplus_from_aplus.genetic_test_occurrences using (person_id) --1951
+join cplus_from_aplus.genetic_tests using (genetic_test_id) --1162 from prod_ref, 1725 from cplus
+join cplus_from_aplus.variant_occurrences vo using (genetic_test_occurrence_id) -- 22! 35 w/o genetic_test_id
+join cplus_from_aplus.target_genes using (target_gene_id) -- genetic_test_id unnecessary for join
+where is_clinically_significant
+;
+*/
 create table ct_lca._variant_significant as
 select distinct person_id, tissue_collection_date
 , genetic_test_name, gene
@@ -84,12 +129,19 @@ join cplus_from_aplus.target_genes using (target_gene_id, genetic_test_id)
 join cplus_from_aplus.pathologies p using (pathology_id)
 join demo using (person_id)
 where is_clinically_significant
-	and p.status != 'deleted'  -- all 'not_reviewed'
+	and nvl(p.status, '') != 'deleted'  
 ;
 select count(*) from ct_lca._variant_significant; --1761
 
+create table gene_alterations as
+select person_id, gene
+, listagg(distinct alteration , '|') within group (order by alteration) as alterations
+from _variant_significant
+group by person_id, gene
+;
 
 
+/*old
 create table ct_lca._variant_listedgene as
 select person_id, gene
 , listagg(distinct alteration , '|') within group (order by alteration) as alterations
@@ -112,8 +164,8 @@ select person_id
 from ct_lca._variant_listedgene
 group by person_id
 ;
-
-select * from ct_lca._variant_listedgene_pivot;
+*/
+-- select * from ct_lca._variant_listedgene_pivot;
 /*
 -- make the checkboxes for all alterations
 create table ct_lca.variant_listedgene_checks as
@@ -264,81 +316,3 @@ group by person_id
 ;
 --select * from p_lot_drugs;
 
-/***
-* labs
-*/
--- using prod_msdw.all_labs
--- config: the loinc codes needed
--- config later: the normal range
--- later: convert to ULM
-
-/*
-select *
-from prod_msdw.all_labs
-join demo using (person_id)
-limit 10;
-
-set search_path=ct_lca;
-select *
-from ct.reference_NSCLC_lab_test
-left join _all_loinc using (loinc_code)
-;
-
-create table labs as
-select distinct person_id, result_date::date, loinc_code, loinc_display_name, value_float, value_range_low, value_range_high, unit
-, source_value, source_unit
-from _all_labs a
-join ct.reference_nsclc_lab_test using (loinc_code)
-where value_float is not null
-;
-
-select * from ct_lca.labs order by person_id, result_date, loinc_code, value_float, source_value, source_unit;
-show search_path;
-select * from labs;
-
-create table last_lab as
-select person_id, result_date as last_date, loinc_code, loinc_display_name, value_float, unit
-from (select *, row_number() over (
-		partition by person_id, loinc_code
-		order by result_date desc nulls last, value_float desc nulls last)
-		from labs)
-where row_number=1
-order by person_id, last_date, loinc_code
-;
-
---create table last_lab_pivot as
-select person_id
-, max(case when loinc_code='1920-8' then value_float end lab_ast
-, case when loinc_code='1742-6' then value_float end lab_alt
-, case when loinc_code='1975-2' then value_float end lab_total_bilirubin
-, case when loinc_code='1968-7' then value_float end lab_direct_bilirubin
-, case when loinc_code='2160-0' then value_float end lab_serum_creatinine
-, case when loinc_code='2164-2' then value_float end lab_crcl
-, case when loinc_code='773-2' then value_float end lab_platelets
-, case when loinc_code='26499-4' then value_float end lab_anc
-, case when loinc_code='718-7' then value_float end lab_hemoglobin
-, case when loinc_code='26464-8' then value_float end lab_wbc
-from last_lab
-GROUP BY person_id
-order by person_id
-;
-
-select * from histology_checks;
-
-set search_path=ct_lca;
-select *
-from (select *, row_number() over (partition by stage
-        order by person_id)
-    from stage_checks)
-where row_number=1
-order by stage
-;
-
-select *
-from (select *, row_number() over (partition by histology
-        order by person_id)
-    from histology_checks)
-where row_number=1
-order by histology
-;
-*/
