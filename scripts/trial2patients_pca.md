@@ -85,6 +85,8 @@ psql_w_envs pca/setup.sql  #> ref tables, crit_attribute_used
 
 # prepare patient tables
 psql_w_envs cancer/prepare_patients.sql  #> demo and other patient tables
+psql_w_envs cancer/prepare_stage.sql  #> stage
+psql_w_envs cancer/prepare_histology.sql  #> stage
 psql_w_envs pca/prepare_patients.sql  #> specific patient tables
 
 # match to attributes
