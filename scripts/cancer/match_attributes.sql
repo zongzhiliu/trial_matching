@@ -295,6 +295,8 @@ SELECT lab_test_name, loinc_code, m.unit, source_unit
 from latest_lab
 join ref_lab_mapping m using (loinc_code) --{ref_lab}
 ;
+
+-- improve with mapping table integrated with attribute id
 drop table if exists _p_a_lab;
 create table _p_a_lab as
 select person_id, '' as patient_value
@@ -431,6 +433,7 @@ order by attribute_name, value, clusion::int
 /***
  * match diseases: matching using icd codes
  * requires: latest_icd
+ * to be improved with the icd mapping
  */
 drop table if exists _p_a_disease;
 create table _p_a_disease as

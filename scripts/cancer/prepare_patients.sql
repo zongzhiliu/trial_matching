@@ -17,6 +17,7 @@ set search_path=ct_${cancer_type}
 
 /***
  * demo
+ * todo: require last visit within 3 years
  */
 drop table if exists demo;
 create table demo as
@@ -27,8 +28,10 @@ join prod_references.people p using (person_id)
 join prod_references.genders g using (gender_id)
 join prod_references.races r using (race_id)
 join prod_references.ethnicities using (ethnicity_id)
+join cplus_from_aplus.visits using (person_id)
 where nvl(cd.status, '') != 'deleted' and nvl(p.status, '') != 'deleted'
     and date_of_death is NULL
+    and datediff(day, visit_date, current_date) <= 365.25*3
     and cancer_type_name='${cancer_type}'
 ;
 
@@ -46,6 +49,7 @@ from (select d.*, address_zip, active_flag
 where row_number=1 --active_flag='Y'
 ; --without left join, will lose persons
 
+-- replace with caregiver
 create or replace view v_demo_w_zip as
 select distinct person_id+3040 as person_id, d.gender_name
 , date_trunc('month', d.date_of_birth)::date date_of_birth_truncated
