@@ -46,16 +46,17 @@ from (select d.*, address_zip, active_flag
     from demo d
     join prod_references.person_mrns pm using(person_id)
     left join prod_msdw.d_person dp on dp.medical_record_number = pm.mrn)
-where row_number=1 --active_flag='Y'
+where row_number=1
 ; --without left join, will lose persons
-
+ --active_flag='Y'
 -- replace with caregiver
 create or replace view v_demo_w_zip as
 select distinct person_id+3040 as person_id, d.gender_name
 , date_trunc('month', d.date_of_birth)::date date_of_birth_truncated
 , case when d.race_name='Not Reported' then
     'Unknown' else d.race_name end as race_name
-, d.ethnicity_name, d.address_zip
+, d.ethnicity_name
+, d.address_zip
 from demo_plus d
 order by person_id
 ;
@@ -83,34 +84,6 @@ select address_zip from demo_new
 where nvl(address_zip, '') !~ '^[-0-9]{3,}$' or address_zip ~ '^0+$'
 ;
 */
-
-/***
- * stage:  using $cancer_type
- */
-drop table stage;
-create table stage as
-with _stage as (
-    select person_id, overall_stage stage
-        , regexp_substr(stage, '^[0IV]+') stage_base
-        , regexp_substr(stage, '[A-C].*') stage_ext
-    from demo
-    join cplus_from_aplus.cancer_diagnoses cd using (person_id)
-    join prod_references.cancer_types using (cancer_type_id)
-    where nvl(cd.status,'') != 'deleted'
-        and cancer_type_name='${cancer_type}'
-)
-select person_id, stage
-, case when stage_base='' then NULL else stage_base end stage_base
-, case when stage_ext='' then NULL else stage_ext end stage_ext
-from _stage
-;
-/*qc
-select stage_base, count(distinct person_id) from stage 
-group by stage_base
-order by stage_base
-; --13220 no stage!!
-*/
-
 
 /***
  * histology
