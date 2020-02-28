@@ -5,7 +5,7 @@ Requires:
     dev_patient_info_${cancer_type}
     dev_patient_clinical_${cancer_type}
 Results:
-    demo, stage, histology
+    demo
     loh, latest_lot_drug
     latest_icd, latest_lab
     latest_ecog, latest_karnofsky
@@ -13,7 +13,8 @@ Results:
 Setttings:
     @set cancer_type=
 */
-set search_path=ct_${cancer_type}
+-- icds. labs, etc to limit by last three years?
+set search_path=ct_${cancer_type};
 
 /***
  * demo
@@ -130,7 +131,7 @@ join dev_patient_info_${cancer_type}.vitals on (medical_record_number=mrn)
 ;
 --select count(distinct person_id) from vital; -- 12140/ v2: 12728
 
-create table _vital_weight_height_by_day as
+create temporary table _vital_weight_height_by_day as
 select person_id, age_in_days, procedure_description
 , value::float
 from (select *, row_number() over(
@@ -142,6 +143,8 @@ from (select *, row_number() over(
         and context_name='EPIC')
 where row_number=1
 ;
+
+drop table if exists vital_bmi;
 create table vital_bmi as
 with w as (
     select person_id, age_in_days as weight_age, value as weight_kg
@@ -171,7 +174,7 @@ order by person_id, weight_age
 /***
  * performance: no conversions
  */
-drop table latest_ecog;
+drop table if exists latest_ecog;
 create table latest_ecog as
 select person_id, ecog_ps
 , performance_score_date::date as performance_score_date
@@ -184,7 +187,7 @@ from (select *, row_number() over (
 where row_number=1
 ;
 --select count (person_id) from latest_ecog where ecog_ps>=3; --55
-drop table latest_karnofsky;
+drop table if exists latest_karnofsky;
 create table latest_karnofsky as
 select person_id, karnofsky_pct
 , performance_score_date::date as performance_score_date
@@ -242,12 +245,6 @@ select count(distinct person_id) from line_of_therapy;  --1615
 --drop table line_of_therapy;
 */
 
-create table lot as (
-    select person_id, max(nvl(lot,0)) n_lot
-    from line_of_therapy
-    group by person_id
-)
-;
 
 /***
 * labs
@@ -291,20 +288,28 @@ select * from _all_loinc where lower(loinc_display_name) ~ 'testosterone'; --'pr
 /***
 * lot: including mrn deduplicate
 */
-drop table _line_of_therapy;
-create table _line_of_therapy as
-select *
-from demo
-join cplus_from_aplus.person_mrns using (person_id)
-join dev_patient_clinical_${cancer_type}.line_of_therapy using (mrn)
+drop table if exists lot;
+drop table if exists latest_lot_drug;
+
+create temporary table _line_of_therapy as
+    select *
+    from demo
+    join cplus_from_aplus.person_mrns using (person_id)
+    join dev_patient_clinical_${cancer_type}.line_of_therapy using (mrn)
 ;
-drop table lot;
+
 create table lot as
 select person_id
 , max(nvl(lot,0)) n_lot
 from demo
 left join _line_of_therapy using (person_id)
 group by person_id
+;
+create table latest_lot_drug as
+select person_id, drugname drug_name, max(agedays) as last_ageday
+from _line_of_therapy
+--where lot>=1
+group by person_id, drugname
 ;
 /*qc
 select count(distinct person_id) from lot where n_lot>0; --v1: 1057 ; v2:1185
@@ -314,16 +319,7 @@ from lot
 group by n_lot
 order by n_lot
 ;
-*/
 
-drop table latest_lot_drug;
-create table latest_lot_drug as
-select person_id, drugname drug_name, max(agedays) as last_ageday
-from _line_of_therapy
---where lot>=1
-group by person_id, drugname
-;
-/*qc
 select distinct drug_name from latest_lot_drug;
 --person_lot_drug_cats mv to attribute_matching.sql;
 */

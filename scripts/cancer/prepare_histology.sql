@@ -3,7 +3,9 @@
  * histology
  * requires: $cancer_type
  */
-drop table histology;
+set search_path=ct_${cancer_type};
+
+drop table if exists histology;
 create table histology as
 select distinct person_id, histologic_type_id, histologic_type_name
 from demo

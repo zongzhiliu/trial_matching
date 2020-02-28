@@ -1,7 +1,9 @@
 /***
  * stage:  using $cancer_type
  */
-drop table stage;
+set search_path=ct_${cancer_type};
+
+drop table if exists stage;
 create table stage as
 with _stage as (
     select person_id, overall_stage stage
