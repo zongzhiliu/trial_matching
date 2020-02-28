@@ -1,63 +1,125 @@
-create schema ct_nsclc;
-set search_path=ct_nsclc; show search_path;
-/***
- * cohort
- */
--- cohort: histology is sclc and not deceased.
-drop table if exists cohort;
+/*dbeaver
+@set cancer_type=NSCLC
+
+Require:
+_crit_attribute_raw > crit_attribute_used
+_trial_atrribute_raw > trial_attribute_used
+ref_histology_category
+ct_lca.demo_plus, histology -> cohort, demo
+ct_lca._p_a_match > _master_match
+*/
+set search_path=ct_${cancer_type};
+show search_path;
+
+---------- hard coded begin
+create or replace view _crit_attribute_raw as
+select * from ct.crit_attribute_raw_20200223
+;
+create or replace view _trial_attribute_raw as
+select * from trial_attribute_raw_20200223
+;
+---------
+
+drop view if exists ref_histology_category;
+create or replace view ref_histology_category as
+select * from ct.lca_histology_category;
+
+-- cohort: histology is nsclc and not deceased.
+drop table if exists cohort cascade;
 create table cohort as
 select distinct person_id
-from ct_lca.demo
+from ct_lca.demo_plus
 join ct_lca.histology using (person_id)
-join ct.lca_histology_category using (histology)
+join ref_histology_category using (histologic_type_name)
 where nsclc and date_of_death is NULL
 ;
--- select count(*) from cohort; --2775
-
-/***
- * trial and attributes
- */
-/*-- trial_atttibute: cleaning up
--- check attribute_id
-select count(distinct attribute_id) from trial_attribute --204
-join ct.attribute using(attribute_id); --204
--- check clusion
-select distinct inclusion, exclusion from trial_attribute;
--- yerd
---  yes
-
-create table trial_attribute_raw as select * from trial_attribute;
-update trial_attribute set exclusion='yes' where exclusion in ('yerd', ' yes'); --3
-update trial_attribute set exclusion=NULL where inclusion is not null;
+/*qc
+select count(*) from cohort; --2775; 3212; 3224
 */
-
---drop table if exists attribute_used cascade;
-create table trial_attribute_used as
-select * from trial_attribute
-join ct.attribute using (attribute_id)
-where nvl(inclusion, exclusion) is not null
-and trial_id!='NCT03347838'
+create or replace view v_demo_w_zip as
+select distinct person_id+3040 as person_id, d.gender_name
+, date_trunc('month', d.date_of_birth)::date date_of_birth_truncated --, d.date_of_death::date
+, case when d.race_name='Not Reported' then
+    'Unknown' else d.race_name end as race_name
+, d.ethnicity_name, d.address_zip
+from ct_lca.demo_plus d
+join cohort using (person_id)
+order by person_id
 ;
-create view v_trial_attribute_used as
-select trial_id, attribute_id, inclusion, exclusion 
-from trial_attribute_used 
-order by trial_id, attribute_id
-;
-
--- attribute_used
-create table attribute_used as
-select a.*
-from ct.attribute a
-where attribute_id in (select distinct attribute_id from trial_attribute_used)
-;
-create view v_attribute_used as
-select * from attribute_used order by attribute_id
-;
+/*qc
+select count(*), count(distinct person_id) from v_demo_w_zip; --3216
+*/
 
 
 /***
  * patient attribute matching
  */
+drop table if exists trial_attribute_used;
+create table trial_attribute_used as
+select * from _trial_attribute_raw
+where nvl(inclusion, exclusion) is not null
+;
+/*qc
+select count(*) from trial_attribute_used; --5655
+*/
+
+-- attribute_used: to be deprecated
+drop table if exists attribute_used cascade;
+create table attribute_used as
+select attribute_id, count(*) trials
+from trial_attribute_used
+group by attribute_id
+;
+-- crit_attribute_used
+drop table if exists crit_attribute_used cascade;
+create table crit_attribute_used as
+select crit_id, crit_name, mandated
+, attribute_id, c.attribute_group, c.attribute_name, c.value
+from _crit_attribute_raw c
+join (select distinct attribute_id
+    from trial_attribute_used) using (attribute_id)
+;
+create or replace view v_crit_attribute_used as
+select attribute_id, attribute_group, attribute_name, value, mandated, crit_id
+from crit_attribute_used
+order by attribute_id
+;
+/*qc
+select count(*) from crit_attribute_used; --154
+*/
+
+
+/***
+ * master_sheet
+ */
+drop table if exists _master_match cascade;
+create table _master_match as
+--select * from _p_a_t_match
+--union
+select attribute_id, trial_id, person_id
+, patient_value::varchar, match attribute_match
+, inclusion, exclusion
+from cohort
+join ct_lca._p_a_match using (person_id)
+join trial_attribute_used using (attribute_id)
+;
+
+create or replace view v_master_sheet as
+select trial_id, person_id+3040 as person_id
+, attribute_id, attribute_group, attribute_name, value
+, inclusion, exclusion
+, attribute_match
+, patient_value as patient_value_incomplete
+from _master_match
+join crit_attribute_used using (attribute_id)
+order by trial_id, person_id, attribute_id
+;
+/*qc
+select count(distinct trial_id), count(distinct attribute_id) from trial_attribute_used;
+select count(distinct person_id),  count(distinct trial_id), count(distinct attribute_id) from v_master_sheet;
+*/
+
+/*old
 -- patient attribute
 drop table if exists patient_attribute cascade;
 create table patient_attribute as
@@ -72,10 +134,6 @@ from patient_attribute
 order by person_id, attribute_id
 ;
 
-
-/***
- * master_sheet
- */
 create or replace view master_sheet as
 select trial_id, person_id, attribute_id
 , a.attribute_group, a.attribute_name, a.value
@@ -93,8 +151,6 @@ select trial_id, person_id+3040 person_id
 , attribute_match, patient_value
 from master_sheet 
 ;
--- select count(distinct trial_id), count(distinct attribute_id) from v_trial_attribute_used;
--- select count(distinct person_id),  count(distinct trial_id), count(distinct attribute_id) from v_master_sheet;
 
 
 
