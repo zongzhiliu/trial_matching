@@ -86,40 +86,18 @@ where nvl(address_zip, '') !~ '^[-0-9]{3,}$' or address_zip ~ '^0+$'
 */
 
 /***
- * histology
- * requires: $cancer_type
- */
-drop table histology;
-create table histology as
-select distinct person_id, histologic_type_id, histologic_type_name
-from demo
-join cplus_from_aplus.cancer_diagnoses cd using (person_id)
-join prod_references.cancer_types using (cancer_type_id)
-join prod_references.histologic_types ht using (histologic_type_id, cancer_type_id)
-where nvl(cd.status, '')!='deleted'
-    and cancer_type_name='${cancer_type}'
-;
-/*qc
-select histologic_type_name, count(distinct person_id)
-from histology join ct.pca_histology_category using (histologic_type_name)
-group by histologic_type_name
-order by histologic_type_name
-;
-*/
-/***
 * diagnosis
 */
-drop table _all_dx;
-create table _all_dx as
-select distinct person_id, dx_date, icd, icd_code, description
-from (select medical_record_number mrn, dx_date
-    , icd, context_diagnosis_code icd_code, description
-    from dev_patient_info_${cancer_type}.all_diagnosis) d
-join cplus_from_aplus.person_mrns using (mrn)
-join demo using (person_id)
-;
-drop table latest_icd;
+drop table if exists latest_icd;
 create table latest_icd as
+with _all_dx as (
+    select distinct person_id, dx_date, icd, icd_code, description
+    from (select medical_record_number mrn, dx_date
+        , icd, context_diagnosis_code icd_code, description
+        from dev_patient_info_${cancer_type}.all_diagnosis) d
+    join cplus_from_aplus.person_mrns using (mrn)
+    join demo using (person_id)
+)
 select person_id, icd_code, icd as context_name, description, dx_date
 from (select *, row_number() over (
         partition by person_id, icd_code
@@ -136,7 +114,7 @@ select count(*) from latest_icd; --v1: 316791, v2: 327904 v3: 199662
 /***
  * vital
  */
-drop table vital;
+drop table if exists vital;
 create table vital as
 select distinct person_id
     , age_in_days
@@ -236,42 +214,6 @@ order by karnofsky_pct
 * demo, stage, histology
 , gleason, psa
 */
-
-/***
-* mutations
-*/
-/** not working yet
-create table tmp_variant_significant as
-select distinct person_id, tissue_collection_date::date
-, genetic_test_name, gene
-, variant_type, alteration
-from demo
-join cplus_from_aplus.genetic_test_occurrences using (person_id)
-join cplus_from_aplus.genetic_tests using (genetic_test_id)
-join cplus_from_aplus.variant_occurrences vo using (genetic_test_occurrence_id)
-join cplus_from_aplus.target_genes using (target_gene_id)
-where is_clinically_significant
-;
-*/
-create table _variant_significant as
-select distinct person_id, tissue_collection_date
-, genetic_test_name, gene
-, variant_type, alteration --, exon
-from cplus_from_aplus.variant_occurrences vo
-join cplus_from_aplus.genetic_test_occurrences using (genetic_test_occurrence_id)
-join cplus_from_aplus.genetic_tests using (genetic_test_id)
-join cplus_from_aplus.target_genes using (target_gene_id, genetic_test_id)
-join cplus_from_aplus.pathologies p using (pathology_id)
-join demo using (person_id)
-where is_clinically_significant
-    and nvl(p.status, '') != 'deleted'
-
-create table gene_alterations as
-select person_id, gene
-, listagg(distinct alteration , '|') within group (order by alteration) as alterations
-from _variant_significant
-group by person_id, gene
-;
 
 /***
 * lot: including mrn deduplicate
