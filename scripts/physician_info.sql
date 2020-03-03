@@ -57,6 +57,45 @@ join ct.caregiver_zip cz using (caregiver_control_key)
 ;
 
 -- map the NSCLC patients to relevant oncologists
+drop table ct._pool;
+create table ct._pool_by_encounter_key as
+with _cohort_encounter as (
+    select mrn, encounter_key, encounter_visit_id
+    , begin_date_time encounter_begin, encounter_type
+    from ct_nsclc.cohort
+    join prod_references.person_mrns pm using (person_id)
+    join d_encounter de on de.medical_record_number=pm.mrn
+), _icd_enc as (
+    select distinct encounter_key, encounter_visit_id
+    from _cohort_encounter
+    join fact f using (encounter_key)
+    join b_diagnosis bd using (diagnosis_group_key)
+    join v_diagnosis_control_ref vd using (diagnosis_key)
+    where vd.context_name like 'ICD-%' and context_diagnosis_code ~ '^(C34|162)' -- LCA
+), _onco_enc as (
+    select distinct caregiver_control_key, encounter_key, encounter_visit_id
+    from _cohort_encounter
+    join fact f using (encounter_key)
+    join b_caregiver bc using (caregiver_group_key)
+    join v_caregiver_control_ref vc using (caregiver_key)
+    join ct.caregiver_zip using (caregiver_control_key)
+    where known_specialty ~ 'Oncology'
+)
+select distinct mrn, caregiver_control_key, encounter_visit_id
+, ce.encounter_key
+, encounter_begin
+from _cohort_encounter ce
+join _icd_enc using (encounter_visit_id)
+join _onco_enc using (encounter_visit_id)
+;
+/*
+select count(distinct mrn), count(distinct caregiver_control_key), count(*) from ct._pool;
+ -- by same encounter_visit_id  1092 |    75 | 787224
+ -- by same encounter: 1075 |    74 | 29195
+ -- old by same fact: 1042 |    71 | 25693  only 1/3 patients has an oncologist assigned
+*/
+
+/* old
 create table _pool as
 select distinct mrn, caregiver_control_key, calendar_date
 from ct_nsclc.cohort
@@ -73,7 +112,6 @@ join ct.caregiver_zip using (caregiver_control_key)
 where vd.context_name like 'ICD-%' and context_diagnosis_code ~ '^(C34|162)' -- LCA
 and known_specialty ~ 'Oncology'
 ;
-/*
 select count(distinct mrn), count(distinct caregiver_control_key), count(*) from _pool;
  --1042 |    71 | 25693  only 1/3 patients has an oncologist assigned
 */
