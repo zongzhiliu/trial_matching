@@ -74,17 +74,3 @@ order by attribute_name, value, clusion::int
 ;
 */
 
-/***
-* finish the master_match
-*/
-drop table if exists master_match;
-create table master_match as
-select attribute_id, trial_id, person_id, patient_value::varchar, match
-from _p_a_t_gleason
-union
-select attribute_id, trial_id, person_id, patient_value::varchar, match
-from _p_a_histology join trial_attribute_used using (attribute_id)
-union
-select attribute_id, trial_id, person_id, patient_value::varchar, match
-from _master_match
-;

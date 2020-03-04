@@ -3,60 +3,78 @@
 */
 -- collect info from d_caregiver
 set search_path=prod_msdw;
-drop table if exists tmp;
-create temporary table tmp as
+drop table tmp;
+create temporary table tmp as (
     select distinct caregiver_key, caregiver_control_key, first_name, last_name
     , status, active_flag, date_activated::date, date_of_birth::date
-    , case when zip not in ('NOT AVAILABLE', '0') then 
+    , case when zip not in ('NOT AVAILABLE', '0') then
         zip end as known_zip
-    , case when caregiver_type not in ('NOT AVAILABLE', '<unknown>') then 
+    , case when caregiver_type not in ('NOT AVAILABLE', '<unknown>') then
         caregiver_type end as known_caregiver_type
-    , case when job_title not in ('NOT AVAILABLE', '<unknown>') then 
+    , case when job_title not in ('NOT AVAILABLE', '<unknown>') then
         job_title end as known_job_title
-    , case when specialty not in ('NOT AVAILABLE', '<unknown>') then 
+    , case when specialty not in ('NOT AVAILABLE', '<unknown>') then
         specialty end as known_specialty
-    , case when department not in ('NOT AVAILABLE', '<unknown>') then 
+    , case when department not in ('NOT AVAILABLE', '<unknown>') then
         department end as known_department
     from d_caregiver
-;
-create table ct.caregiver as (
-select caregiver_key, caregiver_control_key, first_name, last_name 
+);
+
+drop table if exists ct._caregiver;
+create table ct._caregiver as
+select caregiver_key, caregiver_control_key, first_name, last_name
 , date_of_birth, date_activated, known_zip
-, known_specialty, known_department
-from tmp 
-where known_job_title='MD' 
-and active_flag='Y'
-and status='Active' --caregiver_type all Practitioner
+, known_specialty, known_department, known_job_title, status
+from tmp
+where active_flag='Y'
+--known_job_title='MD' 
+--and status='Active' --caregiver_type all Practitioner
 order by caregiver_control_key, caregiver_key
-)
 ;
 
 -- try to rescue the unknown zip code for a caregiver
-create table ct.caregiver_zip_rescued as
+
+drop table ct._caregiver_zip_rescued;
+create table ct._caregiver_zip_rescued as
 with pool as (
     select caregiver_key, caregiver_control_key, known_zip
-    from (select caregiver_control_key from ct.caregiver where known_zip is null)
+    from (select caregiver_control_key 
+        from ct._caregiver where known_zip is null)
     join tmp using (caregiver_control_key)
     where known_zip is not null
 )
 select *
 from (select *, row_number() over (
         partition by caregiver_control_key
-        order by caregiver_key)
+        order by -caregiver_key)
     from pool)
-where row_number=1
+where row_number=1  -- pick the zip with largest caregiver_key
 ;
-    -- only 57 can be recovered
+drop table ct.caregiver_zip;
 create table ct.caregiver_zip as
 select caregiver_control_key, first_name, last_name
-, known_specialty, date_activated, known_zip
-from ct.caregiver;
+, known_specialty, known_zip
+, date_activated, known_job_title, status
+from ct._caregiver;
+
 update ct.caregiver_zip set known_zip=cr.known_zip
-from ct.caregiver_zip_rescued cr
+from ct._caregiver_zip_rescued cr
 join ct.caregiver_zip cz using (caregiver_control_key)
 ;
 
--- map the NSCLC patients to relevant oncologists
+-- set specialty rank
+create or replace view ct.v_no_filter_mapping as
+select last_name, first_name
+, caregiver_control_key
+, known_specialty, known_zip
+, date_activated, known_job_title, status
+from ct.hema_onco_faculty ho
+left join ct.caregiver_zip cz using (first_name, last_name)
+order by caregiver_control_key is null, last_name, first_name
+, status!='Active', known_job_title!='MD'
+;
+
+-- map the NSCLC patients to relevant caregivers using same encounter_visit_id
 drop table ct._pool;
 create table ct._pool_by_encounter_key as
 with _cohort_encounter as (
@@ -74,12 +92,14 @@ with _cohort_encounter as (
     where vd.context_name like 'ICD-%' and context_diagnosis_code ~ '^(C34|162)' -- LCA
 ), _onco_enc as (
     select distinct caregiver_control_key, encounter_key, encounter_visit_id
+    -- caregiver_role
     from _cohort_encounter
     join fact f using (encounter_key)
     join b_caregiver bc using (caregiver_group_key)
     join v_caregiver_control_ref vc using (caregiver_key)
     join ct.caregiver_zip using (caregiver_control_key)
-    where known_specialty ~ 'Oncology'
+    where --known_specialty ~ 'Oncology' 
+    --    bc.caregiver_role in ('Primary', 'attending')
 )
 select distinct mrn, caregiver_control_key, encounter_visit_id
 , ce.encounter_key
@@ -110,7 +130,7 @@ join b_caregiver bc using (caregiver_group_key)
 join v_caregiver_control_ref vc using (caregiver_key)
 join ct.caregiver_zip using (caregiver_control_key)
 where vd.context_name like 'ICD-%' and context_diagnosis_code ~ '^(C34|162)' -- LCA
-and known_specialty ~ 'Oncology'
+-- and known_specialty ~ 'Oncology'
 ;
 select count(distinct mrn), count(distinct caregiver_control_key), count(*) from _pool;
  --1042 |    71 | 25693  only 1/3 patients has an oncologist assigned
@@ -118,6 +138,7 @@ select count(distinct mrn), count(distinct caregiver_control_key), count(*) from
 
 
 -- prepare the prioritizing criteria
+drop table ct._freqs;
 create table ct._freqs as
 with _freq_3_y as (
     select mrn, caregiver_control_key
