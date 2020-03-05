@@ -75,12 +75,10 @@ len(df.crit_id.value_counts())  #132 crit
 
 ## prepare the patient tables, match attributes and patients
 ```bash
-function psql_w_envs {
-    cat $1 | substitute_env_vars_in_pipe.py \
-    | psql --echo-all --no-psqlrc -v ON_ERROR_STOP=1
-}
+source util/util.sh #psql_w_envs
 export cancer_type=PCA
-export cancer_type_icd=^(C61|185)
+export cancer_type_icd='^(C61|185)'
+psql_w_envs caregiver/icd_physician.sql
 psql_w_envs pca/setup.sql  #> ref tables, crit_attribute_used
 
 # prepare patient tables

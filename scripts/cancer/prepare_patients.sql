@@ -20,7 +20,7 @@ set search_path=ct_${cancer_type};
  * demo
  * todo: require last visit within 3 years
  */
-drop table if exists demo;
+drop table if exists demo cascade;
 create table demo as
 select distinct person_id, date_of_birth, gender_name, date_of_death, race_name, ethnicity_name
 from cplus_from_aplus.cancer_diagnoses cd
@@ -35,6 +35,8 @@ where nvl(cd.status, '') != 'deleted' and nvl(p.status, '') != 'deleted'
     and datediff(day, visit_date, current_date) <= 365.25*3
     and cancer_type_name='${cancer_type}'
 ;
+
+create or replace view cohort as select distinct person_id from demo;
 
 -- demo with zip
 drop table if exists demo_plus cascade;
@@ -111,65 +113,6 @@ where row_number=1
 select count(distinct person_id) from _all_dx; --v1:4997 v2:5430 v3:3446
 select count(*) from latest_icd; --v1: 316791, v2: 327904 v3: 199662
 */
-
-/***
- * vital
- */
-drop table if exists vital;
-create table vital as
-select distinct person_id
-    , age_in_days
-    , procedure_role
-    , procedure_description
-    , context_procedure_code
-    , context_name
-    , value
-    , unit_of_measure
-from demo
-join prod_references.person_mrns using (person_id)
-join dev_patient_info_${cancer_type}.vitals on (medical_record_number=mrn)
-;
---select count(distinct person_id) from vital; -- 12140/ v2: 12728
-
-create temporary table _vital_weight_height_by_day as
-select person_id, age_in_days, procedure_description
-, value::float
-from (select *, row_number() over(
-        partition by person_id, age_in_days, procedure_description
-        order by value::float desc nulls last, context_name)
-    from vital
-    where procedure_description in ('WEIGHT', 'HEIGHT')
-        and value ~ '^[0-9]+([.][0-9]+)?$'
-        and context_name='EPIC')
-where row_number=1
-;
-
-drop table if exists vital_bmi;
-create table vital_bmi as
-with w as (
-    select person_id, age_in_days as weight_age, value as weight_kg
-    from _vital_weight_height_by_day
-    where procedure_description='WEIGHT'
-), h as (
-    select person_id, age_in_days as height_age, value as height_cm
-    from _vital_weight_height_by_day
-    where procedure_description='HEIGHT'
-), hw as (
-    select person_id, weight_age, weight_kg, height_age, height_cm
-    from w
-    join h using (person_id)
-    where weight_age-height_age between 0 and 365
-)
-select person_id, weight_age, weight_kg
-, height_age, height_cm/100 as height_m
-, weight_kg/(height_m*height_m) as bmi
-from (select *, row_number() over (
-        partition by person_id, weight_age
-        order by height_age desc nulls last)
-    from hw)
-where row_number=1
-order by person_id, weight_age
-;
 
 /***
  * performance: no conversions
@@ -283,44 +226,5 @@ from latest_lab
 
 select count(distinct person_id) from latest_lab; --11417
 select * from _all_loinc where lower(loinc_display_name) ~ 'testosterone'; --'prostate';
-*/
-
-/***
-* lot: including mrn deduplicate
-*/
-drop table if exists lot;
-drop table if exists latest_lot_drug;
-
-create temporary table _line_of_therapy as
-    select *
-    from demo
-    join cplus_from_aplus.person_mrns using (person_id)
-    join dev_patient_clinical_${cancer_type}.line_of_therapy using (mrn)
-;
-
-create table lot as
-select person_id
-, max(nvl(lot,0)) n_lot
-from demo
-left join _line_of_therapy using (person_id)
-group by person_id
-;
-create table latest_lot_drug as
-select person_id, drugname drug_name, max(agedays) as last_ageday
-from _line_of_therapy
---where lot>=1
-group by person_id, drugname
-;
-/*qc
-select count(distinct person_id) from lot where n_lot>0; --v1: 1057 ; v2:1185
--- v3:648
-select n_lot, count(distinct person_id)
-from lot
-group by n_lot
-order by n_lot
-;
-
-select distinct drug_name from latest_lot_drug;
---person_lot_drug_cats mv to attribute_matching.sql;
 */
 
