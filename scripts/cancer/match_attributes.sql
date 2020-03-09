@@ -293,7 +293,7 @@ select person_id, NULL as patient_value
 , attribute_id
 , case attribute_id
     when 201 then --Other malignancy: to exclude secondary C7[7-9B]
-        bool_or(icd_code ~ '^(C[0-689]|C7[0-6A]|1[4-8]|19[0-59]|20)'
+        bool_or(icd_code ~ '^(C[0-689]|C7[0-6A]|C80|1[4-8]|19[0-59]|20)'
             and icd_code !~ '${cancer_type_icd}')
     -- when 199 then --autoimmune not implemented NULL
     when 194 then --brain met
