@@ -37,9 +37,11 @@ def summarize_ie_value(res):
 def convert_crit_attribute(raw_csv):
     df = pd.read_csv(raw_csv)
     assert max(df.attribute_id.value_counts()) == 1 #no dup
+    df = df[~pd.isna(df['code_type'])]
     df['code'] = df['code_raw']
-    sele = df['code_type'] == 'icd_rex'
-    df['code'][sele] = [f"^({'|'.join((x,) if pd.isna(y) else (x,y)).replace('.', '[.]')})"
+    sele = df['code_type'].str.startswith('icd_rex') #icd_rex, icd_rex_other
+    # convert icd10 and icd9 into full python regx
+    df.loc[sele, 'code'] = [f"^({'|'.join((x,) if pd.isna(y) else (x,y)).replace('.', '[.]')})"
             for i, (x, y) in df[['code_raw', 'code_ext']][sele].iterrows() ]
     return df
 
