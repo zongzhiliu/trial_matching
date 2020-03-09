@@ -22,9 +22,10 @@ psql_w_envs caregiver/icd_physician.sql
 psql_w_envs mm/setup.sql #to be replaced with config file
 psql_w_envs cancer/prepare_attribute.sql
 psql_w_envs cancer/match_icd.sql
-psql_w_envs cancer/match_rxnorm.sql
 psql_w_envs cancer/match_loinc.sql
+psql_w_envs cancer/match_rxnorm.sql
 psql_w_envs cancer/match_misc_measurement.sql
+psql_w_envs mm/match_mm_active_status.sql
 
 #later cancer/perpare_alterations.sql
 ```

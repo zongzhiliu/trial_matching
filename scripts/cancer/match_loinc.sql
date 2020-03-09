@@ -19,7 +19,7 @@ left join latest_lab on code=loinc_code
 group by attribute_id, code, loinc_code
 order by loinc_code
 ;
-*/
+/*
 select person_id, trial_id, attribute_id
 , case lower(attribute_value)
     when 'min' then value_float * loinc_2_ie_factor >= ie_value
@@ -31,11 +31,10 @@ join tau using (attribute_id)
 ;
 --group by person_id, trial_id, attribute_id
 --, code_type, code, max_years
-/*
 select attribute_name, attribute_value, match, count(distinct person_id)
 from _p_a_t_loinc
 join crit_attribute_used using (attribute_id)
 group by attribute_name, attribute_value, match
 order by attribute_name, attribute_value, match
 ;
-
+*/
