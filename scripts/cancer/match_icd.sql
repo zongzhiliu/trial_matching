@@ -40,10 +40,11 @@ group by person_id, trial_id, attribute_id
 ;
 */
 /*qc
-select attribute_name, attribute_value, match, count(distinct person_id)
+select attribute_id, attribute_name, attribute_value, match, count(distinct person_id)
 from _p_a_t_icd_rex join crit_attribute_used using (attribute_id)
-group by attribute_name, attribute_value, match
-order by attribute_name, attribute_value, match
+where match
+group by attribute_id, attribute_name, attribute_value, match
+order by attribute_id, attribute_name, attribute_value, match
 ;
 -- more than 50% of patiets have cancer icds other thab LCA.
 select regexp_substr(icd_code, '^...') icd, count(distinct person_id) patients

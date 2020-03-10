@@ -11,7 +11,7 @@ Result:
 */
 -- set search_path=ct_${cancer_type};
 -- trial_attribute_used
-drop table if exists trial_attribute_used;
+drop table if exists trial_attribute_used cascade;
 create table trial_attribute_used as
 select * from trial_attribute_raw
 where nvl(inclusion, exclusion) is not null

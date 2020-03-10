@@ -19,15 +19,23 @@ psql_w_envs cancer/prepare_lot.sql
 psql_w_envs cancer/prepare_vital.sql
 psql_w_envs caregiver/icd_physician.sql
 
+# load updated drug mapping table
+load_into_db_schema_some_csvs.py rimsdw ct drug_mapping_cat_expn3_20200308.csv
 psql_w_envs mm/setup.sql #to be replaced with config file
+# load the trial_attribute and crit_attribute using the python sessions below then
 psql_w_envs cancer/prepare_attribute.sql
 psql_w_envs cancer/match_icd.sql
 psql_w_envs cancer/match_loinc.sql
 psql_w_envs cancer/match_rxnorm.sql
 psql_w_envs cancer/match_misc_measurement.sql
-psql_w_envs mm/match_mm_active_status.sql
+psql_w_envs cancer/match_aof20200209.sql
 
-#later cancer/perpare_alterations.sql
+psql_w_envs mm/match_mm_active_status.sql
+psql_w_envs mm/master_match.sql  #> master_match
+psql_w_envs cancer/master_sheet.sql  #> master_sheet
+
+# match to patients
+psql_w_envs trial2patients.sql  #> trial2patients
 ```
 ## check the crit_attribute table
 * icd_rex: to make the code_raw into a code_rex: '^(' || replace(code_raw, '.', '[.]') || ')'

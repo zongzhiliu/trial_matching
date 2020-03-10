@@ -4,22 +4,30 @@ Input: cplus_from_aplus.cancer_diagnosis_mm.mm_active_status
 */
 drop table if exists _p_a_t_mm_active_status cascade;
 create table _p_a_t_mm_active_status as
-with cau as (
-    select attribute_id, code_type, code
-    , attribute_value
-    , nvl(attribute_value_norm, '1')::float loinc_2_ie_factor
-    from crit_attribute_used
-    where code_type = 'loinc'
-), tau as (
+with tau as (
     select attribute_id, trial_id
-    , nvl(inclusion, exclusion)::float ie_value
     from trial_attribute_used
-    where inclusion != 'yes' --quickfix, waiting for KY's update
+    join crit_attribute_used using (attribute_id)
+    where code = 'mm_active_status'
+), act_stat as (
+    select person_id, mm_active_status
+    from cplus_from_aplus.cancer_diagnoses_mm
+    join cplus_from_aplus.cancer_diagnoses using (cancer_diagnosis_id)
+    join cohort using(person_id)
 )
 select person_id, trial_id, attribute_id
-, match
-from latest_lab
-join cau on code=loinc_code
-join tau using (attribute_id)
+, case mm_active_status
+    when 'Active'
+        then False
+    when 'Smoldering'
+        then True
+    end as match
+from tau
+cross join act_stat
 ;
-
+/*
+select match, count(distinct person_id)
+from _p_a_t_mm_active_status
+group by match
+;
+*/
