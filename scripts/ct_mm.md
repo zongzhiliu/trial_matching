@@ -35,7 +35,14 @@ psql_w_envs mm/master_match.sql  #> master_match
 psql_w_envs cancer/master_sheet.sql  #> master_sheet
 
 # match to patients
-psql_w_envs trial2patients.sql  #> trial2patients
+###psql_w_envs trial2patients.sql  #> trial2patients
+
+# download result files for sharing
+select_from_db_schema_table.py rimsdw ct_mm.v_master_sheet > v_master_sheet_20200310.csv
+select_from_db_schema_table.py rimsdw ct_mm.v_crit_attribute_used > v_crit_attribute_used_10100310.csv
+select_from_db_schema_table.py rimsdw ct_mm.v_demo_w_zip > v_demo_w_zip_10100310.csv
+select_from_db_schema_table.py rimsdw ct_mm.v_treating_physician > v_treating_physician_10100310.csv
+
 ```
 ## check the crit_attribute table
 * icd_rex: to make the code_raw into a code_rex: '^(' || replace(code_raw, '.', '[.]') || ')'

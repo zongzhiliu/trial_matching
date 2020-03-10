@@ -28,3 +28,12 @@ order by attribute_id limit 99;
 -- loinc, misc_meas, aof have less patients
 */
 
+-- set match as null by default for each patient
+create view master_match as
+select attribute_id, trial_id, person_id, match
+from (trial_attribute_used
+    cross join cohort)
+left join _master_match using (attribute_id, trial_id, person_id)
+;
+
+
