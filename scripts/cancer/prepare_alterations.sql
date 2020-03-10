@@ -27,11 +27,11 @@ join demo using (person_id)
 where is_clinically_significant
     and nvl(p.status, '') != 'deleted'
 
-    create table gene_alterations as
-    select person_id, gene
-    , listagg(distinct alteration , '|') within group (order by alteration) as alterations
-    from _variant_significant
-    group by person_id, gene
-    ;
+create table gene_alterations as
+select person_id, gene
+, listagg(distinct alteration , '|') within group (order by alteration) as alterations
+from _variant_significant
+group by person_id, gene
+;
 
 
