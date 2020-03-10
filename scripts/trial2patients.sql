@@ -7,9 +7,8 @@ Results:
     trial2patients
 Settings:
     @set cancer_type=
+    SET search_path=ct_${cancer_type};
 */
-SET search_path=ct_${cancer_type};
-
 --crit_used
 drop table if exists crit_used cascade;
 create table crit_used as

@@ -28,14 +28,14 @@ psql_w_envs cancer/match_icd.sql
 psql_w_envs cancer/match_loinc.sql
 psql_w_envs cancer/match_rxnorm.sql
 psql_w_envs cancer/match_misc_measurement.sql
-psql_w_envs cancer/match_aof20200209.sql
+psql_w_envs cancer/match_aof20200229.sql
 
 psql_w_envs mm/match_mm_active_status.sql
 psql_w_envs mm/master_match.sql  #> master_match
 psql_w_envs cancer/master_sheet.sql  #> master_sheet
 
 # match to patients
-###psql_w_envs trial2patients.sql  #> trial2patients
+psql_w_envs cancer/master_patient.sql #> trial2patients
 
 # download result files for sharing
 select_from_db_schema_table.py rimsdw ct_mm.v_master_sheet > v_master_sheet_20200310.csv
