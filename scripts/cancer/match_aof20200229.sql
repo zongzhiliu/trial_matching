@@ -1,9 +1,14 @@
+/***
+Requires:
+    latest_lab, $ref_lab_mapping
+Result: _p_a_t_aof
+*/
 CREATE temporary TABLE _lab_w_normal_range AS
 SELECT person_id, lab_test_name, loinc_code, m.unit
 , normal_low, normal_high
 , result_date, value_float
 from latest_lab
-join ct.lab_loinc_mapping m using (loinc_code)
+join ${ref_lab_mapping} m using (loinc_code)
 ;
 
 drop table if exists _p_aof cascade;

@@ -1,3 +1,8 @@
+/*** match attribute using rxnome codes, drug_name, modality, moa
+Requires: crit_attribute_used, trial_attribute_used
+    latest_lot_drug, $ref_drug_mapping
+Results: _p_a_t_rxnorm
+*/
 drop table if exists _p_a_rxnorm cascade;
 drop table if exists _p_a_rxnorm cascade;
 create table _p_a_rxnorm as
@@ -8,7 +13,7 @@ select person_id, attribute_id
     when 'drug_moa_rex' then bool_or(pca.py_re_search(moa, code, 'i') is null)
     end as match
 from latest_lot_drug h
-join ref_drug_mapping m using (drug_name)
+join ${ref_drug_mapping} m using (drug_name)
 join crit_attribute_used on code_type in ('drug_name', 'drug_moa_rex', 'drug_modality')
 group by person_id, attribute_id, code_type
 ;

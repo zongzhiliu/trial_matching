@@ -7,7 +7,7 @@ Results:
     @set cancer_type_icd=
 Settings
 */
-set search_path=ct_${cancer_type};
+--set search_path=ct_${cancer_type};
 
 drop table if exists _pool_by_encounter cascade;
 create temporary table _pool_by_encounter as

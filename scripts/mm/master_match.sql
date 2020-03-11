@@ -1,11 +1,9 @@
 /***
  * master match: need modifying for each cancer type!!
-Requires:
+Requires: trial_attribute_used
     _p_a_t_...
-    trial_attribute_used
 Results:
     master_match
-Settings:
 */
 --SET search_path=ct_${cancer_type};
 

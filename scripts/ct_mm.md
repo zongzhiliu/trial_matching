@@ -29,49 +29,34 @@
 * export the crit_attribute_table:
     * copy the relevant columns (without note, for example) to a new sheet
     * export to a csv file (crit_attribute_.csv) to the working_dir
+* go to script_dir and config
+```bash
+source mm/config.sh
+ipython
+```
 * config and run (with checking) the following script in ipython to transform and load to ct_mm schema
 ```ipython
-# config
-HOME=os.environ['HOME']
-cancer_type='MM'
-working_dir=f"{HOME}/OneDrive - Sema4 Genomics/rimsdw/{cancer_type}"
-script_dir = '/Users/zongzhiliu/git/trial_matching/scripts'
-
-cd {script_dir}
-%run -i -n util/convert_attribute.py
-%run -i -n util/util.py #today_stamp
-cd {working_dir}
-
-#trial_attribute
-raw_csv = 'trial_attribute_raw_.csv'
-res = convert_trial_attribute(raw_csv)
-summarize_ie_value(res)
-res_csv=f'trial_attribute_raw_{today_stamp()}.csv'
-res.to_csv(res_csv, index=False)
-!ln -sf {res_csv} trial_attribute_raw.csv
-!load_into_db_schema_some_csvs.py -d rimsdw ct_{cancer_type} trial_attribute_raw.csv
-
-# crit_attribute
-raw_csv='crit_attribute_raw_.csv'
-res = convert_crit_attribute(raw_csv)
-summarize_crit_attribute(res)
-res_csv=f'crit_attribute_raw_{today_stamp()}.csv'
-res.to_csv(res_csv, index=False)
-!ln -sf {res_csv} crit_attribute_raw.csv
-!load_into_db_schema_some_csvs.py -d rimsdw ct_{cancer_type} crit_attribute_raw.csv
+#mm/load_attribute.py
+```
+## update and load the drug/lab mapping table
+```bash
+source mm/config.sh
 ```
 ## To prepare patient data, perform attribute matching, patient matching and export results
 * config and run the following script
 ```bash
 # config
-export cancer_type=MM
-export cancer_type_icd="^(C90|230)"
-export working_dir="$HOME/OneDrive - Sema4 Genomics/rimsdw/${cancer_type}"
-export working_schema="ct_${cancer_type}"
-export script_dir="$HOME/git/trial_matching/scripts'
+source mm/config.sh
 
 cd ${script_dir}
 source mm/import.sh
+```
+* QC
+```sql
+select count(distinct person_id) from latest_icd; 
+    -- 3669
+select count(distinct person_id) from latest_lab;
+    -- 3569
 ```
 ## for debugging in dbeaver
 ```

@@ -1,3 +1,8 @@
+/*** match attribute using loinc codes
+Requires: crit_attribute_used, trial_attribute_used
+    latest_lab
+Results: _p_a_t_loinc
+*/
 drop table if exists _p_a_t_loinc cascade;
 create table _p_a_t_loinc as
 with cau as (
@@ -12,14 +17,6 @@ with cau as (
     from trial_attribute_used
     where inclusion != 'yes' --quickfix, waiting for KY's update
 )
-select attribute_id, code, listagg(distinct ie_value, ', ')
-, loinc_code
-from tau join cau using (attribute_id)
-left join latest_lab on code=loinc_code
-group by attribute_id, code, loinc_code
-order by loinc_code
-;
-/*
 select person_id, trial_id, attribute_id
 , case lower(attribute_value)
     when 'min' then value_float * loinc_2_ie_factor >= ie_value
@@ -28,6 +25,14 @@ select person_id, trial_id, attribute_id
 from latest_lab
 join cau on code=loinc_code
 join tau using (attribute_id)
+;
+/*
+select attribute_id, code, listagg(distinct ie_value, ', ')
+, loinc_code
+from tau join cau using (attribute_id)
+left join latest_lab on code=loinc_code
+group by attribute_id, code, loinc_code
+order by loinc_code
 ;
 --group by person_id, trial_id, attribute_id
 --, code_type, code, max_years

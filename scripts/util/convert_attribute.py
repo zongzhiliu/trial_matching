@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as pd, sqlite3
 
 def convert_trial_attribute(raw_csv):
     """convert the pivot format to vertical one
@@ -28,18 +28,22 @@ def convert_trial_attribute(raw_csv):
     sele = ~res.inclusion.isna() | ~res.exclusion.isna()
     return res[sele]
 
+def unique_non_null(s):
+    return s.dropna().unique()
+
 def summarize_ie_value(res):
     print(f'trial_id value:\n{res.trial_id.value_counts().describe()}')
     print(f'attribute_id value:\n{res.attribute_id.value_counts().describe()}')
     print(f'ie value:\n{pd.concat((res.inclusion, res.exclusion)).value_counts(dropna=False)}')
-
+    # con = sqlite3.connect(':memory:')
+    return res.fillna('').groupby('attribute_id').agg(dict(inclusion=['unique'], exclusion=['unique']))
 
 def convert_crit_attribute(raw_csv):
     df = pd.read_csv(raw_csv)
     assert max(df.attribute_id.value_counts()) == 1 #no dup
     df = df[~pd.isna(df['code_type'])]
     df['code'] = df['code_raw']
-    sele = df['code_type'].str.startswith('icd_rex') #icd_rex, icd_rex_other
+    sele = df['code_type'].isin(['icd_rex', 'icd_rex_other']) #str.startswith('icd_rex')
     # convert icd10 and icd9 into full python regx
     df.loc[sele, 'code'] = [f"^({'|'.join((x,) if pd.isna(y) else (x,y)).replace('.', '[.]')})"
             for i, (x, y) in df[['code_raw', 'code_ext']][sele].iterrows() ]

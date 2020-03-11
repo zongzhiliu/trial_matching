@@ -1,3 +1,8 @@
+/*** match attribute using misc_measurement code
+Requires: crit_attribute_used, trial_attribute_used
+    demo, latest_eog, latest_karnofsky, lot
+Results: _p_a_t_misc_measurement
+*/
 create temporary table misc_meas as (
     select person_id, 'age' as code
     , datediff(day, date_of_birth, current_date) / 365.25 as value_float
