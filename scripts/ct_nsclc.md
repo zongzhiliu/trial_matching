@@ -9,6 +9,7 @@ source util/util.sh
 export cancer_type='NSCLC'
 export cancer_type_icd='^(C34|162)'
 psql_w_envs caregiver/icd_physician.sql
+psql_w_envs caregiver/treating_physician_scott.sql
 ```
 
 
