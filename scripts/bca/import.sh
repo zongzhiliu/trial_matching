@@ -1,34 +1,32 @@
-###
-
-# config and setup
-source mm/config.sh
+source bca/config.sh
 source util/util.sh
 psql -c "create schema if not exists ${working_schema}"
 
-# prepare attribute
-ipython mm/load_attribute.py
-psql_w_envs cancer/prepare_attribute.sql
-
-# load updated drug/lab mapping table
-#no run: load_into_db_schema_some_csvs.py rimsdw ct drug_mapping_cat_expn3_20200308.csv
-
 # prepare patient data
-#psql_w_envs cancer/prepare_patients.sql
 psql_w_envs cancer/prepare_cohort.sql
 psql_w_envs cancer/prepare_diagnosis.sql
 psql_w_envs cancer/prepare_performance.sql
 psql_w_envs cancer/prepare_lab.sql
 psql_w_envs cancer/prepare_lot.sql
-psql_w_envs cancer/prepare_vital.sql
+psql_w_envs cancer/prepare_stage.sql
+psql_w_envs cancer/prepare_histology.sql
+psql_w_envs cancer/prepare_vital.sql #! divide by zero error
 psql_w_envs caregiver/icd_physician.sql
+
+# prepare attribute
+ipython bca/load_attribute.ipy
+psql_w_envs cancer/prepare_attribute.sql
 
 # perform the attribute matching
 psql_w_envs cancer/match_icd.sql
-psql_w_envs cancer/match_loinc.sql
-psql_w_envs cancer/match_rxnorm.sql
+#psql_w_envs cancer/match_loinc.sql
+psql_w_envs cancer/match_aof20200311.sql
+psql_w_envs cancer/match_rxnorm_wo_modality.sql
+
+psql_w_envs cancer/match_stage.sql
+
 psql_w_envs cancer/match_misc_measurement.sql
 
-psql_w_envs cancer/match_aof20200229.sql
 psql_w_envs mm/match_mm_active_status.sql
 
 # compile the matches
@@ -45,3 +43,6 @@ select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used > 
 select_from_db_schema_table.py rimsdw ${working_schema}.v_demo_w_zip > v_demo_w_zip_$(today_stamp).csv
 select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > v_treating_physician_$(today_stamp).csv
 
+#later cancer/perpare_alterations.sql
+
+## matching
