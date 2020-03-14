@@ -3,17 +3,6 @@ Requires: crit_attribute_used, trial_attribute_used
     demo, latest_eog, latest_karnofsky, lot
 Results: _p_a_t_misc_measurement
 */
-create temporary table misc_meas as (
-    select person_id, 'age' as code
-    , datediff(day, date_of_birth, current_date) / 365.25 as value_float
-    from demo
-    union select person_id, 'ecog', ecog_ps
-    from latest_ecog
-    union select person_id, 'karnosky', karnofsky_pct
-    from latest_karnofsky
-    union select person_id, 'lot', n_lot
-    from lot
-);
 drop table if exists _p_a_t_misc_measurement cascade;
 create table _p_a_t_misc_measurement as
 with cau as (
@@ -24,6 +13,7 @@ with cau as (
     select attribute_id, trial_id
     , nvl(inclusion, exclusion)::float ie_value
     from trial_attribute_used
+    where nvl(inclusion, exclusion) != 'yes' --quickfix: to remove later
 )
 select person_id, trial_id, attribute_id
 , ie_value
@@ -31,7 +21,7 @@ select person_id, trial_id, attribute_id
     when 'min' then value_float >= ie_value
     when 'max' then value_float <= ie_value
     end as match
-from misc_meas
+from misc_measurement
 join cau using (code)
 join tau using (attribute_id)
 ;

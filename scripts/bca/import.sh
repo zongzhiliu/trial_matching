@@ -20,14 +20,15 @@ psql_w_envs cancer/prepare_attribute.sql
 # perform the attribute matching
 psql_w_envs cancer/match_icd.sql
 #psql_w_envs cancer/match_loinc.sql
-psql_w_envs cancer/match_aof20200311.sql
-psql_w_envs cancer/match_rxnorm_wo_modality.sql
-
-psql_w_envs cancer/match_stage.sql
-
+psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
+psql_w_envs cancer/match_rxnorm_wo_modality.sql #update match_rxnorm later
+psql_w_envs bca/prepare_misc_measurement.sql #mv to cancer later
 psql_w_envs cancer/match_misc_measurement.sql
 
-psql_w_envs mm/match_mm_active_status.sql
+psql_w_envs bca/match_cat_measurement.sql
+psql_w_envs cancer/match_icdo_rex.sql
+psql_w_envs cancer/match_stage.sql
+psql_w_envs bca/match_TN20200311.sql
 
 # compile the matches
 psql_w_envs mm/master_match.sql  #> master_match
