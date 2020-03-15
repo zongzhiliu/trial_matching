@@ -10,7 +10,7 @@ select person_id, attribute_id
 , case code_type
     when 'drug_name' then bool_or(drug_name=code)
     when 'drug_modality' then bool_or(modality=lower(code)) --quickfix
-    when 'drug_moa_rex' then bool_or(pca.py_re_search(moa, code, 'i') is null)
+    when 'drug_moa_rex' then bool_or(ct.py_contains(moa, code, 'i') is null)
     end as match
 from latest_lot_drug h
 join ${ref_drug_mapping} m using (drug_name)
