@@ -1,8 +1,8 @@
 # repopulate the ct_bca schema
-* alterations later
-* set search_path to psql_w_envs??
+
+## run the pipeline
 ```
-psql -c "create schema if not exists ct_${cancer_type}"
+source bca/import.sh
 ```
 
 ## dbeaber settings
@@ -21,7 +21,6 @@ set search_path=ct_${cancer_type};
 select * from trial_attribute_used
 where attribute_id='BCA109'
 ;
-
 
 select person_id, gene, variant_type, variant, reported_occurrence_type
 from cohort
