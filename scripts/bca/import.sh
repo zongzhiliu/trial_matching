@@ -1,3 +1,6 @@
+# the workflow to create and populate ct_${cancer} schema
+# requires:
+# ct.py_contains, .ref_drug_mapping .ref_lab_mapping
 source bca/config.sh
 source util/util.sh
 psql -c "create schema if not exists ${working_schema}"
@@ -12,7 +15,8 @@ psql_w_envs cancer/prepare_lot.sql
 psql_w_envs cancer/prepare_stage.sql #! to be updated with TNM for BCA
 psql_w_envs cancer/prepare_histology.sql
 psql_w_envs cancer/prepare_vital.sql #! divide by zero error
-psql_w_envs caregiver/icd_physician.sql
+psql_w_envs cancer/prepare_variant.sql
+#psql_w_envs caregiver/icd_physician.sql
 
 # prepare attribute
 ipython bca/load_attribute.ipy
@@ -32,6 +36,7 @@ psql_w_envs bca/prepare_cat_measurement.sql
 psql_w_envs bca/match_cat_measurement.sql #mv to cancer later
 psql_w_envs cancer/match_icdo_rex.sql
 psql_w_envs cancer/match_stage.sql
+psql_w_envs cancer/match_variant.sql
 
 # compile the matches
 psql_w_envs bca/master_match.sql  #> master_match

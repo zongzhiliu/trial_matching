@@ -2,7 +2,7 @@
 * mutations
 */
 create table _variant_significant as
-select person_id, gene_test_name, gene
+select person_id, genetic_test_name, gene
 , variant_type, variant, reported_occurrence_type
 from cohort
 join cplus_from_aplus.genetic_test_occurrences using (person_id)
