@@ -12,10 +12,10 @@ with cau as (
 )
 select person_id, trial_id, attribute_id
 , case when code_type='icd_rex_other' then --Other primary malignancy
-    bool_or(pca.py_re_search(icd_code, code, '') is not null
+    bool_or(ct.py_contains(icd_code, code)
         and datediff(day, dx_date, current_date) <= 365.25 * max_years
         and icd_code !~ '${cancer_type_icd}')
-    else bool_or(pca.py_re_search(icd_code, code, '') is not null
+    else bool_or(ct.py_contains(icd_code, code, '')
         and datediff(day, dx_date, current_date) <= 365.25 * max_years)
     end as match
 from latest_icd

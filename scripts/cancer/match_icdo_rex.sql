@@ -11,7 +11,7 @@ with cau as (
     where code_type in ('icdo_rex')
 )
 select person_id, trial_id, attribute_id
-, bool_or(pca.py_re_search(histologic_icdo, code, '') is not null) as match
+, bool_or(ct.py_contains(histologic_icdo, code, '')) as match
 from histology
 cross join cau
 join trial_attribute_used using (attribute_id)
