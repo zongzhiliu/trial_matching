@@ -1,7 +1,7 @@
 /***
  * stage:  using $cancer_type
  */
-set search_path=ct_${cancer_type};
+--set search_path=ct_${cancer_type};
 
 drop table if exists stage;
 create table stage as
@@ -15,7 +15,8 @@ with _stage as (
     where nvl(cd.status,'') != 'deleted'
         and cancer_type_name='${cancer_type}'
 )
-select person_id, stage
+select person_id
+, case when stage in ('', 'Not Reported') then NULL else stage end stage
 , case when stage_base='' then NULL else stage_base end stage_base
 , case when stage_ext='' then NULL else stage_ext end stage_ext
 from _stage
