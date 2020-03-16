@@ -17,12 +17,13 @@ with cau as (
     --where ie_value = 'yes'
 )
 select person_id, trial_id, attribute_id
-, case code_type
+, bool_or(case code_type
     when 'stage_base' then stage_base = code
     when 'stage_like' then stage like code
-    end as match
+    end) as match
 from (stage cross join cau)
 join tau using (attribute_id)
+group by person_id, trial_id, attribute_id
 ;
 /*
 select attribute_id, attribute_name, code, attribute_value, ie_value, match

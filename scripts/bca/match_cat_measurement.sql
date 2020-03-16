@@ -15,16 +15,16 @@ with cau as (
     from trial_attribute_used
     where ie_value != 'Low' -- Quickfix
 )
-select person_id, trial_id, attribute_id
-, ie_value
-, case code
+select person_id, trial_id, attribute_id, ie_value
+, bool_or(case code
     when 'menopausal_status' then value = attribute_value_norm --'Post'
     when 'gender' then value = attribute_value --ie_value='yes'
     else lower(value)=lower(ie_value) --er, pr, her2, tri_neg
-    end as match
+    end) as match
 from cat_measurement
 join cau using (code)
 join tau using (attribute_id)
+group by person_id, trial_id, attribute_id, ie_value
 ;
 /*
 select attribute_id, attribute_name, attribute_value, ie_value, match

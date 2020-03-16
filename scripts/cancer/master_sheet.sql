@@ -37,5 +37,8 @@ order by person_id, trial_id, attribute_id
 limit 100;
 select count(distinct person_id), count(distinct attribute_id) from v_master_sheet;
 select count(distinct trial_id), count(distinct attribute_id) from trial_attribute_used;
+
+select count(*) from v_master_sheet; --20,172,318
+select count(*) from (select distinct trial_id, person_id, attribute_id from v_master_sheet); --20, 119,807
 */
 
