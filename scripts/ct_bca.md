@@ -1,5 +1,6 @@
 # repopulate the ct_bca schema
 For breast cancer trials.
+Without limitation to the date of last visit.
 
 # test
 
