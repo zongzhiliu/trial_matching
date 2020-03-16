@@ -11,6 +11,7 @@ os.chdir(working_dir)
 # trial_attribute
 raw_csv = 'trial_attribute_raw_.csv'
 res = convert_trial_attribute_plus_m(raw_csv)
+res.loc[(res.attribute_id=='BCA30') & (res.inclusion=='Low'), 'inclusion'] = 'Equivalent'
 res.fillna('').groupby('attribute_id')\
     .agg(dict(inclusion=['unique'], exclusion=['unique'], ie_mandatory=['unique']))\
     .to_csv('trial_attribute_ie_summary.csv')

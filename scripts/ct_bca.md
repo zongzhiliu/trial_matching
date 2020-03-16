@@ -7,6 +7,8 @@ For breast cancer trials.
 ```
 source bca/import.sh
 ```
+## attributes cumstomarization
+* BCA30    Low -> Equivalent
 
 ## dbeaber settings
 ```
@@ -30,6 +32,28 @@ where match
 group by attribute_id, attribute_name, code, attribute_value, match
 order by attribute_id, attribute_name, match
 ;
+-- Not all BCA patients with BCA ICD?
+with tmp as (
+select count(distinct person_id) --, date_of_birth, gender_name, date_of_death, race_name, ethnicity_name
+from cplus_from_aplus.cancer_diagnoses cd
+join prod_references.cancer_types using (cancer_type_id)
+join prod_references.people p using (person_id)
+join prod_references.genders g using (gender_id)
+join prod_references.races r using (race_id)
+join prod_references.ethnicities using (ethnicity_id)
+--join cplus_from_aplus.visits using (person_id)
+where --nvl(cd.status, '') != 'deleted' and nvl(p.status, '') != 'deleted'
+    --and date_of_death is NULL
+    --and datediff(day, visit_date, current_date)/365.25 <= 99
+    cancer_type_name='${cancer_type}'
+    --13241
+ )
+ select count(distinct person_id)
+ from tmp
+ join prod_references.person_mrns using(person_id)
+ join dev_patient_info_bca.all_diagnosis ad on medical_record_number = mrn
+ where context_diagnosis_code ~ '^(C50|17[45])'
+; --13038
 ```
 ## debug
 ```sql
