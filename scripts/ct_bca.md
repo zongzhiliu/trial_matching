@@ -8,6 +8,16 @@ Without limitation to the date of last visit.
 ```
 source bca/import.sh
 ```
+## input format
+* trial_attribute: [inclusion,M,exclusion] for each trial
+    * ie (bool): inclusion/exclusion
+    * ie_value: value in inclusion/exclusion; could be transformed during conversion.
+
+* crit_attribute: [code_type, code_raw, code_ext, attribute_value, attribute_mandatated]
+    * code_type: how to match using code_raw, code_ext, attribute_value, ie_value
+    * attributes with code_type empty or '-' will be filtered off
+    * code_raw, code_ext: could be transformed to code during the conversion
+
 ## attributes cumstomarization
 * BCA30    Low -> Equivalent
 
@@ -76,5 +86,7 @@ where is_clinically_significant
 ```
 Activating mutations:
 HER2: I655V, V659E, R678Q, V697L, Exon 20 insertion, T733I, L755X, I767M, D769H/N/Y, V773M, V777L/M, L786V, V842I, T862I, L869R
+    * using all but exon 20 insertion
 EGFR: R108K, R222C, A289T, P596L, G598V, Exon 20 insertion, E709K, G719X, V742I, E746_A750del, S768I, V769M, V774M, R831C, R831H, L858R, L861Q, A864V
+    * using all clinical significant molecular variants
 ```

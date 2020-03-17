@@ -14,6 +14,7 @@ Result:
 drop table if exists trial_attribute_used cascade;
 create table trial_attribute_used as
 select * from trial_attribute_raw
+join crit_attribute_raw using (attribute_id)
 where nvl(inclusion, exclusion) is not null
 ;
 -- crit_attribute_used
@@ -28,7 +29,7 @@ where attribute_id in (select distinct attribute_id
 drop view if exists v_crit_attribute_used;
 create view v_crit_attribute_used as
 select attribute_id, attribute_group, attribute_name, attribute_value value
-, mandated, logic
+, attribute_mandated, logic
 from crit_attribute_used
 order by attribute_id
 ;

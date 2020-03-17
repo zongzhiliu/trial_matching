@@ -74,20 +74,29 @@ def summarize_ie_value(res):
 def convert_crit_attribute(raw_csv):
     df = pd.read_csv(raw_csv)
     assert max(df.attribute_id.value_counts()) == 1 #no dup
-    df = df[~pd.isna(df['code_type'])]
+    # filter for implemented
+    mask = pd.isna(df['code_type']) | (df['code_type']=='-')
+    df = df[~mask]
+
+    # attribute_manditated as bool: later
+    # code transformation: to be improved later
     df['code'] = df['code_raw']
     sele = df['code_type'].isin(['icd_rex', 'icd_rex_other']) #str.startswith('icd_rex')
     # convert icd10 and icd9 into full python regx
     df.loc[sele, 'code'] = [f"^({'|'.join((x,) if pd.isna(y) else (x,y)).replace('.', '[.]')})"
             for i, (x, y) in df[['code_raw', 'code_ext']][sele].iterrows() ]
 
-    sele = df['code_type'].isin(['alteration_rex'])
+    # convert gene name(s) to regx
+    sele = df['code_type'].isin(['gene_variant', 'gene_vtype', 'gene_rtype'])
     df.loc[sele, 'code'] = [ f"^({x})$"
             for x in df['code_raw'][sele] ]
 
+    # use lowercase drug names
     sele = df['code_type'].isin(['drug_name'])
     df.loc[sele, 'code'] = [ x.lower()
             for x in df['code_raw'][sele] ]
+
+    # add border to drug_moa_rex: later
     return df
 
 def summarize_crit_attribute(df):
