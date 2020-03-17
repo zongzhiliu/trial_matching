@@ -20,7 +20,13 @@ source bca/import.sh
 
 ## attributes cumstomarization
 * BCA30    Low -> Equivalent
-
+## match attributes
+## match patient
+* madatory
+    * use ie_mandatory if not null, otherwise attribute_mandated
+* logic
+    * break logic into two levels
+    * group with bool_and for the 2nd level, then bool_or to the first level, then bool_and to the root
 ## dbeaber settings
 ```
 @set cancer_type=BCA
@@ -57,7 +63,15 @@ where match
 group by attribute_id, attribute_name, match
 order by attribute_id, match
 ;
-
+-- match cat
+select attribute_id, attribute_name, attribute_value, ie_value, match
+, count(distinct person_id) patients
+from _p_a_t_cat_measurement
+join crit_attribute_used using (attribute_id)
+where match
+group by attribute_id, attribute_name, attribute_value, ie_value, match
+order by attribute_name, attribute_value, ie_value, match
+;
 -- stage matching
 select attribute_id, attribute_name, code, attribute_value,  match
 , count(distinct person_id) patients

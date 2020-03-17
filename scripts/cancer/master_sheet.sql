@@ -15,6 +15,7 @@ create table _master_sheet as
 select trial_id, person_id, attribute_id
 , attribute_group, attribute_name, attribute_value value
 , inclusion, exclusion
+, ie_mandatory  --not back compatible
 , match as attribute_match
 from master_match
 join trial_attribute_used using (attribute_id, trial_id) --unnecessary for the new master_match
@@ -25,6 +26,7 @@ create or replace view v_master_sheet as
 select trial_id, person_id+3040 as person_id
 , attribute_id, attribute_group, attribute_name, value
 , inclusion, exclusion
+, ie_mandatory  --not back compatible
 , attribute_match
 --, patient_value as patient_value_incomplete
 from _master_sheet

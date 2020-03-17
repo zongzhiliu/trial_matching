@@ -37,7 +37,7 @@ psql_w_envs bca/match_cat_measurement.sql #mv to cancer later
 psql_w_envs cancer/match_icdo_rex.sql
 psql_w_envs cancer/match_stage.sql
 psql_w_envs cancer/match_variant.sql
-psql_w_envs cancer/match_biomarker.sql
+psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
 
 # compile the matches
 psql_w_envs bca/master_match.sql  #> master_match

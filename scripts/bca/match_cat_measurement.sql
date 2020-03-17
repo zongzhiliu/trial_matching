@@ -15,7 +15,7 @@ with cau as (
     from trial_attribute_used
 )
 select person_id, trial_id, attribute_id, ie_value
-, bool_or(case when code in ('menopausal_status', 'gendar') then
+, bool_or(case when code in ('menopausal_status', 'gender') then
         value = attribute_value
     else lower(value)=lower(ie_value) --er, pr, her2, tri_neg
     end) as match
