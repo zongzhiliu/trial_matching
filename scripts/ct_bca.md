@@ -34,6 +34,30 @@ set search_path=ct_${cancer_type};
 
 ## QC
 ```sql
+-- prepare_lot
+select count(distinct person_id) from lot where n_lot>0;
+select count(distinct person_id) from modality_lot where n_lot>0;
+    -- 5765, 5765
+select modality, count(distinct person_id) patients
+from modality_lot
+where n_lot>0
+group by modality
+;
+select n_lot, count(distinct person_id)
+from lot
+group by n_lot
+order by n_lot
+;
+-- match drug
+select attribute_id, attribute_name, match
+, count(distinct person_id) patients
+from _p_a_rxnorm
+join crit_attribute_used using (attribute_id)
+where match
+group by attribute_id, attribute_name, match
+order by attribute_id, match
+;
+
 -- stage matching
 select attribute_id, attribute_name, code, attribute_value,  match
 , count(distinct person_id) patients

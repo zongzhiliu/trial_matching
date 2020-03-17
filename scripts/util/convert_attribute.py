@@ -97,6 +97,11 @@ def convert_crit_attribute(raw_csv):
             for x in df['code_raw'][sele] ]
 
     # add border to drug_moa_rex: later
+    sele = df['code_type'].isin(['drug_moa_rex'])
+    #df.loc[sele, 'code'] = [ x.replace('(', '[(]').replace(')', '[)]')
+    #        for x in df['code_raw'][sele] ]
+        #do not convert the parathesis, as real rex parathesis might be used
+
     return df
 
 def summarize_crit_attribute(df):
