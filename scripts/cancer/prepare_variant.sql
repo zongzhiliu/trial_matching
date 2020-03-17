@@ -1,6 +1,7 @@
 /***
 * mutations
 */
+drop table if exists _variant_significant cascade;
 create table _variant_significant as
 select person_id, genetic_test_name, gene
 , variant_type, variant, reported_occurrence_type
@@ -30,3 +31,4 @@ select person_id, gene
 from _variant_significant
 group by person_id, gene
 ;
+*/

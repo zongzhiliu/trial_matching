@@ -12,7 +12,7 @@ psql_w_envs cancer/prepare_cohort.sql
 psql_w_envs cancer/prepare_diagnosis.sql
 psql_w_envs cancer/prepare_performance.sql
 psql_w_envs cancer/prepare_lab.sql
-psql_w_envs cancer/prepare_lot.sql
+psql_w_envs cancer/prepare_lot.sql # drug mapping needed
 psql_w_envs cancer/prepare_stage.sql
 psql_w_envs cancer/prepare_histology.sql
 psql_w_envs cancer/prepare_variant.sql
@@ -22,13 +22,12 @@ psql_w_envs cancer/prepare_biomarker.sql
 # prepare attribute
 ipython bca/load_attribute.ipy
 psql_w_envs cancer/prepare_attribute.sql
-    #to truncate trial_attr and crit_attr against each other.
-    #to move stage code to attribute_value, stage code_type to code
-    #to rescue stage using TNM c/p
+    #later: to move stage code to attribute_value, stage code_type to code
+    #later: rescue stage using TNM c/p
 
 # perform the attribute matching
 #psql_w_envs cancer/match_loinc.sql
-psql_w_envs cancer/match_icd.sql
+psql_w_envs cancer/match_icd.sql #later: make a _p_a table, and a _p_a_t view
 psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
 psql_w_envs cancer/match_rxnorm_wo_modality.sql #update match_rxnorm later
 psql_w_envs bca/prepare_misc_measurement.sql #mv to cancer later

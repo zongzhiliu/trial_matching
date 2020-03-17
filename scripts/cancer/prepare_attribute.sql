@@ -13,7 +13,8 @@ Result:
 -- trial_attribute_used
 drop table if exists trial_attribute_used cascade;
 create table trial_attribute_used as
-select * from trial_attribute_raw
+select tar.*
+from trial_attribute_raw tar
 join crit_attribute_raw using (attribute_id)
 where nvl(inclusion, exclusion) is not null
 ;
