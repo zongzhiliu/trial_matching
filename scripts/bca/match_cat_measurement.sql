@@ -13,12 +13,10 @@ with cau as (
     select attribute_id, trial_id
     , nvl(inclusion, exclusion) ie_value
     from trial_attribute_used
-    where ie_value != 'Low' -- Quickfix
 )
 select person_id, trial_id, attribute_id, ie_value
-, bool_or(case code
-    when 'menopausal_status' then value = attribute_value_norm --'Post'
-    when 'gender' then value = attribute_value --ie_value='yes'
+, bool_or(case when code in ('menopausal_status', 'gendar') then
+        value = attribute_value
     else lower(value)=lower(ie_value) --er, pr, her2, tri_neg
     end) as match
 from cat_measurement
