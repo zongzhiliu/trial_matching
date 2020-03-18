@@ -22,9 +22,12 @@ source bca/import.sh
 * BCA30    Low -> Equivalent
 ## match attributes
 ## match patient
-* madatory
-    * use ie_mandatory if not null, otherwise attribute_mandated
-* logic
+* adjusted match with inc/exc
+
+* then ajusted match with modatory for missing data: False if madatory, otherwise True
+    * madatory: use ie_mandatory if not null, otherwise attribute_mandated
+
+* logic: quick implementation, later do it with tree structure in python
     * break logic into two levels
     * group with bool_and for the 2nd level, then bool_or to the first level, then bool_and to the root
 ## dbeaber settings
