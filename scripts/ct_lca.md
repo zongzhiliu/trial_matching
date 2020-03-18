@@ -1,4 +1,7 @@
 # log 20200223 - updated for NSCLC
+## updates
+* 20200318 _variant_significant updated
+
 ## create the patient tables in dbeaver/ct_lca.sql
 * especially update the mutation table
 

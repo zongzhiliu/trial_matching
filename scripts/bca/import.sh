@@ -44,6 +44,8 @@ psql_w_envs bca/master_match.sql  #> master_match
 psql_w_envs cancer/master_sheet.sql  #> master_sheet
 # match to patients
 psql_w_envs cancer/master_patient.sql #> trial2patients
+# python cancer/master_tree.py generate patient counts at each logic branch,
+# and dynamic visualization file for each trial.
 
 # download result files for sharing
 cd "${working_dir}"
@@ -52,5 +54,6 @@ select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet > v_maste
 select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used > v_crit_attribute_used_$(today_stamp).csv
 select_from_db_schema_table.py rimsdw ${working_schema}.v_demo_w_zip > v_demo_w_zip_$(today_stamp).csv
 select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > v_treating_physician_$(today_stamp).csv
+cd -
 
 
