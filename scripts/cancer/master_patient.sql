@@ -1,6 +1,6 @@
 /***
 Requires:
-    trial_attributes_used, crit_attribute_used
+    crit_attribute_used
     _master_sheet
 Results:
     trial_patient_match
@@ -18,14 +18,13 @@ create table _ie_match as
 select trial_id, person_id, attribute_id
 , (inclusion is not null) as ie
 , nvl(inclusion, exclusion) as ie_value
-, nvl(ie_mandatory, attribute_mandated='yes') as mandatory
 , attribute_match
+, mandatory
 , case when ie then attribute_match
     else not attribute_match
     end as match_adjusted
 , nvl(match_adjusted, not mandatory) as match_imputed
 from _master_sheet
-join crit_attribute_used using(attribute_id)
 ;
 /*
 select * from _ie_match
@@ -63,7 +62,7 @@ order by person_id, trial_id, attribute_id
 */
 
 -- collase the ie_match to levels of logic
-drop table _crit_l1;
+drop table if exists _crit_l1;
 create temporary table _crit_l1 as
 with _crit_l2 as (
     select trial_id, person_id, logic_l1, logic_l2

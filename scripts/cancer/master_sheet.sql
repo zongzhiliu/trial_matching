@@ -15,8 +15,8 @@ create table _master_sheet as
 select trial_id, person_id, attribute_id
 , attribute_group, attribute_name, attribute_value value
 , inclusion, exclusion
-, ie_mandatory  --not back compatible
 , match as attribute_match
+, nvl(ie_mandatory, attribute_mandated='yes') as mandatory
 from master_match
 join trial_attribute_used using (attribute_id, trial_id) --unnecessary for the new master_match
 join crit_attribute_used using (attribute_id)
@@ -26,8 +26,8 @@ create or replace view v_master_sheet as
 select trial_id, person_id+3040 as person_id
 , attribute_id, attribute_group, attribute_name, value
 , inclusion, exclusion
-, ie_mandatory  --not back compatible
 , attribute_match
+, mandatory
 --, patient_value as patient_value_incomplete
 from _master_sheet
 join cohort using (person_id) --unnecessary for the new master_match

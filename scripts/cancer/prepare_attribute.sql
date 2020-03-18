@@ -32,7 +32,7 @@ create view v_crit_attribute_used as
 select attribute_id, attribute_group, attribute_name, attribute_value value
 , attribute_mandated, logic
 from crit_attribute_used
-order by attribute_id
+order by regexp_substr(attribute_id, '[0-9]+$')::int
 ;
 /*qc
 select count(*) from crit_attribute_used;
