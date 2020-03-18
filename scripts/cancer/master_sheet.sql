@@ -31,14 +31,13 @@ select trial_id, person_id+3040 as person_id
 --, patient_value as patient_value_incomplete
 from _master_sheet
 join cohort using (person_id) --unnecessary for the new master_match
-order by trial_id, person_id, attribute_id
+order by trial_id, person_id, regexp_substr(attribute_id, '[0-9]+$')::int
 ;
 /* qc
 select * from v_master_sheet
 order by person_id, trial_id, attribute_id
 limit 100;
-select count(distinct person_id), count(distinct attribute_id) from v_master_sheet;
-select count(distinct trial_id), count(distinct attribute_id) from trial_attribute_used;
+select count(distinct person_id), count(distinct trial_id), count(distinct attribute_id) from v_master_sheet;
 
 select count(*) from v_master_sheet; --20,172,318
 select count(*) from (select distinct trial_id, person_id, attribute_id from v_master_sheet); --20, 119,807
