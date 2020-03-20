@@ -61,7 +61,7 @@ select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > \
     ${cancer_type}.v_treating_physician_$(today_stamp).csv
 
 # load to pharma mysql server
-sed 's/,True/,1/g;s/,False/,0/' ${cancer_type}.v_master_sheet_$(today_stamp).csv \
+sed 's/,True/,1/g;s/,False/,0/g' ${cancer_type}.v_master_sheet_$(today_stamp).csv \
     > ${cancer_type}.v_master_sheet.csv
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${cancer_type}.v_master_sheet.csv
