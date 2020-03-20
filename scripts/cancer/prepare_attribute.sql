@@ -30,7 +30,7 @@ where attribute_id in (select distinct attribute_id
 drop view if exists v_crit_attribute_used;
 create view v_crit_attribute_used as
 select attribute_id, attribute_group, attribute_name, attribute_value value
-, attribute_mandated, logic
+, logic
 from crit_attribute_used
 order by regexp_substr(attribute_id, '[0-9]+$')::int
 ;

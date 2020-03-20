@@ -49,11 +49,22 @@ psql_w_envs cancer/master_patient.sql #> trial2patients
 
 # download result files for sharing
 cd "${working_dir}"
-select_from_db_schema_table.py rimsdw ${working_schema}.v_trial_patient_count > v_trial_patient_count_$(today_stamp).csv
-select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet > v_master_sheet_$(today_stamp).csv
-select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used > v_crit_attribute_used_$(today_stamp).csv
-select_from_db_schema_table.py rimsdw ${working_schema}.v_demo_w_zip > v_demo_w_zip_$(today_stamp).csv
-select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > v_treating_physician_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_trial_patient_count > \
+    ${cancer_type}.v_trial_patient_count_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet > \
+    ${cancer_type}.v_master_sheet_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used > \
+    ${cancer_type}.v_crit_attribute_used_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_demo_w_zip > \
+    ${cancer_type}.v_demo_w_zip_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > \
+    ${cancer_type}.v_treating_physician_$(today_stamp).csv
+
+# load to pharma mysql server
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_master_sheet_$(today_stamp).csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_crit_attribute_used_$(today_stamp).csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_demo_w_zip_$(today_stamp).csv
 cd -
-
-

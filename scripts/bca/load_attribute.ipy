@@ -18,7 +18,10 @@ res.fillna('').groupby('attribute_id')\
 #!open trial_attribute_ie_summary.csv
 
 # cutomized conversoins and export
-mand = res['ie_mandatory'].apply(lambda x: True if x in ('Y', 'M') else False)
+mand = res['ie_mandatory'].apply(lambda x: 
+        True if x in ('Y', 'M')
+        else False if x in ('N', 'n')
+        else None)
 res['ie_mandatory'] = mand
 #summarize_ie_value(res).to_csv('trial_attribute_ie_summary.csv')
 res_csv=f'trial_attribute_raw_{today_stamp()}.csv'
