@@ -29,7 +29,7 @@ psql_w_envs cancer/prepare_attribute.sql
 #psql_w_envs cancer/match_loinc.sql
 psql_w_envs cancer/match_icd.sql #later: make a _p_a table, and a _p_a_t view
 psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
-psql_w_envs cancer/match_rxnorm_wo_modality.sql #update match_rxnorm later
+psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
 psql_w_envs bca/prepare_misc_measurement.sql #mv to cancer later
 psql_w_envs cancer/match_misc_measurement.sql
 psql_w_envs bca/prepare_cat_measurement.sql #menopausal to be cleaned
@@ -61,10 +61,18 @@ select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > \
     ${cancer_type}.v_treating_physician_$(today_stamp).csv
 
 # load to pharma mysql server
+sed 's/,True/,1/g;s/,False/,0/' ${cancer_type}.v_master_sheet_$(today_stamp).csv \
+    > ${cancer_type}.v_master_sheet.csv
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_master_sheet_$(today_stamp).csv
+    ${cancer_type}.v_master_sheet.csv
+
+ln -sf ${cancer_type}.v_crit_attribute_used_$(today_stamp).csv \
+    ${cancer_type}.v_crit_attribute_used.csv
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_crit_attribute_used_$(today_stamp).csv
+    ${cancer_type}.v_crit_attribute_used.csv
+
+ln -sf ${cancer_type}.v_demo_w_zip_$(today_stamp).csv \
+    ${cancer_type}.v_demo_w_zip.csv
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_demo_w_zip_$(today_stamp).csv
+    ${cancer_type}.v_demo_w_zip.csv
 cd -
