@@ -1,8 +1,9 @@
 # the workflow to create and populate ct_${cancer} schema
 # requires:
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
-source bca/config.sh
+source ct/config.sh
 source util/util.sh
+pgsetup rdmsdw
 psql -c "create schema if not exists ${working_schema}"
 psql_w_envs cancer/prepare_reference.sql
 
