@@ -1,7 +1,7 @@
 # the workflow to create and populate ct_${cancer} schema
 # requires:
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
-source ct/config.sh
+source cd/config.sh
 source util/util.sh
 pgsetup rdmsdw
 psql -c "create schema if not exists ${working_schema}"
@@ -9,15 +9,13 @@ psql_w_envs cancer/prepare_reference.sql
 
 # prepare patient data
 #psql_w_envs cancer/prepare_vital.sql #! divide by zero error
-psql_w_envs cancer/prepare_cohort.sql
-psql_w_envs cancer/prepare_diagnosis.sql
-psql_w_envs cancer/prepare_performance.sql
-psql_w_envs cancer/prepare_lab.sql
-psql_w_envs cancer/prepare_lot.sql # drug mapping needed
-psql_w_envs cancer/prepare_stage.sql
-psql_w_envs cancer/prepare_histology.sql
-psql_w_envs cancer/prepare_variant.sql
-psql_w_envs cancer/prepare_biomarker.sql
+psql_w_envs disease/prepare_cohort.sql
+psql_w_envs disease/prepare_diagnosis.sql
+psql_w_envs disease/prepare_vital.sql
+psql_w_envs disease/prepare_sochx.sql
+psql_w_envs disease/prepare_procedure.sql # drug mapping needed
+psql_w_envs disease/prepare_medication.sql # drug mapping needed
+psql_w_envs disease/prepare_lab.sql
 #psql_w_envs caregiver/icd_physician.sql
 
 # prepare attribute
