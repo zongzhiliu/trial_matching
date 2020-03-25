@@ -75,4 +75,14 @@ ln -sf ${cancer_type}.v_demo_w_zip_$(today_stamp).csv \
     ${cancer_type}.v_demo_w_zip.csv
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${cancer_type}.v_demo_w_zip.csv
+
+sed 's/,True/,1/g;s/,False/,0/g' ${cancer_type}.v_master_sheet_new_$(today_stamp).csv \
+    > ${cancer_type}.v_master_sheet_new.csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_master_sheet_new.csv -d
+
+ln -sf ${cancer_type}.v_crit_attribute_used_$(today_stamp).csv \
+    ${cancer_type}.v_crit_attribute_used.csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_crit_attribute_used.csv
 cd -

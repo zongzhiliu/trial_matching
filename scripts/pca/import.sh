@@ -1,25 +1,28 @@
+############################################################## 
+# incomplete do not run
 # the workflow to create and populate ct_${cancer} schema
 # requires:
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
-source cd/config.sh
+source pca/config.sh
 source util/util.sh
-pgsetup rdmsdw
 psql -c "create schema if not exists ${working_schema}"
 psql_w_envs cancer/prepare_reference.sql
 
 # prepare patient data
 #psql_w_envs cancer/prepare_vital.sql #! divide by zero error
-psql_w_envs disease/prepare_cohort.sql
-psql_w_envs disease/prepare_diagnosis.sql
-psql_w_envs disease/prepare_vital.sql
-psql_w_envs disease/prepare_sochx.sql
-psql_w_envs disease/prepare_procedure.sql # drug mapping needed
-psql_w_envs disease/prepare_medication.sql # drug mapping needed
-psql_w_envs disease/prepare_lab.sql
+psql_w_envs cancer/prepare_cohort.sql
+psql_w_envs cancer/prepare_diagnosis.sql
+psql_w_envs cancer/prepare_performance.sql
+psql_w_envs cancer/prepare_lab.sql
+psql_w_envs cancer/prepare_lot.sql # drug mapping needed
+psql_w_envs cancer/prepare_stage.sql
+psql_w_envs cancer/prepare_histology.sql
+psql_w_envs cancer/prepare_variant.sql
+psql_w_envs cancer/prepare_biomarker.sql
 #psql_w_envs caregiver/icd_physician.sql
 
 # prepare attribute
-ipython cd/load_attribute.ipy
+ipython bca/load_attribute.ipy
 psql_w_envs cancer/prepare_attribute.sql
     #later: to move stage code to attribute_value, stage code_type to code
     #later: rescue stage using TNM c/p
@@ -74,4 +77,19 @@ ln -sf ${cancer_type}.v_demo_w_zip_$(today_stamp).csv \
     ${cancer_type}.v_demo_w_zip.csv
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${cancer_type}.v_demo_w_zip.csv
+############################################################## #
+
+select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet_new > \
+    v_master_sheet_new_$(today_stamp).csv
+sed 's/,True/,1/g;s/,False/,0/g' v_master_sheet_new_$(today_stamp).csv \
+    > ${cancer_type}.v_master_sheet_new.csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_master_sheet_new.csv -d
+
+select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used_new > \
+    v_crit_attribute_used_new_$(today_stamp).csv
+ln -sf v_crit_attribute_used_new_$(today_stamp).csv \
+    ${cancer_type}.v_crit_attribute_used_new.csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_crit_attribute_used_new.csv -d
 cd -
