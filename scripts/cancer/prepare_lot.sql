@@ -1,6 +1,8 @@
 --set search_path=ct_${cancer_type};
 /***
 * lot: including mrn deduplicate
+Requires: ref_drug_mapping
+Results: see the lines below
 */
 drop table if exists _line_of_therapy cascade;
 drop table if exists lot cascade;
@@ -53,9 +55,7 @@ group by person_id, drugname
 ;
 /*qc
 select count(distinct person_id) from lot where n_lot>0;
--- 5379
 select count(distinct person_id) from modality_lot where n_lot>0;
--- 5365
 
 select modality, count(distinct person_id) patients
 from modality_lot

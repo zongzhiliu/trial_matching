@@ -1,9 +1,13 @@
 /***
 * mutations
 */
+drop table if exists _variant_significant cascade;
 create table _variant_significant as
 select person_id, genetic_test_name, gene
-, variant_type, variant, reported_occurrence_type
+, variant_type
+, case when variant in ('Not Reported') then null else variant
+    end variant
+, reported_occurrence_type
 from cohort
 join cplus_from_aplus.genetic_test_occurrences using (person_id)
 join cplus_from_aplus.genetic_tests using (genetic_test_id)
@@ -30,3 +34,4 @@ select person_id, gene
 from _variant_significant
 group by person_id, gene
 ;
+*/

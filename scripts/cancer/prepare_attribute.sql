@@ -13,7 +13,9 @@ Result:
 -- trial_attribute_used
 drop table if exists trial_attribute_used cascade;
 create table trial_attribute_used as
-select * from trial_attribute_raw
+select tar.*
+from trial_attribute_raw tar
+join crit_attribute_raw using (attribute_id)
 where nvl(inclusion, exclusion) is not null
 ;
 -- crit_attribute_used
@@ -28,9 +30,9 @@ where attribute_id in (select distinct attribute_id
 drop view if exists v_crit_attribute_used;
 create view v_crit_attribute_used as
 select attribute_id, attribute_group, attribute_name, attribute_value value
-, mandated, logic
+, logic
 from crit_attribute_used
-order by attribute_id
+order by regexp_substr(attribute_id, '[0-9]+$')::int
 ;
 /*qc
 select count(*) from crit_attribute_used;

@@ -13,7 +13,7 @@ with cau as (
     select attribute_id, trial_id
     , nvl(inclusion, exclusion)::float ie_value
     from trial_attribute_used
-    where nvl(inclusion, exclusion) != 'yes' --quickfix: to remove later
+    --where nvl(inclusion, exclusion) != 'yes' --quickfix: to remove later
 )
 select person_id, trial_id, attribute_id
 , ie_value

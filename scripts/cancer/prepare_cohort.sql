@@ -40,13 +40,15 @@ where row_number=1
 ; --without left join, will lose persons
  --active_flag='Y'
 -- replace with caregiver
-create or replace view v_demo_w_zip as
+
+drop view if exists v_demo_w_zip;
+create view v_demo_w_zip as
 select distinct person_id+3040 as person_id, d.gender_name
 , date_trunc('month', d.date_of_birth)::date date_of_birth_truncated
 , case when d.race_name='Not Reported' then
     'Unknown' else d.race_name end as race_name
 , d.ethnicity_name
-, d.address_zip
+, substring(d.address_zip, 1, 3) address_zip
 from demo_plus d
 order by person_id
 ;

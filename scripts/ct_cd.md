@@ -1,15 +1,12 @@
-# repopulate the ct_bca schema
-For breast cancer trials.
-Without limitation to the date of last visit.
-
-# test
+# repopulate the ct_cd schema
+For crohn's disease
 
 ## run the pipeline
 ```
-source bca/import.sh
+source cd/import.sh
 ```
 ## input format
-* trial_attribute: [inclusion,M,exclusion] for each trial
+* trial_attribute: [inclusion,M,logic,exclusion] for each trial
     * ie (bool): inclusion/exclusion
     * ie_value: value in inclusion/exclusion; could be transformed during conversion.
 
@@ -32,13 +29,6 @@ source bca/import.sh
     * group with bool_and for the 2nd level, then bool_or to the first level, then bool_and to the root
 ## dbeaber settings
 ```
-@set cancer_type=BCA
-@set cancer_type_icd=^(C50|17[45])
-@set working_schema=ct_${cancer_type}
-@set last_visit_within=99
-@set ref_drug_mapping=ct.drug_mapping_cat_expn4_20200313
-@set ref_lab_mapping=ct.ref_lab_loinc_mapping
-set search_path=ct_${cancer_type};
 ```
 
 ## QC
