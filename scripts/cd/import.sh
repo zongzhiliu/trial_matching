@@ -7,6 +7,11 @@ pgsetup rdmsdw
 psql -c "create schema if not exists ${working_schema}"
 psql_w_envs cancer/prepare_reference.sql
 
+# load mapping tables
+cd ${working_dir}
+load_into_db_schema_some_csvs.py rdmsdw ct_cd proc_mapping.csv
+cd -
+
 # prepare patient data
 #psql_w_envs cancer/prepare_vital.sql #! divide by zero error
 psql_w_envs disease/prepare_cohort.sql

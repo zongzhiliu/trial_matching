@@ -57,3 +57,4 @@ group by context_name, context_diagnosis_code, description
 grant all on schema ct_scd to wen_pan;
 select * from dmsdw_2019q1.d_person limit 10;
 
+

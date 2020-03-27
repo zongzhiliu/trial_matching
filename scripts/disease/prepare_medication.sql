@@ -66,6 +66,22 @@ select * from rx
 order by mrn, age_in_days, rx_name, rx_generic
 ;
 
+create table _all_drugs as
+select rx_name, nvl(rx_generic, '_') rx_generic
+, count(*) records, count(distinct mrn) patients
+from rx r 
+group by rx_name, rx_generic
+;
+
+select * from _all_drugs;
+select drug_name, rx_generic, rx_name, patients
+from ct.drug_mapping_cat_expn5_20200317 dm 
+left join _all_drugs ad on drug_name=lower(rx_generic) or lower(rx_name) like '%'||drug_name||'%'
+where patients is not null 
+	and drug_name != lower(rx_generic) --must be right
+order by drug_name, nvl(rx_generic, '_'), rx_name
+;
+
 create table rx_list as
 select rx_name, rx_generic
 , count(*) rx_days, count(distinct mrn) patients
