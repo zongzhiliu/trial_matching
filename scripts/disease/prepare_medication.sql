@@ -62,11 +62,11 @@ from _rx
 group by mrn, age_in_days, rx_name, rx_generic
 ;
 
-
 /*
 select * from rx
 order by mrn, age_in_days, rx_name, rx_generic
 ;
+
 
 create table _all_drugs as
 select rx_name, nvl(rx_generic, '_') rx_generic

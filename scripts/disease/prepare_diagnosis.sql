@@ -27,6 +27,7 @@ from _dx
 order by mrn, age_in_days, context_name
 */
 
+
 drop table if exists _latest_icd;
 create table _latest_icd as
 select mrn
@@ -51,5 +52,4 @@ from _latest_icd join demo using (mrn)
 /*
 select count(*), count(distinct mrn) from latest_icd;
 select * from latest_icd limit 99;
-	-- ~600K, ~17K
-*/
+

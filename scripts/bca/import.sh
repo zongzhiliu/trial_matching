@@ -46,7 +46,7 @@ psql_w_envs cancer/master_sheet.sql  #> master_sheet
 psql_w_envs cancer/master_patient.sql #> trial2patients
 # python cancer/master_tree.py generate patient counts at each logic branch,
 # and dynamic visualization file for each trial.
-#psql_w_envs disease/rewire_master_sheet.sql
+
 
 # download result files for sharing
 cd "${working_dir}"
@@ -77,7 +77,7 @@ ln -sf ${cancer_type}.v_demo_w_zip_$(today_stamp).csv \
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${cancer_type}.v_demo_w_zip.csv
 
-############################################################## #
+
 select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet_new > \
     ${cancer_type}.v_master_sheet_new.csv
 load_into_db_schema_some_csvs.py -d pharma db_data_bridge \
@@ -87,4 +87,5 @@ select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used_ne
     ${cancer_type}.v_crit_attribute_used_new_$(today_stamp).csv
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${cancer_type}.v_crit_attribute_used_new_$(today_stamp).csv
+
 cd -
