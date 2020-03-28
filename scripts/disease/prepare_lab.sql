@@ -19,14 +19,16 @@ where loinc_code is not null
 
 drop table if exists latest_lab;
 create table latest_lab as
-select mrn, age_in_days
+select mrn person_id
+, dateadd(day, age_in_days::int, date_of_birth)::date lab_date
 , loinc_code, loinc_display_name
 , value_float, unit
 , source_unit, source_value
 from (select *, row_number() over (
         partition by mrn, loinc_code
         order by age_in_days desc nulls last, value_float desc nulls last)
-        from loinc_lab)
+    from loinc_lab)
+join demo using (mrn)
 where row_number=1
 --order by mrn, age_in_days, loinc_code
 ;
