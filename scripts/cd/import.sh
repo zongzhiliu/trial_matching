@@ -7,10 +7,12 @@ pgsetup rdmsdw
 psql -c "create schema if not exists ${working_schema}"
 psql_w_envs cancer/prepare_reference.sql
 
+
 # load mapping tables
 cd ${working_dir}
 load_into_db_schema_some_csvs.py rdmsdw ct_cd proc_mapping.csv
 cd -
+
 
 # prepare patient data
 #psql_w_envs cancer/prepare_vital.sql #! divide by zero error
@@ -30,6 +32,7 @@ psql_w_envs cancer/prepare_attribute.sql
     #later: rescue stage using TNM c/p
 
 # perform the attribute matching
+
 psql_w_envs disease/match_diagnosis.sql #later: make a _p_a tables, and a _p_a_t view
 psql_w_envs disease/match_procedure.sql #later: make a _p_a table, and a _p_a_t view
 psql_w_envs disease/match_rxnorm.sql
@@ -46,6 +49,8 @@ psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
 #psql_w_envs cancer/match_stage.sql
 #psql_w_envs cancer/match_variant.sql
 #psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
+
+
 
 # compile the matches
 psql_w_envs bca/master_match.sql  #> master_match

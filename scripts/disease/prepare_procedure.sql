@@ -55,6 +55,7 @@ order by mrn, age_in_days, procedure_description, level2_event_name, level3_acti
 ;
 */
 
+
 create table _latest_proc AS
 select mrn, age_in_days
 , procedure_description, context_name, context_procedure_code, procedure_role
@@ -68,6 +69,7 @@ from (select *, row_number() over (
 )
 where row_number=1
 ;
+
 --alter table latest_proc rename to _latest_proc;
 create table latest_proc as
 select mrn, mrn person_id

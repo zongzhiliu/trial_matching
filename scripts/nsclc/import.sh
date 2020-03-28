@@ -83,6 +83,7 @@ load_into_db_schema_some_csvs.py pharma db_data_bridge \
 cd "${working_dir}"
 select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet_new > \
     ${cancer_type}.v_master_sheet_new.csv
+
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${cancer_type}.v_master_sheet_new.csv -d
 
