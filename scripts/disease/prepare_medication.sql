@@ -61,12 +61,30 @@ select mrn, age_in_days, rx_name, rx_generic
 from _rx
 group by mrn, age_in_days, rx_name, rx_generic
 ;
-
 /*
 select * from rx
 order by mrn, age_in_days, rx_name, rx_generic
 ;
+*/
 
+drop table if exists latest_rx;
+create table latest_rx as
+select mrn person_id
+, drug_name, moa, modality
+, dateadd(day, age_in_days, date_of_birth)::date rx_date
+from (select *, row_number() over (
+        partition by mrn, drug_name
+        order by -age_in_days)
+    FROM rx
+    JOIN _all_name an using(rx_name)
+    JOIN ref_drug_mapping mp using (drug_name))
+join demo using (mrn)
+where row_number=1
+;
+/*
+select count(*), count(distinct person_id) from lastest_rx;
+select * from lastest_rx limit 99;
+*/
 
 create table _all_drugs as
 select rx_name, nvl(rx_generic, '_') rx_generic

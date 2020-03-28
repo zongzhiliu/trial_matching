@@ -20,7 +20,7 @@ where loinc_code is not null
 drop table if exists latest_lab;
 create table latest_lab as
 select mrn person_id
-, dateadd(day, age_in_days::int, date_of_birth)::date lab_date
+, dateadd(day, age_in_days::int, date_of_birth)::date result_date
 , loinc_code, loinc_display_name
 , value_float, unit
 , source_unit, source_value
