@@ -26,7 +26,7 @@ res['ie_mandatory'] = tmp
 res_csv=f'trial_attribute_raw_{today_stamp()}.csv'
 res.to_csv(res_csv, index=False)
 !ln -sf {res_csv} trial_attribute_raw.csv
-!load_into_db_schema_some_csvs.py -d rdmsdw ${working_schema} trial_attribute_raw.csv
+!load_into_db_schema_some_csvs.py -d rdmsdw {working_schema} trial_attribute_raw.csv
 
 # crit_attribute
 raw_csv='crit_attribute_raw_.csv'
@@ -36,5 +36,5 @@ res_csv=f'crit_attribute_raw_{today_stamp()}.csv'
 res.to_csv(res_csv, index=False)
 #!open {res_csv}
 !ln -sf {res_csv} crit_attribute_raw.csv
-!load_into_db_schema_some_csvs.py -d rdmsdw ct_${working_schema} crit_attribute_raw.csv
+!load_into_db_schema_some_csvs.py -d rdmsdw {working_schema} crit_attribute_raw.csv
 # todo: remove the rows without attribute_id/code_type

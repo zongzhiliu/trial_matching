@@ -18,6 +18,9 @@ from trial_attribute_raw tar
 join crit_attribute_raw using (attribute_id)
 where nvl(inclusion, exclusion) is not null
 ;
+/*
+select count(*) from trial_attribute_used;
+*/
 -- crit_attribute_used
 drop table if exists crit_attribute_used cascade;
 create table crit_attribute_used as
@@ -36,5 +39,8 @@ order by regexp_substr(attribute_id, '[0-9]+$')::int
 ;
 /*qc
 select count(*) from crit_attribute_used;
-    --170
+    --114
 */
+grant all on table crit_attribute_used to mingwei_zhang;
+grant all on table trial_attribute_used to mingwei_zhang;
+

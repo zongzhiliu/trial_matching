@@ -101,7 +101,8 @@ def convert_crit_attribute(raw_csv):
     # attribute_manditated as bool: later
     # code transformation: to be improved later
     df['code'] = df['code_raw']
-    sele = df['code_type'].isin(['icd_rex', 'icd_rex_other', 'icd_rex_le_tempo', 'icd_earliest'])
+    sele = df['code_type'].isin(
+        ['icd_rex', 'icd_rex_other', 'icd_le_tempo', 'icd_earliest', 'proc_icd_rex'])
     # convert icd10 and icd9 into full python regx
     df.loc[sele, 'code'] = [f"^({'|'.join((x,) if pd.isna(y) else (x,y)).replace('.', '[.]')})"
             for i, (x, y) in df[['code_raw', 'code_ext']][sele].iterrows() ]

@@ -16,8 +16,10 @@ group by mrn
 
 drop table if exists demo cascade;
 create table demo as
-select mrn
-, TO_DATE(datepart(year, date_of_birth) || '-' || month_of_birth, 'yyyy-month') dob_low, last_day(dob_low) as dob_high
+select mrn, mrn person_id
+, TO_DATE(datepart(year, date_of_birth) || '-' || month_of_birth, 'yyyy-month') dob_low
+, dob_low as date_of_birth
+, last_day(dob_low) as dob_high
 , datepart(year, dob_low) dob_year, datepart(month, dob_low) dob_month
 , race race_raw, patient_ethnic_group ethnicity_raw
 , case gender
@@ -35,8 +37,10 @@ where active_flag='Y'
 	and datediff(year, dob_low, current_date)<130 -- impossible birthdate
 ;
 
-drop view if exists cohort;
-create view cohort as select distinct(mrn) from demo;
+drop table if exists cohort;
+create table cohort as
+select distinct mrn, person_id
+from demo;
 
 create table _person as
 select person_key, mrn
@@ -50,3 +54,5 @@ select count(*), count(distinct mrn)
 from demo;
 	-- 16712
 */
+grant all on table demo to mingwei_zhang;
+grant all on table cohort to mingwei_zhang;
