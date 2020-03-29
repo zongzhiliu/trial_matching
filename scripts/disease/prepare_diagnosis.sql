@@ -1,10 +1,8 @@
 /**** diagnosis
 Requires:
-    cohort, cplus, dev_patient_info
+    _person, dmsdw
 Results:
     latest_icd
-Settings:
-    cancer_type
 */
 drop table if exists _dx;
 create temporary table _dx as
@@ -52,4 +50,5 @@ from _latest_icd join demo using (mrn)
 /*
 select count(*), count(distinct mrn) from latest_icd;
 select * from latest_icd limit 99;
+*/
 

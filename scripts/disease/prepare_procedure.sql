@@ -1,5 +1,6 @@
 /***
- * proc: surg
+Results: latest_proc
+Requires: _person, dmsdw
 create table _kinds_of_procedures as
 select distinct bp.procedure_role
     , fp.procedure_description
@@ -32,6 +33,7 @@ join ${dmsdw}.fd_procedure fp using (procedure_key)
     where level3_action_name not in ('Canceled', 'Pended') -- more later
 ;
 
+/*
 create table _surg as
 select distinct *
 from _proc
@@ -47,7 +49,7 @@ from _surg
 group by mrn, age_in_days
 , context_procedure_code, context_name, procedure_description, level2_event_name
 ;
-/*
+
 select mrn, age_in_days, procedure_description, level2_event_name, level3_action_name, level4_field_name
 , value, unit_of_measure, context_name, context_procedure_code
 from _surg
