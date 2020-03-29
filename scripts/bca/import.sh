@@ -47,6 +47,7 @@ psql_w_envs cancer/master_patient.sql #> trial2patients
 # python cancer/master_tree.py generate patient counts at each logic branch,
 # and dynamic visualization file for each trial.
 
+
 # download result files for sharing
 cd "${working_dir}"
 select_from_db_schema_table.py rimsdw ${working_schema}.v_trial_patient_count > \
@@ -76,13 +77,15 @@ ln -sf ${cancer_type}.v_demo_w_zip_$(today_stamp).csv \
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${cancer_type}.v_demo_w_zip.csv
 
-sed 's/,True/,1/g;s/,False/,0/g' ${cancer_type}.v_master_sheet_new_$(today_stamp).csv \
-    > ${cancer_type}.v_master_sheet_new.csv
-load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_master_sheet_new.csv -d
 
-ln -sf ${cancer_type}.v_crit_attribute_used_$(today_stamp).csv \
-    ${cancer_type}.v_crit_attribute_used.csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet_new > \
+    ${cancer_type}.v_master_sheet_new.csv
+load_into_db_schema_some_csvs.py -d pharma db_data_bridge \
+    ${cancer_type}.v_master_sheet_new.csv
+
+select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used_new > \
+    ${cancer_type}.v_crit_attribute_used_new_$(today_stamp).csv
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_crit_attribute_used.csv
+    ${cancer_type}.v_crit_attribute_used_new_$(today_stamp).csv
+
 cd -

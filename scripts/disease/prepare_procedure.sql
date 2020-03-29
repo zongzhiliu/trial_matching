@@ -55,7 +55,8 @@ order by mrn, age_in_days, procedure_description, level2_event_name, level3_acti
 ;
 */
 
-create table latest_proc AS
+
+create table _latest_proc AS
 select mrn, age_in_days
 , procedure_description, context_name, context_procedure_code, procedure_role
 , level2_event_name, level3_action_name, level4_field_name, value, unit_of_measure
@@ -68,3 +69,13 @@ from (select *, row_number() over (
 )
 where row_number=1
 ;
+
+--alter table latest_proc rename to _latest_proc;
+create table latest_proc as
+select mrn, mrn person_id
+, context_name, context_procedure_code
+, dateadd(day, age_in_days::int, dob_low)::date as proc_date
+from _latest_proc
+join demo using (mrn)
+;
+

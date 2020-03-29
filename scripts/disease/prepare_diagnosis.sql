@@ -27,10 +27,13 @@ from _dx
 order by mrn, age_in_days, context_name
 */
 
-drop table if exists latest_icd;
-create table latest_icd as
-select mrn, context_diagnosis_code icd_code, context_name
-, description, age_in_days
+
+drop table if exists _latest_icd;
+create table _latest_icd as
+select mrn
+, context_diagnosis_code icd_code, context_name
+, description
+, age_in_days
 from (select *, row_number() over (
         partition by mrn, context_diagnosis_code
         order by age_in_days desc nulls last, description)
@@ -38,7 +41,15 @@ from (select *, row_number() over (
     )
 where row_number=1
 ;
+
+drop table if exists latest_icd;
+create table latest_icd as
+select mrn, mrn person_id
+, icd_code, context_name
+, dateadd(day, age_in_days::int, dob_low)::date as dx_date
+from _latest_icd join demo using (mrn)
+;
 /*
 select count(*), count(distinct mrn) from latest_icd;
-	-- ~600K, ~17K
-*/
+select * from latest_icd limit 99;
+

@@ -26,13 +26,18 @@ join cau using (code)
 join tau using (attribute_id)
 ;
 /*
-select attribute_id, attribute_name, attribute_value, ie_value, match
-, count(distinct person_id) patients
-from _p_a_t_misc_measurement
-join crit_attribute_used using (attribute_id)
-where match
-group by attribute_id, attribute_name, attribute_value, ie_value, match
-order by attribute_id, ie_value, match
+with tmp as (
+    select attribute_id, attribute_name, attribute_value, ie_value
+    , match, count(distinct person_id) patients
+    from _p_a_t_misc_measurement join crit_attribute_used using (attribute_id)
+    group by attribute_id, attribute_name, attribute_value, ie_value, match
+)
+select attribute_id, attribute_name, attribute_value, ie_value
+, sum(case when match is True then patients end) as True_patients
+, sum(case when match is False then patients end) as false_patients
+from tmp
+group by attribute_id, attribute_name, attribute_value, ie_value
+order by attribute_id, attribute_name, attribute_value
 ;
 */
 

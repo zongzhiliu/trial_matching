@@ -101,7 +101,8 @@ def convert_crit_attribute(raw_csv):
     # attribute_manditated as bool: later
     # code transformation: to be improved later
     df['code'] = df['code_raw']
-    sele = df['code_type'].isin(['icd_rex', 'icd_rex_other']) #str.startswith('icd_rex')
+    sele = df['code_type'].isin(
+        ['icd_rex', 'icd_rex_other', 'icd_le_tempo', 'icd_earliest', 'proc_icd_rex'])
     # convert icd10 and icd9 into full python regx
     df.loc[sele, 'code'] = [f"^({'|'.join((x,) if pd.isna(y) else (x,y)).replace('.', '[.]')})"
             for i, (x, y) in df[['code_raw', 'code_ext']][sele].iterrows() ]
@@ -117,7 +118,7 @@ def convert_crit_attribute(raw_csv):
             for x in df['code_raw'][sele] ]
 
     # add border to drug_moa_rex: later
-    sele = df['code_type'].isin(['drug_moa_rex'])
+    #sele = df['code_type'].isin(['drug_moa_rex'])
     #df.loc[sele, 'code'] = [ x.replace('(', '[(]').replace(')', '[)]')
     #        for x in df['code_raw'][sele] ]
         #do not convert the parathesis, as real rex parathesis might be used
@@ -128,7 +129,7 @@ def summarize_crit_attribute(df):
     print(df.logic.value_counts())
     print(df.code_type.value_counts())
     print(df.attribute_value.value_counts())
-    print(df.attribute_value_norm.value_counts())
+    #print(df.attribute_value_norm.value_counts())
     print(df.code_raw.describe())
     print(df.code_ext.describe())
     print(df.code.describe())
