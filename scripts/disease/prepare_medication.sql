@@ -86,13 +86,13 @@ select count(*), count(distinct person_id) from lastest_rx;
 select * from lastest_rx limit 99;
 */
 
+/*
 create table _all_drugs as
 select rx_name, nvl(rx_generic, '_') rx_generic
 , count(*) records, count(distinct mrn) patients
 from rx r 
 group by rx_name, rx_generic
 ;
-
 select * from _all_drugs;
 select drug_name, rx_generic, rx_name, patients
 from ct.drug_mapping_cat_expn5_20200317 dm 
