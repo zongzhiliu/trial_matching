@@ -1,6 +1,6 @@
 /***
-Results: latest_proc
-Requires: _person, dmsdw
+Results: _proc, latest_proc
+Requires: _person, demo, dmsdw
 create table _kinds_of_procedures as
 select distinct bp.procedure_role
     , fp.procedure_description
@@ -57,11 +57,11 @@ order by mrn, age_in_days, procedure_description, level2_event_name, level3_acti
 ;
 */
 
-
-create table _latest_proc AS
-select mrn, age_in_days
-, procedure_description, context_name, context_procedure_code, procedure_role
-, level2_event_name, level3_action_name, level4_field_name, value, unit_of_measure
+drop table if exists latest_proc;
+create table latest_proc as
+select mrn, mrn person_id
+, context_name, context_procedure_code
+, dateadd(day, age_in_days::int, dob_low)::date as proc_date
 from (select *, row_number() over (
         partition by mrn, procedure_description
         order by -age_in_days, context_name, context_procedure_code, procedure_role
@@ -69,15 +69,7 @@ from (select *, row_number() over (
         , value, unit_of_measure)
     from _proc
 )
+join demo using(mrn)
 where row_number=1
-;
-
---alter table latest_proc rename to _latest_proc;
-create table latest_proc as
-select mrn, mrn person_id
-, context_name, context_procedure_code
-, dateadd(day, age_in_days::int, dob_low)::date as proc_date
-from _latest_proc
-join demo using (mrn)
 ;
 
