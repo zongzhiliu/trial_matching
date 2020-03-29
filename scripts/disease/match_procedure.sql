@@ -27,7 +27,7 @@ with cau as (
     where code_type = 'cpt_mapping'
 ), pm as (
     select proc_name, context_name, context_procedure_code::varchar
-    from proc_mapping
+    from ref_proc_mapping
 )
 select person_id, attribute_id
 , True as match

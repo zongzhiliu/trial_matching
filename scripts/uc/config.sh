@@ -1,5 +1,5 @@
-export disease=CD
-export disease_icd="^(K50|555[.][0-1])"
+export disease=UC
+export disease_icd="^(K51|556[.][2-6])"
 export working_schema="ct_${disease}"
 export last_visit_within=99 #years
 

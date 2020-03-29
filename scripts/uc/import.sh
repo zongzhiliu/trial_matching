@@ -2,7 +2,7 @@
 # requires:
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
 # ct.ref_proc_mapping, ct.ref_rx_mapping
-source cd/config.sh
+source uc/config.sh
 source util/util.sh
 pgsetup rdmsdw
 
@@ -15,6 +15,9 @@ cd -
 psql -c "create schema if not exists ${working_schema}"
 psql_w_envs cancer/prepare_reference.sql
 
+# prepare attribute
+ipython uc/load_attribute.ipy
+psql_w_envs cancer/prepare_attribute.sql
 
 # prepare patient data
 #psql_w_envs cancer/prepare_vital.sql #! divide by zero error
@@ -27,14 +30,8 @@ psql_w_envs disease/prepare_medication.sql # drug mapping needed
 psql_w_envs disease/prepare_lab.sql
 #psql_w_envs caregiver/icd_physician.sql
 
-# prepare attribute
-ipython cd/load_attribute.ipy
-psql_w_envs cancer/prepare_attribute.sql
-    #later: to move stage code to attribute_value, stage code_type to code
-    #later: rescue stage using TNM c/p
 
 # perform the attribute matching
-
 psql_w_envs disease/match_diagnosis.sql #later: make a _p_a tables, and a _p_a_t view
 psql_w_envs disease/match_procedure.sql #later: make a _p_a table, and a _p_a_t view
 psql_w_envs disease/match_rxnorm.sql
