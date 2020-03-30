@@ -34,7 +34,8 @@ join _crit_attribute_logic cal using (attribute_id)
 /*
 select count(*), count(distinct attribute_id) from v_crit_attribute_used;
 select count(*), count(distinct attribute_id) from _crit_attribute_used_new;
-select * from _crit_attribute_used_new;
+select * from _crit_attribute_used_new where logic_l1='moa.or';
+select * from crit_attribute_used where logic='moa.or';
 */
 -- logic
 -- 3) _attr_value
@@ -80,7 +81,7 @@ select row_number() over (order by attribute_id, attribute_value, ie_value) as n
 , ie_value
 , mandatory_default, logic_l1, logic_l2
 from _attr_value
-join _crit_attribute_used_new cn using (attribute_id, attribute_group, attribute_name, attribute_value)
+join _crit_attribute_used_new cn using (attribute_id, attribute_group, attribute_name, attribute_value) -- tobe fixed
 order by new_attribute_id;
 
 create view v_crit_attribute_used_new as
@@ -99,6 +100,7 @@ select_from_db_schema_table.py rdmsdw ct_cd.v_crit_attribute_used_new \
 
 select count(distinct attribute_id) from crit_attribute_used;
 select count(*), count(distinct old_attribute_id) from crit_attribute_used_new;
+select * from v_crit_attribute_used_new where logic_l1='moa.or';
 */
 
 
@@ -141,6 +143,34 @@ join v_crit_attribute_used_new cn using (new_attribute_id, old_attribute_id)
 order by person_id, trial_id, new_attribute_id
 ;
 
+/* for faster loading
+drop view if exists v_master_sheet_n;
+create view v_master_sheet_n as
+select new_attribute_id
+, trial_id, person_id
+, attribute_match::int
+, inclusion, exclusion
+, mandatory
+from v_master_sheet_new
+;
+
+-- on the pharma server
+create index i_CD_v_master_sheet_n on CD_v_master_sheet_n (new_attribute_id);
+create index i_CD_v_master_sheet_n_new_attr_t_p on CD_v_master_sheet_n (new_attribute_id, trial_id, person_id);
+create index i_CD_v_crit_attribute_new on CD_v_crit_attribute_used_new (new_attribute_id);
+create table CD_master_sheet_new as
+select new_attribute_id, old_attribute_id
+, trial_id, person_id
+, attribute_group, attribute_name, attribute_value
+, attribute_match
+, inclusion, exclusion
+, mandatory
+, logic_l1, logic_l2
+from CD_v_master_sheet_n
+join CD_v_crit_attribute_used_new using (new_attribute_id)
+order by person_id, trial_id, new_attribute_id
+;
+*/
 /*
 -- same number of records with old master sheet
 select count(*) from v_master_sheet;

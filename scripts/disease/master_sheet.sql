@@ -1,11 +1,11 @@
 /***
 Requires:
-    _master_match, trial_attribute_used, crit_attribute_used
+    _master_match
+    , trial_attribute_used, crit_attribute_used
 Results:
     v_master_sheet
 Settings:
 */
---SET search_path=ct_${cancer_type};
 
 -- set match as null by default for each patient
 create view master_match as
@@ -26,7 +26,15 @@ from master_match
 join trial_attribute_used using (attribute_id, trial_id) --unnecessary for the new master_match
 join crit_attribute_used using (attribute_id)
 ;
-
+/*
+select trial_id, person_id, count(*)
+from v_master_sheet
+where person_id::varchar like '%000'
+group by trial_id, person_id
+order by trial_id, person_id
+limit 99
+;
+*/
 create or replace view v_master_sheet as
 select trial_id, person_id
 , attribute_id, attribute_group, attribute_name, value

@@ -49,6 +49,4 @@ select trial_id, attribute_id
 from trial_attribute_used
 ;
 
-grant all on table crit_attribute_used to mingwei_zhang;
-grant all on table trial_attribute_used to mingwei_zhang;
 
