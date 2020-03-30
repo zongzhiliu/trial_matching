@@ -55,6 +55,6 @@ join demo using (mrn)
 where row_number=1
 ;
 /*
-select count(*), count(distinct mrn) from earliest_icd;
+sselect count(*), count(distinct person_id||icd_code), count(distinct mrn) from earliest_icd;
 select * from latest_icd limit 99;
 */

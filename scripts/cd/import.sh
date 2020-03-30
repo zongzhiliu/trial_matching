@@ -5,39 +5,35 @@
 source cd/config.sh
 source util/util.sh
 pgsetup rdmsdw
+psql -c "create schema if not exists ${working_schema}"
 
-
-# load mapping tables
+# prepare references
 cd ${working_dir}
 load_into_db_schema_some_csvs.py rdmsdw ct ref_proc_mapping_20200325.csv
 #load_into_db_schema_some_csvs.py rdmsdw ct ref_rx_mapping_20200325.csv
 cd -
-psql -c "create schema if not exists ${working_schema}"
-psql_w_envs cancer/prepare_reference.sql
+psql_w_envs disease/prepare_reference.sql
 
+# prepare attribute
+ipython cd/load_attribute.ipy
+psql_w_envs cancer/prepare_attribute.sql
 
 # prepare patient data
-#psql_w_envs cancer/prepare_vital.sql #! divide by zero error
 psql_w_envs disease/prepare_cohort.sql
 psql_w_envs disease/prepare_diagnosis.sql
 psql_w_envs disease/prepare_vital.sql
 #psql_w_envs disease/prepare_sochx.sql
 psql_w_envs disease/prepare_procedure.sql
-psql_w_envs disease/prepare_medication.sql # drug mapping needed
+psql_w_envs disease/prepare_medication.sql
 psql_w_envs disease/prepare_lab.sql
 #psql_w_envs caregiver/icd_physician.sql
 
-# prepare attribute
-ipython cd/load_attribute.ipy
-psql_w_envs cancer/prepare_attribute.sql
-    #later: to move stage code to attribute_value, stage code_type to code
-    #later: rescue stage using TNM c/p
 
 # perform the attribute matching
 psql_w_envs disease/match_rxnorm.sql
 psql_w_envs disease/match_loinc.sql
 psql_w_envs cancer/match_aof20200311.sql
-psql_w_envs disease/match_diagnosis.sql #later: icd_earlist
+psql_w_envs disease/match_diagnosis.sql #> _p_a_t_diagnosis
 psql_w_envs disease/match_procedure.sql
 psql_w_envs cd/prepare_misc_measurement.sql
 psql_w_envs cancer/match_misc_measurement.sql
