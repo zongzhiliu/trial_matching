@@ -76,7 +76,7 @@ from (select *, row_number() over (
         partition by mrn, drug_name
         order by -age_in_days)
     FROM rx
-    JOIN _all_name an using(rx_name)
+    JOIN ref_rx_mapping an using(rx_name)
     JOIN ref_drug_mapping mp using (drug_name))
 join demo using (mrn)
 where row_number=1
