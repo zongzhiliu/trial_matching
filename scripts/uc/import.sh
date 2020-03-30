@@ -29,7 +29,6 @@ psql_w_envs disease/prepare_lab.sql
 psql_w_envs disease/match_diagnosis.sql #later: make a _p_a tables, and a _p_a_t view
 psql_w_envs disease/match_procedure.sql #later: make a _p_a table, and a _p_a_t view
 psql_w_envs disease/match_rxnorm.sql
-
 psql_w_envs cd/prepare_misc_measurement.sql #mv to cancer later
 psql_w_envs cancer/match_misc_measurement.sql
 psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
