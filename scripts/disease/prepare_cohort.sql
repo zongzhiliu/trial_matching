@@ -58,6 +58,20 @@ from demo;
 	-- 16712
 */
 
+/*
+drop view v_demo_w_zip;
+create or replace view v_demo_w_zip as
+select mrn as person_id, gender
+, dob_low date_of_birth_truncated --, d.date_of_death::date
+, nvl(c.race_name, 'Unknown') race_name
+, d.ethnicity, d.address_zip
+from demo_w_zipcode d
+join cohort using (mrn)
+left join ct.non_cancer_race_mapping c using (race)
+order by person_id
+;
+*/
+
 grant all on table demo to mingwei_zhang;
 grant all on table cohort to mingwei_zhang;
 

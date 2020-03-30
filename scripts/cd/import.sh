@@ -30,13 +30,13 @@ psql_w_envs disease/prepare_lab.sql
 
 
 # perform the attribute matching
-psql_w_envs disease/match_rxnorm.sql
-psql_w_envs disease/match_loinc.sql
-psql_w_envs cancer/match_aof20200311.sql
+psql_w_envs disease/match_rxnorm.sql #> _p_a_t_rxnorm
+psql_w_envs disease/match_loinc.sql #> _p_a_t_loinc
+psql_w_envs cancer/match_aof20200327.sql #> _p_a_t_aof
 psql_w_envs disease/match_diagnosis.sql #> _p_a_t_diagnosis
-psql_w_envs disease/match_procedure.sql
+psql_w_envs disease/match_procedure.sql #> _p_a_t_procedure
 psql_w_envs cd/prepare_misc_measurement.sql
-psql_w_envs cancer/match_misc_measurement.sql
+psql_w_envs cancer/match_misc_measurement.sql #> _p_a_t_misc_measurement
 
 #psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
 #psql_w_envs bca/prepare_cat_measurement.sql #menopausal to be cleaned
@@ -46,14 +46,43 @@ psql_w_envs cancer/match_misc_measurement.sql
 #psql_w_envs cancer/match_variant.sql
 #psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
 
-
 # compile the matches
-psql_w_envs bca/master_match.sql  #> master_match
-psql_w_envs cancer/master_sheet.sql  #> master_sheet
-psql_w_envs cd/master_sheet_conversion.sdql
+psql_w_envs cd/master_match.sql  #> master_match
+psql_w_envs disease/master_sheet.sql  #> master_sheet
+psql_w_envs disease/master_sheet_conversion.sdql
 
 # match to patients
-psql_w_envs cancer/master_patient.sql #> trial2patients
+psql_w_envs disease/master_patient.sql #> trial2patients
+
+# download result files for sharing
+cd "${working_dir}"
+select_from_db_schema_table.py rimsdw ${working_schema}.v_trial_patient_count > \
+    ${cancer_type}.v_trial_patient_count_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet > \
+    ${cancer_type}.v_master_sheet_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used > \
+    ${cancer_type}.v_crit_attribute_used_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_demo_w_zip > \
+    ${cancer_type}.v_demo_w_zip_$(today_stamp).csv
+select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > \
+    ${cancer_type}.v_treating_physician_$(today_stamp).csv
+
+# load to pharma mysql server
+sed 's/,True/,1/g;s/,False/,0/g' ${cancer_type}.v_master_sheet_$(today_stamp).csv \
+    > ${cancer_type}.v_master_sheet.csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_master_sheet.csv -d
+
+ln -sf ${cancer_type}.v_crit_attribute_used_$(today_stamp).csv \
+    ${cancer_type}.v_crit_attribute_used.csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_crit_attribute_used.csv
+
+ln -sf ${cancer_type}.v_demo_w_zip_$(today_stamp).csv \
+    ${cancer_type}.v_demo_w_zip.csv
+load_into_db_schema_some_csvs.py pharma db_data_bridge \
+    ${cancer_type}.v_demo_w_zip.csv
+cd -
 # python cancer/master_tree.py generate patient counts at each logic branch,
 # and dynamic visualization file for each trial.
 
