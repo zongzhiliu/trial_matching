@@ -44,7 +44,7 @@ create table cohort as
 select distinct mrn, person_id
 from demo;
 
-
+drop table if exists _person;
 create table _person as
 select person_key, mrn
 from cohort

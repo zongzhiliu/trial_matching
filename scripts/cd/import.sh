@@ -21,8 +21,8 @@ psql_w_envs cancer/prepare_reference.sql
 psql_w_envs disease/prepare_cohort.sql
 psql_w_envs disease/prepare_diagnosis.sql
 psql_w_envs disease/prepare_vital.sql
-psql_w_envs disease/prepare_sochx.sql
-psql_w_envs disease/prepare_procedure.sql # drug mapping needed
+#psql_w_envs disease/prepare_sochx.sql
+psql_w_envs disease/prepare_procedure.sql
 psql_w_envs disease/prepare_medication.sql # drug mapping needed
 psql_w_envs disease/prepare_lab.sql
 #psql_w_envs caregiver/icd_physician.sql
@@ -34,17 +34,15 @@ psql_w_envs cancer/prepare_attribute.sql
     #later: rescue stage using TNM c/p
 
 # perform the attribute matching
-
-psql_w_envs disease/match_diagnosis.sql #later: make a _p_a tables, and a _p_a_t view
-psql_w_envs disease/match_procedure.sql #later: make a _p_a table, and a _p_a_t view
 psql_w_envs disease/match_rxnorm.sql
-
-psql_w_envs cd/prepare_misc_measurement.sql #mv to cancer later
+psql_w_envs disease/match_loinc.sql
+psql_w_envs cancer/match_aof20200311.sql
+psql_w_envs disease/match_diagnosis.sql #later: icd_earlist
+psql_w_envs disease/match_procedure.sql
+psql_w_envs cd/prepare_misc_measurement.sql
 psql_w_envs cancer/match_misc_measurement.sql
-psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
 
-#psql_w_envs cancer/match_loinc.sql
-psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
+#psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
 #psql_w_envs bca/prepare_cat_measurement.sql #menopausal to be cleaned
 #psql_w_envs bca/match_cat_measurement.sql #mv to cancer later
 #psql_w_envs cancer/match_icdo_rex.sql
@@ -53,10 +51,11 @@ psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
 #psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
 
 
-
 # compile the matches
 psql_w_envs bca/master_match.sql  #> master_match
 psql_w_envs cancer/master_sheet.sql  #> master_sheet
+psql_w_envs cd/master_sheet_conversion.sdql
+
 # match to patients
 psql_w_envs cancer/master_patient.sql #> trial2patients
 # python cancer/master_tree.py generate patient counts at each logic branch,

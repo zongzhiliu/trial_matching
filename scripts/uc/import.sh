@@ -6,14 +6,8 @@ source uc/config.sh
 source util/util.sh
 pgsetup rdmsdw
 
-
-# load mapping tables
-cd ${working_dir}
-load_into_db_schema_some_csvs.py rdmsdw ct ref_proc_mapping_20200325.csv
-#load_into_db_schema_some_csvs.py rdmsdw ct ref_rx_mapping_20200325.csv
-cd -
 psql -c "create schema if not exists ${working_schema}"
-psql_w_envs cancer/prepare_reference.sql
+psql_w_envs disease/prepare_reference.sql
 
 # prepare attribute
 ipython uc/load_attribute.ipy

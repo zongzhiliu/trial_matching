@@ -1,8 +1,8 @@
 /*
-Results: _vital, _vital_bmi
-Requires: cohort
-    , {dmsdw}
+Results: vital_bmi, latest_bmi
+Requires: _person, {dmsdw}
 */
+drop table if exists _vital;
 create table _vital as
 select distinct mrn
 , f.age_in_days_key as age_in_days
@@ -13,8 +13,7 @@ select distinct mrn
 , f.value
 , u.unit_of_measure
 , level2_event_name, level3_action_name, level4_field_name
-from cohort
-join ${dmsdw}.d_person on (medical_record_number=mrn))
+from _person
 join ${dmsdw}.fact f using (person_key)
 join ${dmsdw}.d_metadata m using (meta_data_key)
 join ${dmsdw}.b_procedure bp using (procedure_group_key)
@@ -26,6 +25,8 @@ where level2_event_name like 'vital sign%'
 ;
 
 -- safe to only pick from EPIC (scott), uom is no problem, exclude 'Result' (scott), keep Vital Sign (RAS X02) for now
+
+drop table if exists _vital_weight_height_by_day;
 create table _vital_weight_height_by_day as
 select mrn, age_in_days, procedure_description, value::float, level2_event_name, level3_action_name
 from (select *, row_number() over(
@@ -38,6 +39,7 @@ from (select *, row_number() over(
 where row_number=1
 ;
 --select '71.' ~ '^[0-9]+(\\.[0-9]+)?$';
+drop table if exists vital_bmi;
 create table vital_bmi as
 with w as (
     select mrn, age_in_days as weight_age, value as weight_kg
@@ -48,7 +50,7 @@ with w as (
     from ct_scd._vital_weight_height_by_day
     where procedure_description='HEIGHT'
 ), hw as (
-    select mrn, weight_age, weight_kg, height_age, height_cm    
+    select mrn, weight_age, weight_kg, height_age, height_cm
     from w
     join h using (mrn)
     where weight_age-height_age between 0 and 365
@@ -56,10 +58,19 @@ with w as (
 select mrn, weight_age, weight_kg
 , height_age, height_cm/100 as height_m
 , weight_kg/(height_m*height_m) as bmi
+from hw
+where height_m != 0 --quickfix: divide by zero error
+;
+
+drop table if exists latest_bmi;
+create table latest_bmi as
+select mrn, mrn person_id
+, height_age, height_m
+, weight_age, weight_kg
+, bmi
 from (select *, row_number() over (
-        partition by mrn, weight_age
-        order by height_age desc nulls last)
-    from hw)
-where row_number=1
-order by mrn, weight_age
+        partition by mrn
+        order by -weight_age, -height_age)
+    from vital_bmi)
+where row_number = 1
 ;

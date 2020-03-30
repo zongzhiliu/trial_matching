@@ -1,5 +1,6 @@
 /***
- * sochx
+Requires: cohort, dmsdw
+Results: _sochx, sochx_alcohol
  */
 -- socialHx (Tobacco, alcohol, sexual, illicit drug, ...)
 -- weekly_low >= 24 is defined as abuse, e.g.  beer or wine we don't know yet
