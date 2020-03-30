@@ -43,11 +43,11 @@ drop table if exists vital_bmi;
 create table vital_bmi as
 with w as (
     select mrn, age_in_days as weight_age, value as weight_kg
-    from ct_scd._vital_weight_height_by_day
+    from _vital_weight_height_by_day
     where procedure_description='WEIGHT'
 ), h as (
     select mrn, age_in_days as height_age, value as height_cm
-    from ct_scd._vital_weight_height_by_day
+    from _vital_weight_height_by_day
     where procedure_description='HEIGHT'
 ), hw as (
     select mrn, weight_age, weight_kg, height_age, height_cm
