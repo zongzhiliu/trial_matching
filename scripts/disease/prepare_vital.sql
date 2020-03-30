@@ -27,7 +27,7 @@ where level2_event_name like 'vital sign%'
 -- safe to only pick from EPIC (scott), uom is no problem, exclude 'Result' (scott), keep Vital Sign (RAS X02) for now
 
 drop table if exists _vital_weight_height_by_day;
-create table _vital_weight_height_by_day as
+create temporary table _vital_weight_height_by_day as
 select mrn, age_in_days, procedure_description, value::float, level2_event_name, level3_action_name
 from (select *, row_number() over(
         partition by mrn, age_in_days, procedure_description
