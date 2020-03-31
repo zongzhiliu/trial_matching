@@ -1,5 +1,6 @@
 # config
 HOME=os.environ['HOME']
+disease = os.environ['disease']
 working_schema = os.environ['working_schema']
 working_dir=os.environ['working_dir']
 script_dir = os.environ['script_dir']
@@ -23,7 +24,7 @@ res['ie_mandatory'] = tmp
 
 # pick only the selected trials
 trial_info = pd.read_csv('trial_info.csv')
-trial_id = trial_info.trial_id[trial_info.indication=='CD']
+trial_id = trial_info.trial_id[trial_info.indication==disease]
 sele = res.trial_id.isin(trial_id)
 
 #summarize_ie_value(res).to_csv('trial_attribute_ie_summary.csv')

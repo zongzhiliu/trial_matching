@@ -41,6 +41,12 @@ order by regexp_substr(attribute_id, '[0-9]+$')::int
 select count(*) from crit_attribute_used;
     --114
 */
-grant all on table crit_attribute_used to mingwei_zhang;
-grant all on table trial_attribute_used to mingwei_zhang;
+
+create view trial_attribute_ie as
+select trial_id, attribute_id
+, (inclusion is not null)::int as ie
+, nvl(inclusion, exclusion) as ie_value
+from trial_attribute_used
+;
+
 

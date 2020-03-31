@@ -5,7 +5,7 @@ Results:
     latest_icd
 */
 drop table if exists _dx;
-create temporary table _dx as
+create table _dx as
 select distinct mrn
 , age_in_days_key as age_in_days
 , DESCRIPTION
@@ -25,30 +25,36 @@ from _dx
 order by mrn, age_in_days, context_name
 */
 
-
-drop table if exists _latest_icd;
-create table _latest_icd as
-select mrn
-, context_diagnosis_code icd_code, context_name
-, description
-, age_in_days
-from (select *, row_number() over (
-        partition by mrn, context_diagnosis_code
-        order by age_in_days desc nulls last, description)
-    from _dx
-    )
-where row_number=1
-;
-
 drop table if exists latest_icd;
 create table latest_icd as
-select mrn, mrn person_id
-, icd_code, context_name
+select mrn, person_id
+, context_diagnosis_code icd_code, context_name
 , dateadd(day, age_in_days::int, dob_low)::date as dx_date
-from _latest_icd join demo using (mrn)
+from (select *, row_number() over (
+        partition by mrn, context_diagnosis_code
+        order by -age_in_days, description)
+    from _dx)
+join demo using (mrn)
+where row_number=1
 ;
 /*
 select count(*), count(distinct mrn) from latest_icd;
 select * from latest_icd limit 99;
 */
 
+drop table if exists earliest_icd;
+create table earliest_icd as
+select mrn, person_id
+, context_diagnosis_code icd_code, context_name
+, dateadd(day, age_in_days::int, dob_low)::date as dx_date
+from (select *, row_number() over (
+        partition by mrn, context_diagnosis_code
+        order by age_in_days, description)
+    from _dx)
+join demo using (mrn)
+where row_number=1
+;
+/*
+sselect count(*), count(distinct person_id||icd_code), count(distinct mrn) from earliest_icd;
+select * from latest_icd limit 99;
+*/

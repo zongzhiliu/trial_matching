@@ -14,7 +14,7 @@ GROUP BY person_id, attribute_id
 drop table if exists _p_a_drug_moa_le_tempo cascade;
 create table _p_a_drug_moa_le_tempo as
 with cau as (
-    select attribute_id, code, code_transform::float max_years
+    select attribute_id, code, code_transform::float max_years -- to be improve later
     from crit_attribute_used
     where code_type = 'drug_moa_rex_le_tempo'
 )
@@ -25,6 +25,7 @@ from latest_rx join cau on ct.py_contains(moa, code)
 group by person_id, attribute_id
 ;
 
+-- missing drug info is False
 drop view if exists _p_a_t_rxnorm;
 create view _p_a_t_rxnorm as
 with cau as (
