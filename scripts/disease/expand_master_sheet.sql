@@ -16,7 +16,7 @@ select new_attribute_id, old_attribute_id
 , inclusion, exclusion
 , mandatory
 , logic_l1, logic_l2
-from ${disease}_v_master_sheet_n
+from ${disease}_v_master_sheet_n m
 join ${disease}_v_crit_attribute_used_new using (new_attribute_id)
 order by person_id, trial_id, new_attribute_id
 ;
