@@ -1,0 +1,2 @@
+select 'aaa';
+select '${disease}';
