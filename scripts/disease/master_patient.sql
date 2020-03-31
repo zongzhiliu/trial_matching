@@ -46,8 +46,8 @@ select distinct l1_match from _crit_l1;
 
 -- summary of logic_l1 matches
 
-drop view if exists v_logic_l1_summary;
-create view v_logic_l1_summary as
+drop table if exists v_logic_l1_summary;
+create table v_logic_l1_summary as
 with tp as (
     select trial_id, count(distinct person_id) total_patients
     from _crit_l1
@@ -60,12 +60,11 @@ from _crit_l1 join tp using (trial_id)
 group by trial_id, logic_l1, total_patients
 ;
 /*
-select * from v_logic_l1_summary where patients is null;
 select count(*), count(distinct logic_l1), count(distinct trial_id) from v_logic_l1_summary;
     -- different trial using a variety number of logic1s
 */
 /*ipython
-!select_from_db_schema_table.py rdmsdw ct_cd.v_logic_l1_summary > v_logic_l1_summary.csv
+!select_from_db_schema_table.py rdmsdw ${working_schema}.v_logic_l1_summary > v_logic_l1_summary.csv
 df = pd.read_csv('v_logic_l1_summary.csv')
 res = df.pivot(index='logic_l1', columns='trial_id', values='patients')
 res.to_csv('v_logic_l1_summary.pivot_patients.csv')

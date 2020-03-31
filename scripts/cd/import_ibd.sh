@@ -66,3 +66,4 @@ ln -sf ${disease}.v_crit_attribute_used_new_$(today_stamp).csv \
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${disease}.v_crit_attribute_used_new.csv
 
+mysql_w_envs disease/expand_master_sheet.sql

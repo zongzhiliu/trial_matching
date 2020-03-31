@@ -39,33 +39,18 @@ select * from crit_attribute_used where logic='moa.or';
 */
 -- logic
 -- 3) _attr_value
-drop table _attr_value;
+drop table if exists _attr_value;
 create table _attr_value as
 select distinct attribute_id, attribute_group, attribute_name
 , value as attribute_value, nvl(inclusion, exclusion) ie_value
 from v_master_sheet
 ;
 /*
-select_from_db_schema_table.py rdmsdw -q 'select * from ct_cd._attr_value order by attribute_id, ie_value'  > _attr_value.csv
+select_from_db_schema_table.py rdmsdw -q 'select * from ${working_schema}._attr_value order by attribute_id, ie_value'  > _attr_value.csv
 -- min/max only, the LOT min 1/2 are identical(defined as any sys therapy)
-
-drop table _ms;
-create temporary table _ms as (
-    select attribute_id as old_attribute_id
-    , trial_id, person_id
-    , attribute_group, attribute_name, attribute_value
-    , inclusion, exclusion, attribute_match
-    , nvl(inclusion, exclusion) _ie_value
-    , _ie_value as ie_value
-    --, case when _ie_value like 'yes%' then 'yes' else _ie_value
-    --    end as ie_value -- convert yes <4W to yes
-    , mandatory
-    from v_master_sheet
-);
-
 */
 -- 4) crit_attribute_used_new, v_crit_attribute_used_new
-drop table crit_attribute_used_new cascade;
+drop table if exists crit_attribute_used_new cascade;
 create table crit_attribute_used_new as
 select row_number() over (order by attribute_id, attribute_value, ie_value) as new_attribute_id
 , attribute_id as old_attribute_id
@@ -105,7 +90,7 @@ select * from v_crit_attribute_used_new where logic_l1='moa.or';
 
 
 -- 5) v_master_sheet_new: implement the logic and mandatory
-drop table _master_sheet_new;
+drop table if exists _master_sheet_new;
 create table _master_sheet_new as
 with _ms as (
     select attribute_id as old_attribute_id
@@ -143,33 +128,19 @@ join v_crit_attribute_used_new cn using (new_attribute_id, old_attribute_id)
 order by person_id, trial_id, new_attribute_id
 ;
 
-/* for faster loading
+-- for faster loading
+
 drop view if exists v_master_sheet_n;
 create view v_master_sheet_n as
 select new_attribute_id
 , trial_id, person_id
-, attribute_match::int
+, attribute_match
 , inclusion, exclusion
 , mandatory
 from v_master_sheet_new
 ;
 
--- on the pharma server
-create index i_CD_v_master_sheet_n on CD_v_master_sheet_n (new_attribute_id);
-create index i_CD_v_master_sheet_n_new_attr_t_p on CD_v_master_sheet_n (new_attribute_id, trial_id, person_id);
-create index i_CD_v_crit_attribute_new on CD_v_crit_attribute_used_new (new_attribute_id);
-create table CD_master_sheet_new as
-select new_attribute_id, old_attribute_id
-, trial_id, person_id
-, attribute_group, attribute_name, attribute_value
-, attribute_match
-, inclusion, exclusion
-, mandatory
-, logic_l1, logic_l2
-from CD_v_master_sheet_n
-join CD_v_crit_attribute_used_new using (new_attribute_id)
-order by person_id, trial_id, new_attribute_id
-;
+/*
 */
 /*
 -- same number of records with old master sheet
