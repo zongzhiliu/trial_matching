@@ -134,6 +134,16 @@ group by context_name, context_diagnosis_code, description
 ;
 grant all on schema ct_scd to wen_pan;
 select * from dmsdw_2019q1.d_person limit 10;
+
+/***
+* master_sheet
+*/
+select count(*) records
+, count(distinct new_attribute_id) attributes
+, count(distinct trial_id) trials
+, count(distinct person_id) patients
+from v_master_sheet_new
+;
 /* old delivery
 # download result files for sharing
 cd "${working_dir}"

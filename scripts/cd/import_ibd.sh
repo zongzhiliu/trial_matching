@@ -25,6 +25,7 @@ psql_w_envs cancer/prepare_attribute.sql
 
 # prepare patient data
 psql_w_envs disease/prepare_cohort.sql
+psql_w_envs disease/prepare_demo_plus.sql
 psql_w_envs disease/prepare_diagnosis.sql
 psql_w_envs disease/prepare_vital.sql
 #psql_w_envs disease/prepare_sochx.sql
@@ -54,10 +55,10 @@ psql_w_envs disease/master_patient.sql #> trial2patients
 
 ### delivery
 cd "${working_dir}"
-select_from_db_schema_table.py rdmsdw ${working_schema}.v_master_sheet_n > \
-    ${disease}.v_master_sheet_n.csv
+select_from_db_schema_table.py rdmsdw ${working_schema}.v_demo_w_zip > \
+    ${disease}.v_demo_w_zip.csv
 load_into_db_schema_some_csvs.py -d pharma db_data_bridge \
-    ${disease}.v_master_sheet_n.csv
+    ${disease}.v_demo_w_zip.csv
 
 select_from_db_schema_table.py rdmsdw ${working_schema}.v_crit_attribute_used_new > \
     ${disease}.v_crit_attribute_used_new_$(today_stamp).csv
@@ -66,4 +67,8 @@ ln -sf ${disease}.v_crit_attribute_used_new_$(today_stamp).csv \
 load_into_db_schema_some_csvs.py pharma db_data_bridge \
     ${disease}.v_crit_attribute_used_new.csv
 
+select_from_db_schema_table.py rdmsdw ${working_schema}.v_master_sheet_n > \
+    ${disease}.v_master_sheet_n.csv
+load_into_db_schema_some_csvs.py -d pharma db_data_bridge \
+    ${disease}.v_master_sheet_n.csv
 mysql_w_envs disease/expand_master_sheet.sql

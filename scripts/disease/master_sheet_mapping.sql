@@ -141,8 +141,6 @@ from v_master_sheet_new
 ;
 
 /*
-*/
-/*
 -- same number of records with old master sheet
 select count(*) from v_master_sheet;
 select count(*) from _master_sheet_new;

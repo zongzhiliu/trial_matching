@@ -63,14 +63,6 @@ group by trial_id, logic_l1, total_patients
 select count(*), count(distinct logic_l1), count(distinct trial_id) from v_logic_l1_summary;
     -- different trial using a variety number of logic1s
 */
-/*ipython
-!select_from_db_schema_table.py rdmsdw ${working_schema}.v_logic_l1_summary > v_logic_l1_summary.csv
-df = pd.read_csv('v_logic_l1_summary.csv')
-res = df.pivot(index='logic_l1', columns='trial_id', values='patients')
-res.to_csv('v_logic_l1_summary.pivot_patients.csv')
-df.pivot(index='logic_l1', columns='trial_id', values='perc_matched')\
-    .to_csv('v_logic_l1_summary.pivot_fraction.csv')
-*/
 
 drop table if exists trial_patient_match cascade;
 create table trial_patient_match as
@@ -91,4 +83,14 @@ order by patients desc
 ;
 /*
 select * from v_trial_patient_count;
+*/
+/*ipython
+cd {os.environ['working_dir']}
+!select_from_db_schema_table.py rdmsdw ${working_schema}.v_logic_l1_summary > v_logic_l1_summary.csv
+df = pd.read_csv('v_logic_l1_summary.csv')
+res = df.pivot(index='logic_l1', columns='trial_id', values='patients')
+res.to_csv('v_logic_l1_summary.pivot_patients.csv')
+df.pivot(index='logic_l1', columns='trial_id', values='perc_matched')\
+    .to_csv('v_logic_l1_summary.pivot_fraction.csv')
+!select_from_db_schema_table.py rdmsdw ${working_schema}.v_trial_patient_count > v_trial_patient_count.csv
 */

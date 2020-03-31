@@ -10,7 +10,7 @@ function psql_w_envs {
 function mysql_w_envs {
     cat $1 \
     | substitute_env_vars_in_pipe.py \
-    | mysql --defaults-file=$HOME/.my.pharma.cnf
+    | mysql --defaults-file="$HOME/.my.pharma.cnf" --verbose
 }
 
 function today_stamp {
