@@ -1,7 +1,7 @@
 /* !! do not run
 Result: v_master_sheet_new
 */
--- clean up crit_attribute
+-- clean up crit_attribute: removing attributes notimplemented, not used in trials
 drop table if exists crit_attribute_used;
 create table crit_attribute_used as
 select attribute_id
