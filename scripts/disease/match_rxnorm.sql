@@ -21,7 +21,7 @@ with cau as (
 select person_id, attribute_id
 , True as match
 from latest_rx join cau on ct.py_contains(moa, code)
-    and datediff(day, rx_date, current_date)/365.25 <= max_years
+    and datediff(day, rx_date, '${protocal_date}')/365.25 <= max_years
 group by person_id, attribute_id
 ;
 

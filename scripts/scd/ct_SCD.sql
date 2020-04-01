@@ -109,13 +109,13 @@ select mrn
 	end as deceased
 from _demo
 where (deceased is null or deceased != 'Yes') -- already deceased
-	and datediff(year, dob_low, current_date)<130 -- impossible birthdate
+	and datediff(year, dob_low, '${protocal_date}')<130 -- impossible birthdate
 ;
 
 select count(*) from ct_scd.demo;
 
 create table ct_scd.demo_age_now_20191105 as
-select mrn, floor(datediff(day, dob_low, current_date) / 365.21) as age_now
+select mrn, floor(datediff(day, dob_low, '${protocal_date}') / 365.21) as age_now
 from ct_scd.demo
 ;
 select * from ct_scd.demo_age_now_20191104;

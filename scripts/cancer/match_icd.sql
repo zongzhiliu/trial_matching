@@ -18,7 +18,7 @@ select person_id, attribute_id
     end as match
 from latest_icd li
 join cau on ct.py_contains(icd_code, code)
-    and datediff(day, dx_date, current_date)/365.25 <= max_years
+    and datediff(day, dx_date, '${protocal_date}')/365.25 <= max_years
 group by person_id, attribute_id
 , code_type, code, max_years
 ;

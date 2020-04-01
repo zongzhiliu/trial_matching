@@ -35,7 +35,7 @@ from _cohort
 join ${dmsdw}.d_person on mrn=medical_record_number
 where active_flag='Y'
 	and (not deceased or deceased is null) -- already deceased
-	and datediff(year, dob_low, current_date)<130 -- impossible birthdate
+	and datediff(year, dob_low, '${protocal_date}')<130 -- impossible birthdate
 ;
 
 drop table if exists cohort;

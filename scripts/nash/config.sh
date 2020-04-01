@@ -3,6 +3,7 @@ export disease=NASH
 export disease_icd="^(__)"
 export working_schema="ct_${disease}"
 export last_visit_within=99 #years
+export protocal_date=$(date +%Y-%m-%d)
 
 export dmsdw=dmsdw_2019q1
 export ref_drug_mapping=ct.drug_mapping_cat_expn6

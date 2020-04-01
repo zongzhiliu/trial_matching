@@ -1,7 +1,7 @@
 drop table if exists misc_measurement cascade;
 create table misc_measurement as
 select person_id, 'age' as code
-    , datediff(day, date_of_birth, current_date) / 365.25 as value_float
+    , datediff(day, date_of_birth, '${protocal_date}') / 365.25 as value_float
     from demo union all
 select person_id, 'latest_bodyweight'
     , weight_kg
