@@ -1,6 +1,9 @@
 ###
 # config and setup
 source mm/config.sh
+
+export db_conn=rimsdw
+pgsetup $db_conn
 source util/util.sh
 psql -c "create schema if not exists ${working_schema}"
 
@@ -39,24 +42,12 @@ psql_w_envs cancer/master_sheet.sql  #> master_sheet
 
 # download result files for sharing
 cd "${working_dir}"
-select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet > v_master_sheet_$(today_stamp).csv
-select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used > v_crit_attribute_used_$(today_stamp).csv
-select_from_db_schema_table.py rimsdw ${working_schema}.v_demo_w_zip > v_demo_w_zip_$(today_stamp).csv
-select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > v_treating_physician_$(today_stamp).csv
+# source cancer/download_master_patient.sh
+# deliver
+source cancer/download_master_sheet.sh
+source cancer/deliver_master_sheet.sh
 
-############################################################## #
-cd "${working_dir}"
-select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet_new > \
-    v_master_sheet_new_$(today_stamp).csv
-ln -sf v_master_sheet_new_$(today_stamp).csv \
-    ${cancer_type}.v_master_sheet_new.csv
-load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_master_sheet_new.csv -d
-
-select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used_new > \
-    v_crit_attribute_used_new_$(today_stamp).csv
-ln -sf v_crit_attribute_used_new_$(today_stamp).csv \
-    ${cancer_type}.v_crit_attribute_used_new.csv
-load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_crit_attribute_used_new.csv -d
-
+cd ${script_dir}
+export logic_cols='logic_l1_id'
+export disease=${cancer_type}
+mysql_w_envs disease/expand_master_sheet.sql

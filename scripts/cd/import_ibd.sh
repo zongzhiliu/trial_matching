@@ -8,8 +8,9 @@
 # source cd/config.sh
 # source uc/config.sh
 
+export db_conn=rdmsdw
 source util/util.sh
-pgsetup rdmsdw
+pgsetup ${db_connection}
 psql -c "create schema if not exists ${working_schema}"
 
 # prepare references
@@ -53,22 +54,11 @@ psql_w_envs disease/master_sheet_mapping.sql
 psql_w_envs disease/master_patient.sql #> trial2patients
 
 
-### delivery
 cd "${working_dir}"
-select_from_db_schema_table.py rdmsdw ${working_schema}.v_demo_w_zip > \
-    ${disease}.v_demo_w_zip.csv
-load_into_db_schema_some_csvs.py -d pharma db_data_bridge \
-    ${disease}.v_demo_w_zip.csv
+source cancer/download_master_sheet.sh
 
-select_from_db_schema_table.py rdmsdw ${working_schema}.v_crit_attribute_used_new > \
-    ${disease}.v_crit_attribute_used_new_$(today_stamp).csv
-ln -sf ${disease}.v_crit_attribute_used_new_$(today_stamp).csv \
-    ${disease}.v_crit_attribute_used_new.csv
-load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${disease}.v_crit_attribute_used_new.csv
-
-select_from_db_schema_table.py rdmsdw ${working_schema}.v_master_sheet_n > \
-    ${disease}.v_master_sheet_n.csv
-load_into_db_schema_some_csvs.py -d pharma db_data_bridge \
-    ${disease}.v_master_sheet_n.csv
+# deliver master_sheet
+source cancer/deliver_master_sheet.sh
+cd ${script_dir}
+export logic_cols='logic_l1, logic_l2'
 mysql_w_envs disease/expand_master_sheet.sql

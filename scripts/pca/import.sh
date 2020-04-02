@@ -5,7 +5,8 @@
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
 source pca/config.sh
 source util/util.sh
-pgsetup rimsdw
+export db_conn=rimsdw
+pgsetup $db_conn
 psql -c "create schema if not exists ${working_schema}"
 psql_w_envs cancer/prepare_reference.sql
 
