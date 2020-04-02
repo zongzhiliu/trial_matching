@@ -1,13 +1,16 @@
 -- run on the pharma server
+-- Requires: disease, v_crit_attribute_used_new, v_master_sheet_n
+
 use db_data_bridge;
 
-create index i_${disease}_v_master_sheet_n__n
-on ${disease}_v_master_sheet_n (new_attribute_id);
-create index i_${disease}_v_master_sheet_n__n_t_p
-on ${disease}_v_master_sheet_n (new_attribute_id, trial_id, person_id);
-create index i_${disease}_v_crit_attribute__n
-on ${disease}_v_crit_attribute_used_new (new_attribute_id);
+alter table ${disease}_v_crit_attribute_used_new
+    add index (new_attribute_id);
+alter table ${disease}_v_master_sheet_n
+    add index (new_attribute_id);
+alter table ${disease}_v_master_sheet_n
+    add index (new_attribute_id, trial_id, person_id);
 
+drop table if exists ${disease}_master_sheet_new;
 create table ${disease}_master_sheet_new as
 select new_attribute_id, old_attribute_id
 , trial_id, person_id
@@ -15,7 +18,7 @@ select new_attribute_id, old_attribute_id
 , attribute_match
 , inclusion, exclusion
 , mandatory
-, logic_l1, logic_l2
+, ${logic_cols}
 from ${disease}_v_master_sheet_n m
 join ${disease}_v_crit_attribute_used_new using (new_attribute_id)
 order by person_id, trial_id, new_attribute_id

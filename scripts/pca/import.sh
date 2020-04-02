@@ -52,33 +52,13 @@ psql_w_envs cancer/master_patient.sql #> trial2patients
 
 # download result files for sharing
 cd "${working_dir}"
-select_from_db_schema_table.py rimsdw ${working_schema}.v_trial_patient_count > \
-    ${cancer_type}.v_trial_patient_count_$(today_stamp).csv
-select_from_db_schema_table.py rimsdw ${working_schema}.v_treating_physician > \
-    ${cancer_type}.v_treating_physician_$(today_stamp).csv
-
-############################################################## #
+source cancer/download_master_patient.sh
 # deliver
 psql_w_envs cancer/quickfix_master_sheet_lca_pca.sql
-cd ${working_dir}
-# attribute
-select_from_db_schema_table.py rimsdw ${working_schema}.v_crit_attribute_used_new > \
-    v_crit_attribute_used_new_$(today_stamp).csv
-ln -sf v_crit_attribute_used_new_$(today_stamp).csv \
-    ${cancer_type}.v_crit_attribute_used_new.csv
-load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_crit_attribute_used_new.csv -d
-# demo
-ln -sf ${cancer_type}.v_demo_w_zip_$(today_stamp).csv \
-    ${cancer_type}.v_demo_w_zip.csv
-load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_demo_w_zip.csv
+source cancer/download_master_sheet.sh
+source cancer/deliver_master_sheet.sh
 
-# master_sheet
-select_from_db_schema_table.py rimsdw ${working_schema}.v_master_sheet_n > \
-    ${cancer_type}.v_master_sheet_n.csv
-load_into_db_schema_some_csvs.py pharma db_data_bridge \
-    ${cancer_type}.v_master_sheet_n.csv -d
-disease=${cancer_type}
-psql_w_envs ${script_dir}/cancer/expand_master_sheet.sql
-
+export logic_cols='logic_l1_id'
+export disease=${cancer_type}
+cd ${script_dir}
+mysql_w_envs disease/expand_master_sheet.sql
