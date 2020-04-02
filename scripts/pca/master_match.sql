@@ -7,23 +7,23 @@ Results:
     master_match
 Settings:
 */
-SET search_path=ct_${cancer_type};
 
 /***
  * master match: need modifying for each cancer type!!
  */
-drop table _p_a_t_match;
+drop table if exists _p_a_t_match cascade;
 create table _p_a_t_match as
 select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_age
 union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_weight
 union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_lab
 union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_blood_pressure
+union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_gleason
 ;
 /*
 select * from _p_a_t_lab join crit_attribute_used using (attribute_id)
 order by person_id, trial_id, attribute_id limit 99;
 */
-drop table _p_a_match cascade;
+drop table if exists _p_a_match cascade;
 create table _p_a_match as
 --select attribute_id, person_id, patient_value::varchar, match from _p_a_age
 --select attribute_id, person_id, patient_value::varchar, match from _p_a_histology
@@ -38,6 +38,7 @@ union select attribute_id, person_id, patient_value::varchar, match from _p_a_di
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_ecog
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_karnofsky
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_mutation
+union select attribute_id, person_id, patient_value::varchar, match from _p_a_histology
 ;
 /*
 select * from _p_a_match --limit 90;
@@ -49,22 +50,8 @@ drop view if exists _master_match;
 create view _master_match as
 select attribute_id, trial_id, person_id, patient_value::varchar, match
 from _p_a_t_match
-union
+union all
 select attribute_id, trial_id, person_id, patient_value::varchar, match
 from _p_a_match join trial_attribute_used using (attribute_id)
 ;
 
-/***
-* finish the master_match
-*/
-drop table if exists master_match;
-create table master_match as
-select attribute_id, trial_id, person_id, patient_value::varchar, match
-from _p_a_t_gleason
-union
-select attribute_id, trial_id, person_id, patient_value::varchar, match
-from _p_a_histology join trial_attribute_used using (attribute_id)
-union
-select attribute_id, trial_id, person_id, patient_value::varchar, match
-from _master_match
-;
