@@ -2,10 +2,10 @@
 clinical trial matching with the patients in MSDW based databases
 
 ## Workflow
-[The working draft here] (scripts/README.md)
+[The working draft here](scripts/README.md)
 
 ## Requirements
-[The working draft here] (https://sema4genomics.sharepoint.com/:w:/r/sites/HAI/Shared%20Documents/Project/Clinical_Trial/setupTrialMatchingWorkflow.docx?d=wae54625881d1426e827df929d6ba7245&csf=1&e=gUJyxq)
+[The working draft here](https://sema4genomics.sharepoint.com/:w:/r/sites/HAI/Shared%20Documents/Project/Clinical_Trial/setupTrialMatchingWorkflow.docx?d=wae54625881d1426e827df929d6ba7245&csf=1&e=gUJyxq)
 
 ## The code structure
 * [/scripts](scripts/):  
