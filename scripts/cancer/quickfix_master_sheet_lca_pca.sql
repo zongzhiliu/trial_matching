@@ -1,28 +1,4 @@
 /*
-Fix the issue of same trial have various number of attributes for different patients
-On the data_bridge server
-
-runned for PCA
-
-alter table crit_attribute_used rename to crit_attribute_used_raw;
-create table crit_attribute_used as
-select attribute_id, attribute_group, attribute_name
-, value attribute_value
-, mandated as mandatory_default
-, crit_id::varchar||'.or' as logic_l1
-from crit_attribute_used_raw
-;
-
-alter table trial_attribute_used rename to trial_attribute_used_raw;
-create table trial_attribute_used as
-select r.*
-, mandatory_default as mandatory
-from trial_attribute_used_raw r
-join crit_attribute_used using (attribute_id)
-;
-*/
-
-/*
 on redshift
 Input: v_master_sheet_new, v_crit_attribute_new
 output: v_master_sheet_n

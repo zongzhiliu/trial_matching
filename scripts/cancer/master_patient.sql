@@ -1,4 +1,7 @@
-/***
+/*** !! deprecated, use disease/master_patient instead
+
+
+
 Requires:
     crit_attribute_used
     _master_sheet

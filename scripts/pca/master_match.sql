@@ -4,13 +4,9 @@ Requires:
     _p_a_t_...
     trial_attribute_used
 Results:
-    master_match
-Settings:
+    _master_match
 */
 
-/***
- * master match: need modifying for each cancer type!!
- */
 drop table if exists _p_a_t_match cascade;
 create table _p_a_t_match as
 select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_age
@@ -25,8 +21,6 @@ order by person_id, trial_id, attribute_id limit 99;
 */
 drop table if exists _p_a_match cascade;
 create table _p_a_match as
---select attribute_id, person_id, patient_value::varchar, match from _p_a_age
---select attribute_id, person_id, patient_value::varchar, match from _p_a_histology
 select attribute_id, person_id, patient_value::varchar, match from _p_a_stage
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_lab
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_lot
