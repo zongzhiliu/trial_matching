@@ -44,6 +44,14 @@ group by trial_id, person_id, logic_l1
 select distinct l1_match from _crit_l1;
 */
 
+--summary of leaf nodes
+drop table if exists _leaf_summary;
+create table _leaf_summary as
+select attribute_id, trial_id
+, sum(match_imputed::int) patients
+from _ie_match
+group by trial_id, attribute_id
+;
 -- summary of logic_l1 matches
 
 drop table if exists v_logic_l1_summary;

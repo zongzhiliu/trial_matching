@@ -18,6 +18,7 @@ psql_w_envs cancer/prepare_attribute.sql
 
 ### !! donot run
 # prepare patient data
+psql_w_envs ${working_schema}/quickfix_prepare_drug.sql # drug mapping needed
 #psql_w_envs cancer/prepare_vital.sql #! divide by zero error
 psql_w_envs cancer/prepare_cohort.sql
 psql_w_envs cancer/prepare_diagnosis.sql
@@ -47,7 +48,7 @@ psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
 
 ### Runable
 # compile the matches
-psql_w_envs pca/master_match.sql  #> master_match
+psql_w_envs ct_PCA/master_match.sql  #> master_match
 psql_w_envs disease/master_sheet.sql  #> master_sheet
 psql_w_envs disease/logic_to_levels.sql
 psql_w_envs disease/master_patient.sql #> trial2patients
