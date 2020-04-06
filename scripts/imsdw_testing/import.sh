@@ -1,0 +1,7 @@
+pgsetup rimsdw
+export working_schema='imsdw_testing';
+psql_w_envs imsdw_testing/gen_cohort.sql
+psql_w_envs imsdw_testing/gen_by_mrn.sql
+psql_w_envs imsdw_testing/gen_fact_by_person_key.sql
+psql_w_envs imsdw_testing/gen_by_group_key.sql
+psql_w_envs imsdw_testing/gen_by_copy_all.sql
