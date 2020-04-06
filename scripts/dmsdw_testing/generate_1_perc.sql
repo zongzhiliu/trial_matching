@@ -14,9 +14,8 @@ Algorithm:
         d_metadata, d_unit_of_measure, d_data_state
         d_time_of_day, d_calendar
 */
-create schema if not exists ${working_schema};
 comment on schema ${working_schema} is 'A subset of dmsdw_2019q1 with 1% of patients for testing purpose.'
-set search_path=dmsdw_testing;
+set search_path=${working_schema};
 
 create table cohort as
 with mrn_all as (
@@ -72,17 +71,31 @@ create table fact as
 select t.* from dmsdw_2019q1.fact t
 join d_person using (person_key);
 /*
-select count(*), count(distinct medical_record_number)
-from d_demographic;
-    -- 93839, 93839
+select count(*), count(distinct person_key)
+from fact;
+    -- 26641180 | 317756
+    -- avg 100 facts for each person_key
+    -- 20% of person_key have no facts
 */
 create table fact_lab as
 select t.* from dmsdw_2019q1.fact_lab t
 join d_person using (person_key);
+/*
+select count(*), count(distinct person_key)
+from fact_lab;
+    -- 10384172 | 12583
+    -- !!?? avg 1000 fact_lab for each person_key having lab
+*/
 
 create table fact_eagle as
 select t.* from dmsdw_2019q1.fact_eagle t
 join d_person using (person_key);
+/*
+select count(*), count(distinct person_key)
+from fact_eagle;
+    --  6996735 | 13494
+    -- !!?? avg 500 fact_eagle for each person_key having lab
+*/
 
 ------------------------------------------------------------ 
 -- filter by group_key
