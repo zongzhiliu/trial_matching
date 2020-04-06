@@ -21,7 +21,7 @@ psql -c "create schema if not exists ${working_schema}"
 psql_w_envs disease/prepare_reference.sql
 
 # prepare attribute
-ipython cd/load_attribute.ipy
+ipython ${working_schema}/load_attribute.ipy
 psql_w_envs cancer/prepare_attribute.sql
 
 # prepare patient data
@@ -42,11 +42,11 @@ psql_w_envs disease/match_loinc.sql #> _p_a_t_loinc
 psql_w_envs cancer/match_aof20200327.sql #> _p_a_t_aof
 psql_w_envs disease/match_diagnosis.sql #> _p_a_t_diagnosis
 psql_w_envs disease/match_procedure.sql #> _p_a_t_procedure
-psql_w_envs cd/prepare_misc_measurement.sql
+psql_w_envs ${working_schema}/prepare_misc_measurement.sql
 psql_w_envs cancer/match_misc_measurement.sql #> _p_a_t_misc_measurement
 
 # compile the matches
-psql_w_envs cd/master_match.sql  #> master_match
+psql_w_envs ${working_schema}/master_match.sql  #> master_match
 psql_w_envs disease/master_sheet.sql  #> master_sheet
 psql_w_envs disease/master_sheet_mapping.sql
 

@@ -1,2 +1,2 @@
-source cd/config.sh
-source cd/import_ibd.sh
+source ct_CD/config.sh
+source ct_CD/import_ibd.sh
