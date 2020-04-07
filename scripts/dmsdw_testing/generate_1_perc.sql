@@ -128,16 +128,16 @@ select t.* from dmsdw_2019q1.b_payor t
 join fact using (payor_group_key);
 
 ------------------------------------------------------------ -- copy the whole tables
-create view fd_diagnosis as
+create table fd_diagnosis as
 select * from dmsdw_2019q1.fd_diagnosis
 ;
-create view fd_material as
+create table fd_material as
 select * from dmsdw_2019q1.fd_material
 ;
-create view fd_procedure as
+create table fd_procedure as
 select * from dmsdw_2019q1.fd_procedure
 ;
-create view fd_caregiver as
+create table fd_caregiver as
 select * from dmsdw_2019q1.fd_caregiver
 ;
 create view fd_facility as
@@ -155,18 +155,18 @@ select * from dmsdw_2019q1.fd_payor
 
 -- d_metadata, d_unit_of_measure, d_data_state
 -- d_time_of_day, d_calendar
-create view d_metadata as
+create table d_metadata as
 select * from dmsdw_2019q1.d_metadata
 ;
-create view d_unit_of_measure as
+create table d_unit_of_measure as
 select * from dmsdw_2019q1.d_unit_of_measure
 ;
-create view d_data_state as
+create table d_data_state as
 select * from dmsdw_2019q1.d_data_state
 ;
-create view d_calendar as
+create table d_calendar as
 select * from dmsdw_2019q1.d_calendar
 ;
-create view d_time_of_day as
+create table d_time_of_day as
 select * from dmsdw_2019q1.d_time_of_day
 ;
