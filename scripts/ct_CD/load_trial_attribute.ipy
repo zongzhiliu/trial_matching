@@ -9,7 +9,7 @@ Results:
 # config
 %run -i -n util/util.py #today_stamp
 %run -i -n util/convert_attribute.py
-cd {os.environ['working_dir']}
+os.chdir(os.environ['working_dir'])
 
 # trial_attribute
 raw_csv = 'trial_attribute_raw_.csv'

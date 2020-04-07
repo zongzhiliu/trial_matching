@@ -7,5 +7,6 @@ cd $working_dir
 ln -sf $PWD/../ct_CD/trial_info.csv .
 ln -sf $PWD/../ct_CD/crit_attribute_raw_.csv .
 ln -sf $PWD/../ct_CD/trial_attribute_raw_.csv .
+cd -
 
 source ct_CD/import_ibd.sh
