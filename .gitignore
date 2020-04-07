@@ -114,6 +114,7 @@ tmp/
 tmp.*
 *.tmp
 *.bak
+*.swp
 *.old
 
 # sublime

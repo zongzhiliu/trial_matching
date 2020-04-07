@@ -29,7 +29,7 @@ with cau as (
 select person_id, attribute_id
 , True as match
 from latest_icd join cau on ct.py_contains(icd_code, code)
-    and datediff(day, dx_date, current_date)/365.25 <= max_years
+    and datediff(day, dx_date, '${protocal_date}')/365.25 <= max_years
 group by person_id, attribute_id
 ;
 /*
@@ -75,8 +75,8 @@ with pat as (
 select person_id, attribute_id, trial_id
 , ie_value
 , case lower(attribute_value)
-    when 'min' then datediff(day, dx_date, current_date)/365.25 >= v_years
-    when 'max' then datediff(day, dx_date, current_date)/365.25 <= v_years
+    when 'min' then datediff(day, dx_date, '${protocal_date}')/365.25 >= v_years
+    when 'max' then datediff(day, dx_date, '${protocal_date}')/365.25 <= v_years
     end as match
 from pat
 ;

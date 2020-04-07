@@ -1,11 +1,18 @@
-/***
+/*** !!Deprecated: using disease/master_sheet instead
 Requires:
-    master_match, trial_attribute_used, crit_attribute_used
+    _master_match, trial_attribute_used, crit_attribute_used
 Results:
-    v_master_sheet
+    master_match, _master_sheet
 Settings:
 */
---SET search_path=ct_${cancer_type};
+-- set match as null by default for each patient
+drop view if exists master_match;
+create view master_match as
+select attribute_id, trial_id, person_id, match
+from (trial_attribute_used
+    cross join cohort)
+left join _master_match using (attribute_id, trial_id, person_id)
+;
 
 /***
  * master_sheet
@@ -13,18 +20,19 @@ Settings:
 drop table if exists _master_sheet cascade;
 create table _master_sheet as
 select trial_id, person_id, attribute_id
-, attribute_group, attribute_name, attribute_value value
+, attribute_group, attribute_name, attribute_value
 , inclusion, exclusion
 , match as attribute_match
-, nvl(ie_mandatory, attribute_mandated='yes') as mandatory
+, nvl(mandatory, mandatory_default) ilike 'y%' as mandatory
 from master_match
 join trial_attribute_used using (attribute_id, trial_id) --unnecessary for the new master_match
 join crit_attribute_used using (attribute_id)
 ;
 
+-- !!to be deprecated
 create or replace view v_master_sheet as
 select trial_id, person_id+3040 as person_id
-, attribute_id, attribute_group, attribute_name, value
+, attribute_id, attribute_group, attribute_name, attribute_value
 , inclusion, exclusion
 , attribute_match
 , mandatory

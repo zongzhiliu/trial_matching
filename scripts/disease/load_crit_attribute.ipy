@@ -1,0 +1,23 @@
+""" convert and load crit_attribute
+Requires:
+    crit_attribute_raw_.csv
+    os.environ: db_conn, working_dir, working_schema
+Results:
+    crit_attribute_raw.csv >> crit_attribute_raw
+"""
+# config
+%run -i -n util/util.py #today_stamp
+%run -i -n util/convert_attribute.py
+os.chdir(os.environ['working_dir'])
+
+# crit_attribute
+raw_csv='crit_attribute_raw_.csv'
+res = convert_crit_attribute(raw_csv)
+
+summarize_crit_attribute(res)
+res_csv=f'crit_attribute_raw_{today_stamp()}.csv'
+res.to_csv(res_csv, index=False)
+#!open {res_csv}
+!ln -sf {res_csv} crit_attribute_raw.csv
+!load_into_db_schema_some_csvs.py -d $db_conn $working_schema crit_attribute_raw.csv
+

@@ -19,7 +19,7 @@ join prod_references.ethnicities using (ethnicity_id)
 join cplus_from_aplus.visits using (person_id)
 where nvl(cd.status, '') != 'deleted' and nvl(p.status, '') != 'deleted'
     and date_of_death is NULL
-    and datediff(day, visit_date, current_date)/365.25 <= ${last_visit_within}
+    and datediff(day, visit_date, '${protocal_date}')/365.25 <= ${last_visit_within}
     and cancer_type_name='${cancer_type}'
 ;
 

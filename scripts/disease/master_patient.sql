@@ -44,6 +44,14 @@ group by trial_id, person_id, logic_l1
 select distinct l1_match from _crit_l1;
 */
 
+--summary of leaf nodes
+drop table if exists _leaf_summary;
+create table _leaf_summary as
+select attribute_id, trial_id
+, sum(match_imputed::int) patients
+from _ie_match
+group by trial_id, attribute_id
+;
 -- summary of logic_l1 matches
 
 drop table if exists v_logic_l1_summary;
@@ -83,14 +91,4 @@ order by patients desc
 ;
 /*
 select * from v_trial_patient_count;
-*/
-/*ipython
-cd {os.environ['working_dir']}
-!select_from_db_schema_table.py rdmsdw ${working_schema}.v_logic_l1_summary > v_logic_l1_summary.csv
-df = pd.read_csv('v_logic_l1_summary.csv')
-res = df.pivot(index='logic_l1', columns='trial_id', values='patients')
-res.to_csv('v_logic_l1_summary.pivot_patients.csv')
-df.pivot(index='logic_l1', columns='trial_id', values='perc_matched')\
-    .to_csv('v_logic_l1_summary.pivot_fraction.csv')
-!select_from_db_schema_table.py rdmsdw ${working_schema}.v_trial_patient_count > v_trial_patient_count.csv
 */

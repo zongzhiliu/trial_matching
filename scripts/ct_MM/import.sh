@@ -1,0 +1,53 @@
+###
+# config and setup
+source mm/config.sh
+
+export db_conn=rimsdw
+pgsetup $db_conn
+source util/util.sh
+psql -c "create schema if not exists ${working_schema}"
+
+# prepare attribute
+ipython mm/load_attribute.py
+psql_w_envs cancer/prepare_attribute.sql
+
+# load updated drug/lab mapping table
+#no run: load_into_db_schema_some_csvs.py rimsdw ct drug_mapping_cat_expn3_20200308.csv
+
+# prepare patient data
+#psql_w_envs cancer/prepare_patients.sql
+psql_w_envs cancer/prepare_cohort.sql
+psql_w_envs cancer/prepare_diagnosis.sql
+psql_w_envs cancer/prepare_performance.sql
+psql_w_envs cancer/prepare_lab.sql
+psql_w_envs cancer/prepare_lot.sql
+psql_w_envs cancer/prepare_vital.sql
+psql_w_envs caregiver/icd_physician.sql
+
+# perform the attribute matching
+psql_w_envs cancer/match_icd.sql
+psql_w_envs cancer/match_loinc.sql
+psql_w_envs cancer/match_rxnorm.sql
+psql_w_envs cancer/match_misc_measurement.sql
+
+psql_w_envs cancer/match_aof20200229.sql
+psql_w_envs mm/match_mm_active_status.sql
+
+# compile the matches
+psql_w_envs mm/master_match.sql  #> master_match
+psql_w_envs cancer/master_sheet.sql  #> master_sheet
+
+# match to patients (to be updated)
+#psql_w_envs cancer/master_patient.sql #> trial2patients
+
+# download result files for sharing
+cd "${working_dir}"
+# source cancer/download_master_patient.sh
+# deliver
+source cancer/download_master_sheet.sh
+source cancer/deliver_master_sheet.sh
+
+cd ${script_dir}
+export logic_cols='logic_l1_id'
+export disease=${cancer_type}
+mysql_w_envs disease/expand_master_sheet.sql

@@ -58,13 +58,13 @@ with _freq_3_y as (
     select mrn, caregiver_control_key
     , count(*) as freq_3_y
     from _pool
-    where datediff(day, calendar_date, current_date)/365.25 <= 3
+    where datediff(day, calendar_date, '${protocal_date}')/365.25 <= 3
     group by mrn, caregiver_control_key
 ),  _freq_1_y as (
     select mrn, caregiver_control_key
     , count(*) as freq_1_y
     from _pool
-    where datediff(day, calendar_date, current_date)/365.25 <= 1
+    where datediff(day, calendar_date, '${protocal_date}')/365.25 <= 1
     group by mrn, caregiver_control_key
 ),  _last_visit as (
     select mrn, caregiver_control_key

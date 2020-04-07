@@ -1,6 +1,6 @@
 create table misc_measurement as (
     select person_id, 'age' as code
-    , datediff(day, date_of_birth, current_date) / 365.25 as value_float
+    , datediff(day, date_of_birth, '${protocal_date}') / 365.25 as value_float
     from demo
     union select person_id, 'ecog', ecog_ps
     from latest_ecog

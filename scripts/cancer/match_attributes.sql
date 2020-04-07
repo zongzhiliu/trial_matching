@@ -65,7 +65,7 @@ order by attribute_name, value
 drop table if exists _p_a_t_age;
 create table _p_a_t_age as
 select attribute_id, trial_id, person_id
-, (datediff(day, date_of_birth, current_date)/365.25)::int as patient_value
+, (datediff(day, date_of_birth, '${protocal_date}')/365.25)::int as patient_value
 , nvl(inclusion, exclusion) as clusion
 , case attribute_id
     when 205 --'Min_age

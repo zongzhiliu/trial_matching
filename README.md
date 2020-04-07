@@ -1,32 +1,39 @@
 # s4_trial_matching
 clinical trial matching with the patients in MSDW based databases
 
-## patient
-Prepare the patient attributes to enable matching
+## Workflow
+[The working draft here](scripts/README.md)
 
-## trial
-Prepare the trial criteria to enable matching
+## Requirements
+[The working draft here](https://sema4genomics.sharepoint.com/:w:/r/sites/HAI/Shared%20Documents/Project/Clinical_Trial/setupTrialMatchingWorkflow.docx?d=wae54625881d1426e827df929d6ba7245&csf=1&e=gUJyxq)
 
-## matching
-Create the matching matrix for each trial, each patient [trial_id, patient_id, criteron, match (T/F/Null)]
+## The code structure
+* [/scripts](scripts/):  
+The current version.
 
-## ex
-Example workflow
+* /patient:  
+Later: Prepare the patient attributes to enable matching
 
-## tests
-Unit tests and integration tests.
+* /trial: <br/>
+Later: Prepare the trial criteria to enable matching
+
+* /matching: <br>
+Later: Create the matching matrix for each trial, each patient [trial_id, patient_id, criteron, match (T/F/Null)]
+
+* /ex:  
+Later: Example workflow
+
+* /tests  
+Later: Unit tests and integration tests.
 
 To run all the tests,
 ```pytest -sv```
-
-## docs
-Documentations.
-
-## Installstion
+<!---
+## Installation
 From the directory of the package,
 ``` pip install .
 ```
 
 ## Usage
 TBD
-
+--->

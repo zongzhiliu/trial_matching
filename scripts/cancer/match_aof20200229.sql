@@ -2,6 +2,9 @@
 Requires:
     latest_lab, $ref_lab_mapping
 Result: _p_a_t_aof
+ (<=2.5x AST, ALT (<=5x liver met case); <=1.5x total bilirubin (<=3x GS case);
+ <=1.5 x creatinine, >=8 hemoglobin
+ >=1,000 ANC, >=50,000 platelets
 */
 CREATE temporary TABLE _lab_w_normal_range AS
 SELECT person_id, lab_test_name, loinc_code, m.unit

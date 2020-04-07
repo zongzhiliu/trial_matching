@@ -1,6 +1,6 @@
 /*** match attribute using ICD codes: icd_rex, icd_rex_other
 Requires: crit_attribute_used, trial_attribute_used
-    latest_icd
+    latest_proc, ref_proc_mapping
 Results: _p_a_t_icd_rex
 */
 drop table if exists _p_a_proc_icd_rex cascade;

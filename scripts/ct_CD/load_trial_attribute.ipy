@@ -1,0 +1,41 @@
+""" convert and load attribute tables
+Requires:
+    trial_attribute_raw_.csv
+    (optional) trial_info.csv
+    os.environ: db_conn, working_dir, disease, working_schema
+Results:
+    trial_attribute_raw.csv >> trial_attribute_raw
+"""
+# config
+%run -i -n util/util.py #today_stamp
+%run -i -n util/convert_attribute.py
+os.chdir(os.environ['working_dir'])
+
+# trial_attribute
+raw_csv = 'trial_attribute_raw_.csv'
+res = convert_trial_attribute_plus_m(raw_csv)
+res.fillna('').groupby('attribute_id')\
+    .agg(dict(inclusion=['unique'], exclusion=['unique']
+        , ie_mandatory=['unique']))\
+    .to_csv('trial_attribute_ie_summary.csv')
+#!open trial_attribute_ie_summary.csv
+
+# cutomized conversoins and export
+tmp = res.ie_mandatory.apply(lambda x: np.nan if x=='or' else x)
+res['ie_mandatory'] = tmp
+
+# pick only the selected trials
+if os.path.exists('trial_info.csv'):
+    trial_info = pd.read_csv('trial_info.csv')
+    trial_id = trial_info.trial_id[trial_info.indication==os.environ['disease']]
+    sele = res.trial_id.isin(trial_id)
+    res = res.loc[sele, :]
+
+#summarize_ie_value(res).to_csv('trial_attribute_ie_summary.csv')
+res_csv=f'trial_attribute_raw_{today_stamp()}.csv'
+res.to_csv(res_csv, index=False)
+!ln -sf {res_csv} trial_attribute_raw.csv
+
+!load_into_db_schema_some_csvs.py -d $db_conn $working_schema trial_attribute_raw.csv
+
+

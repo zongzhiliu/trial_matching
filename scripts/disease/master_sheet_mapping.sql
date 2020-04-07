@@ -1,6 +1,8 @@
 /*
 Result: v_master_sheet_new
 */
+
+-- !! deprecated: use disease/logic_to_levels.sql instead.
 drop table if exists _crit_attribute_logic;
 create table _crit_attribute_logic as
 with tmp as (
@@ -10,17 +12,13 @@ with tmp as (
     from crit_attribute_used
 )
 select attribute_id, logic
-, case when p1 is null or p1=''
-    then attribute_id
-    else p1
-    end logic_l1
-, case when p2 is null or p2=''
-    then attribute_id
-    else p2
-    end logic_l2
+, case when p1 is null or p1='' then attribute_id else p1 end logic_l1
+, case when p2 is null or p2='' then attribute_id else p2 end logic_l2
 from tmp
 order by logic
 ;
+-- !!
+
 
 drop table if exists _crit_attribute_used_new;
 create table _crit_attribute_used_new as
