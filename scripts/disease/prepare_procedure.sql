@@ -58,10 +58,7 @@ from _surg
 order by mrn, age_in_days, procedure_description, level2_event_name, level3_action_name, level4_field_name
 ;
 */
-
-drop table if exists latest_proc;
-create table latest_proc as
-with _proc as (
+create temporary table _proc as
     select mrn, f.age_in_days_key::int as age_in_days
     -- , bp.procedure_role
     , fp.procedure_description
@@ -76,7 +73,10 @@ with _proc as (
     join ${dmsdw}.b_procedure bp using (procedure_group_key)
     join ${dmsdw}.fd_procedure fp using (procedure_key)
         where level3_action_name not in ('Canceled', 'Pended') -- more later
-)
+;
+
+drop table if exists latest_proc;
+create table latest_proc as
 select mrn, mrn person_id
 , context_name, context_procedure_code
 , procedure_description
