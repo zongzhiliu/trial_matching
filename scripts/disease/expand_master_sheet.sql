@@ -1,6 +1,7 @@
--- run on the pharma server
--- Requires: working_schema, logic_cols, v_crit_attribute_used_new, v_master_sheet_n
-
+/* run on the pharma server
+ Requires: working_schema, logic_cols
+    , v_crit_attribute_used_new, v_master_sheet_n
+*/
 use db_data_bridge;
 
 alter table ${working_schema}_v_crit_attribute_used_new
