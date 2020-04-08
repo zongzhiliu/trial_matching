@@ -25,7 +25,8 @@ select trial_id, person_id, attribute_id
 --, nvl(ie_mandatory, mandatory_default) ilike 'y%' as mandatory
 , nvl(mandatory, mandatory_default) ilike 'y%' as mandatory
 from master_match
-join trial_attribute_used using (attribute_id, trial_id) --unnecessary for the new master_match
+join (select *, ie_mandatory mandatory from trial_attribute_used)
+    using (attribute_id, trial_id) --unnecessary for the new master_match
 join crit_attribute_used using (attribute_id)
 ;
 /*
@@ -40,7 +41,7 @@ limit 99
 -- to be deprecated: mv into deliver
 create or replace view v_master_sheet as
 select trial_id, person_id
-, attribute_id, attribute_group, attribute_name, value
+, attribute_id, attribute_group, attribute_name, attribute_value
 , inclusion, exclusion
 , attribute_match
 , mandatory

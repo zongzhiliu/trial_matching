@@ -10,5 +10,5 @@ select_from_db_schema_table.py ${db_conn} ${working_schema}.v_demo_w_zip > \
 
 # master_sheet
 select_from_db_schema_table.py ${db_conn} ${working_schema}.v_master_sheet_n > \
-    ${cancer_type}.v_master_sheet_n.csv
+    v_master_sheet_n.csv
 cd -

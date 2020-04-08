@@ -37,12 +37,20 @@ from prod_msdw.all_labs
 join latest_lab ll using (loinc_code)
 where source_test_name ilike '%testo%';
 ;
+
+select distinct person_id
+from prod_msdw.all_labs
+join prod_references.cancer_diagnoses using (person_id)
+where cancer_type_id=2
+    and death_date is null
+    and cd.edit != 'deleted'
+;
 */
 -- create table inc_count as
 drop table if exists inc_patient;
 create table inc_patient as
 with met as (
-	select distinct person_id
+	select distinct person_id:q
 	from ct_pca._all_dx
 	where icd_code ~ '^(C7[789B]|19[678])'
 ), testo as (

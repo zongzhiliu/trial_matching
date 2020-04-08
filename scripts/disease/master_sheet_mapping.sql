@@ -40,7 +40,7 @@ select * from crit_attribute_used where logic='moa.or';
 drop table if exists _attr_value;
 create table _attr_value as
 select distinct attribute_id, attribute_group, attribute_name
-, value as attribute_value, nvl(inclusion, exclusion) ie_value
+, attribute_value, nvl(inclusion, exclusion) ie_value
 from v_master_sheet
 ;
 /*
