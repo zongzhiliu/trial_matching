@@ -266,7 +266,7 @@ select person_id, NULL as patient_value
     when 410 then --liver or visceral mets
         bool_or(icd_code ~'^(C78[.]7|97[.]7)')
     when 411 then --bone mets
-        bool_or(icd_code ~'^(79[.]51|98[.]5)')
+        bool_or(icd_code ~'^(C79[.]5|98[.]5)')
     end as match
 from crit_attribute_used
 --join ref_disease_mapping using (attribute_name)
