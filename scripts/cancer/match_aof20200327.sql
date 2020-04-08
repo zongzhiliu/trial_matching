@@ -42,11 +42,11 @@ with como as (
     , not bool_or(lab_test_name='ANC')
         or bool_or(lab_test_name='ANC' and value_float>=1) as anc_ok  --unit different
     , not bool_or(lab_test_name='Platelets')
-        or bool_or(lab_test_name='Platelets' and value_float>=100) as plat_ok--unit different
+        or bool_or(lab_test_name='Platelets' and value_float>=${PLATELETS_MIN}) as plat_ok--unit different
     , not bool_or(lab_test_name='WBC')
-        or bool_or(lab_test_name='WBC' and value_float>=3) as wbc_ok--unit different
-    --, not bool_or(lab_test_name='INR')
-    --    or bool_or(lab_test_name='INR' and value_float/normal_high <= 1.5) as inr_ok
+        or bool_or(lab_test_name='WBC' and value_float>=${WBC_MIN}) as wbc_ok--unit different
+    , not bool_or(lab_test_name='INR')
+        or bool_or(lab_test_name='INR' and value_float/normal_high <= ${IRN_MAX}) as inr_ok
     from _lab_w_normal_range
     group by person_id
 )
@@ -56,7 +56,7 @@ select person_id
     and crea_ok
     and hemo_ok and wbc_ok
     and anc_ok and plat_ok
-    --and inr_ok
+    and inr_ok
     as match
 from lab left join como using (person_id)
 ;
