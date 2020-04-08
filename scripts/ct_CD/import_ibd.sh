@@ -8,7 +8,7 @@
 # source ct_CD/config.sh
 # source ct_UC/config.sh
 
-export script_dir="$HOME/git/trial_matching/scripts"
+#export script_dir="$HOME/git/trial_matching/scripts"
 source util/util.sh
 pgsetup ${db_conn}
 psql -c "create schema if not exists ${working_schema}"
