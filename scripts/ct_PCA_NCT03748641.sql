@@ -4,6 +4,7 @@
 create schema ct_NCT03748641;
 set search_path=ct_NCT03748641;
 
+/*
 -- attribute_used
 create table attribute_used as
 select distinct attribute_id, attribute_group, attribute_name, attribute_value
@@ -28,6 +29,7 @@ select sum(match::int)
 from _p_a_match
 where attribute_id=411
 ;
+*/
 
 /* Explore
 select distinct loinc_code, ll.loinc_display_name, ll.unit, source_test_name, ll.source_unit 
@@ -37,6 +39,7 @@ where source_test_name ilike '%testo%';
 ;
 */
 -- create table inc_count as
+drop table if exists inc_patient;
 create table inc_patient as
 with met as (
 	select distinct person_id
@@ -48,16 +51,14 @@ with met as (
 	where loinc_code='49041-7'
 		and value_float<=50
 )
-select * from met intersect
-select * from testo
+select 'met' inc, * from met union all
+select 'testo', * from testo
 ;
 /*
-select 'met' crit, count(*) patients from met union all
-select 'testo', count(*) from testo
+select inc, count(*) from inc_patient group by inc;
 */
 
 -- bone met
-create table _bone_met as
 with bonemet as (
 	select distinct person_id
 	from ct_pca._all_dx
@@ -66,14 +67,19 @@ with bonemet as (
 	select distinct person_id 
 	from ct_pca.stage
 	where stage_base='IV'
+), mcrpc as (
+    select distinct person_id
+    from ct_pca.latest_icd
+    where icd_code ~ '^Z19[.]2'
 )
-select 'bonemet', count(*) from bonemet union all
+select 'bonemet' crit, count(*) patients from bonemet union all
+select 'mCRPC', count(*) from mcrpc union all
 select 'stage_iv', count(*) from stage
 ;
 
 --select count(distinct person_id) from _all_dx;
 
---create table exc_count as
+drop table if exists exc_patient;
 create table exc_patient as
 with parp as (
     select distinct person_id
@@ -95,30 +101,39 @@ with parp as (
     select distinct person_id
     from ct_pca._all_dx
     where icd_code ~ '^(D46|238[.]7[2-5])'
+), brainmet as (
+    select distinct person_id
+    from ct_pca.latest_icd
+    where icd_code ~ '^(C79[.]31|198[.]3)'
+        and datediff(day, dx_date, current_date)/365.25 <= 1
+), othermalig as (
+    select distinct person_id
+    from ct_pca.latest_icd
+    where icd_code ~ '^(C[0-6]|C7[0-6]|C8[1-9]|C9[1-6])'
+        and icd_code !~ '^(C61|185)'
+        and datediff(day, dx_date, current_date)/365.25<=2
 )
-/*select 'parp', count(*) from parp union all
-select 'taxane', count(*) from taxane union all
-select 'antiandr2', count(*) from antiandr2 union all
-select 'aml', count(*) from aml union all
-select 'mds', count(*) from mds
-*/
-select * from parp union
-select * from taxane union
-select * from antiandr2 union
-select * from aml union
-select * from mds
+select 'parp' exc, * from parp union all
+select 'taxane', * from taxane union all
+select 'antiandr2', * from antiandr2 union all
+select 'aml', * from aml union all
+select 'mds', * from mds union all
+select 'brainmet', * from brainmet union all
+select 'othermalig', * from othermalig
 ;
+select exc, count(*) from exc_patient group by exc;
 
-create table eligible_patient as
-select * from inc_patient except
-select * from exc_patient
-;
-
-drop table if exists eligible_count;
-create table eligible_count as
-select 'all_inc', count(*) from inc_patient union all
-select 'all_exc', count(*) from exc_patient union all
-select 'eligible', count(*) from eligible_patient
+with inc as (
+    select person_id from inc_patient where inc='met' intersect
+    select person_id from inc_patient where inc='testo'
+), exc as (
+    select distinct person_id from exc_patient
+)
+select 'all_inc' crit, count(*) patients from inc union all
+select 'all_exc', count(*) from exc union all
+select 'eligible', count(*) from (
+    select * from inc except
+    select * from exc)
 ;
 /*
 select *
@@ -128,6 +143,3 @@ where moa ilike '%second%' --Second_gen_anti_androgen
 where moa ilike '%taxan%' --Taxanes
 */
 ;
-select * from inc_count;
-select * from exc_count;
-select * from eligible_count;
