@@ -381,7 +381,7 @@ select person_id
 , bool_or(moa ~ 'BRAF_targeted') braf_targeted
 , bool_or(moa ~ 'PARP_targeted') parp_targeted
 , bool_or(moa ~ 'Taxanes') taxanes
-, bool_or(moa ~ 'IL_') il_related
+, bool_or(moa ~ '(^|\\W)IL[-_1-9][0-9]?($|\\D)') il_related
 , bool_or(moa ~ 'LHRH_(ant)?agonists') adt
 , bool_or(moa ~ 'Anti_androgen') anti_androgen
 , bool_or(moa ~ 'First_gen_anti_androgen') First_gen_anti_androgen
