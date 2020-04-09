@@ -1,4 +1,5 @@
 # log 20200223 - updated for PCA
+This is the old pipeline.
 
 ## check the raw trial_attribute file
 * move the the first to the third row in csv, then
@@ -76,14 +77,15 @@ len(df.crit_id.value_counts())  #132 crit
 ## prepare the patient tables, match attributes and patients
 ```bash
 source util/util.sh #psql_w_envs
-export cancer_type=PCA
-export cancer_type_icd='^(C61|185)'
+source ct_PCA/config.sh
+
 psql_w_envs caregiver/icd_physician.sql
 psql_w_envs ct_pca/setup.sql  #> ref tables, crit_attribute_used
 
 # prepare patient tables
 psql_w_envs cancer/prepare_patients.sql  #> demo and other patient tables
-psql_w_envs cancer/prepare_stage.sql  #> stage
+# psql_w_envs cancer/prepare_stage.sql  #> stage
+psql_w_envs ct_pca/quickadd_impute_stage.sql  #> stage_plus
 psql_w_envs cancer/prepare_histology.sql  #> stage
 psql_w_envs cancer/prepare_alterations.sql  #> stage
 psql_w_envs ct_pca/prepare_patients.sql  #> specific patient tables
@@ -93,7 +95,7 @@ psql_w_envs cancer/match_attributes.sql  #>_p_a_..., _p_a_t_...
 psql_w_envs cancer/match_lab_pa.sql #>_p_a_lab
 psql_w_envs cancer/match_lab_pat.sql #>_p_a_t_lab
 psql_w_envs ct_pca/match_attributes.sql  #> _p_a_t_gleason, p_a_histology
-psql_w_envs ct_pca/quickfix_match_disease_status.sql
+psql_w_envs ct_pca/quickadd_match_disease_status.sql
 
 psql_w_envs ct_pca/master_match.sql  #> master_match
 psql_w_envs cancer/master_sheet.sql  #> master_sheet
