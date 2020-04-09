@@ -14,6 +14,7 @@ union select attribute_id, trial_id, person_id, patient_value::varchar, match fr
 union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_lab
 union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_blood_pressure
 union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_gleason
+union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_psa_at_diagnosis
 ;
 /*
 select * from _p_a_t_lab join crit_attribute_used using (attribute_id)
