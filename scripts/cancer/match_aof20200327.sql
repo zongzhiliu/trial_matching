@@ -51,8 +51,8 @@ with como as (
     group by person_id
 )
 select person_id
-, (alst_low or alst_mid and livermet)
-    and (bili_low or bili_mid and gs)
+, (alst_low or alst_mid and nvl(livermet, False))
+    and (bili_low or bili_mid and nvl(gs, False))
     and crea_ok
     and hemo_ok and wbc_ok
     and anc_ok and plat_ok
