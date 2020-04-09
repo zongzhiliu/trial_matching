@@ -381,7 +381,7 @@ select person_id
 , bool_or(moa ~ 'BRAF_targeted') braf_targeted
 , bool_or(moa ~ 'PARP_targeted') parp_targeted
 , bool_or(moa ~ 'Taxanes') taxanes
-, bool_or(moa ~ 'IL_2') il_2
+, bool_or(moa ~ 'IL_') il_related
 , bool_or(moa ~ 'LHRH_(ant)?agonists') adt
 , bool_or(moa ~ 'Anti_androgen') anti_androgen
 , bool_or(moa ~ 'First_gen_anti_androgen') First_gen_anti_androgen
@@ -423,9 +423,9 @@ order by attribute_name, value
 */
 drop table if exists _p_a_chemotherapy cascade;
 create table _p_a_chemotherapy as
-select person_id, lot_drugs as patient_value
-, attribute_id --, attribute_group, attribute_name, value
-, case attribute_id --lower(nvl(attribute_name, '') || ', ' || value) 
+select person_id, '' as patient_value
+, attribute_id
+, case attribute_id
     when 152 then chemo
     when 153 then platin
     when 154 then lot_drugs ilike '%cisplatin%'
@@ -449,20 +449,20 @@ order by attribute_name, value
 
 drop table _p_a_immunotherapy cascade;
 create table _p_a_immunotherapy as
-select person_id, lot_drugs as patient_value
+select person_id, '' as patient_value
 , attribute_id
 , case attribute_id
     when 157 then immuno
     when 158 then pd_1_ab
-    when 159 then patient_value ilike '%pembrolizumab%'
-    when 160 then patient_value ilike '%nivolumab%'
+    when 159 then lot_drugs ilike '%pembrolizumab%'
+    when 160 then lot_drugs ilike '%nivolumab%'
     when 161 then pd_l1_ab
-    when 162 then patient_value ilike '%atezolizumab%'
-    when 163 then patient_value ilike '%avelumab%'
-    when 164 then patient_value ilike '%durmalumab%'
+    when 162 then lot_drugs ilike '%atezolizumab%'
+    when 163 then lot_drugs ilike '%avelumab%'
+    when 164 then lot_drugs ilike '%durmalumab%'
     when 165 then ctla_4_ab
-    when 166 then patient_value ilike '%ipilimumab%'
-    when 167 then il_2 --il related
+    when 166 then lot_drugs ilike '%ipilimumab%'
+    when 167 then il_related --il related
     --when 168 then null --ox-40, cd137: not implemented yet
     end as match
 from person_lot_drug_cats
