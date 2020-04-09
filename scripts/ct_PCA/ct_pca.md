@@ -78,14 +78,17 @@ len(df.crit_id.value_counts())  #132 crit
 ```bash
 source util/util.sh #psql_w_envs
 source ct_PCA/config.sh
+pgsetup ${db_conn}
+psql -c "create schema if not exists ${working_schema}"
 
-psql_w_envs caregiver/icd_physician.sql
+# psql_w_envs caregiver/icd_physician.sql
+
 psql_w_envs ct_pca/setup.sql  #> ref tables, crit_attribute_used
 
 # prepare patient tables
 psql_w_envs cancer/prepare_patients.sql  #> demo and other patient tables
 # psql_w_envs cancer/prepare_stage.sql  #> stage
-psql_w_envs ct_pca/quickadd_impute_stage.sql  #> stage_plus
+psql_w_envs ct_pca/quickadd_impute_stage.sql  #> stage
 psql_w_envs cancer/prepare_histology.sql  #> stage
 psql_w_envs cancer/prepare_alterations.sql  #> stage
 psql_w_envs ct_pca/prepare_patients.sql  #> specific patient tables

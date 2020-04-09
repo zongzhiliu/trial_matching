@@ -10,8 +10,8 @@ settings:
     @set cancer_type=PCA
     @set cancer_type_icd=^(C61|185)
 */
-set search_path=ct_${cancer_type};
-show search_path;
+--set search_path=ct_${cancer_type};
+--show search_path;
 -- settings
 create or replace view _crit_attribute_raw as
 select * from ct.crit_attribute_raw_20200223;
@@ -20,10 +20,10 @@ create or replace view _trial_attribute_raw as
 select * from trial_attribute_raw_20200223;
 
 create or replace view ref_drug_mapping as
-select * from ct.drug_mapping_cat_expn3;
+select * from ${ref_drug_mapping}; --ct.drug_mapping_cat_expn3;
 
 create or replace view ref_lab_mapping as
-select * from ct.ref_lab_loinc_mapping;
+select * from ${ref_lab_mapping}; --ct.ref_lab_loinc_mapping;
 
 create or replace view ref_histology_mapping as
 select * from ct.pca_histology_category;
