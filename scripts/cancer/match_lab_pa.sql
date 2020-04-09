@@ -1,17 +1,25 @@
-set search_path=ct_${cancer_type};
+--set search_path=ct_${cancer_type};
 
 /****
 * match labs
 * require: latest_lab, ref_lab_mapping
 */
-drop table _latest_lab_normal_range;
-CREATE TABLE _latest_lab_normal_range AS
+--drop table _latest_lab_normal_range;
+CREATE temporary TABLE _latest_lab_normal_range AS
 SELECT lab_test_name, loinc_code, m.unit, source_unit
 , normal_low, normal_high
 , person_id
 , result_date, value_float
 from latest_lab
 join ref_lab_mapping m using (loinc_code) --{ref_lab}
+;
+
+create temporary table _como as
+    select person_id
+    , bool_or(icd_code ~ '^(C787[.]7|197[.]7)') as livermet
+    , bool_or(icd_code ~ '^(E80[.]4|277[.]4)') as gs
+    from latest_icd
+    group by person_id
 ;
 
 -- improve with mapping table integrated with attribute id
@@ -27,20 +35,23 @@ select person_id, '' as patient_value
     when 51 then bool_or(lab_test_name='AST' and value_float/normal_high <=2)
     when 52 then bool_or(lab_test_name='AST' and value_float/normal_high <=2.5)
     when 53 then bool_or(lab_test_name='AST' and value_float/normal_high <=3)
-    when 54 then bool_or(lab_test_name='AST' and value_float/normal_high <=5)
+    when 54 then bool_or(lab_test_name='AST' and value_float/normal_high <=5
+            and nvl(livermet, False))
     when 56 then --ALT<=1 xULN
         bool_or(lab_test_name='ALT' and value_float/normal_high <=1)
     when 57 then bool_or(lab_test_name='ALT' and value_float/normal_high <=1.5)
     when 58 then bool_or(lab_test_name='ALT' and value_float/normal_high <=2)
     when 59 then bool_or(lab_test_name='ALT' and value_float/normal_high <=2.5)
     when 60 then bool_or(lab_test_name='ALT' and value_float/normal_high <=3)
-    when 61 then bool_or(lab_test_name='ALT' and value_float/normal_high <=5)
+    when 61 then bool_or(lab_test_name='ALT' and value_float/normal_high <=5
+            and nvl(livermet,False))
     when 63 then --total bilirubin
         bool_or(lab_test_name='Total bilirubin' and value_float/normal_high <=1)
     when 64 then bool_or(lab_test_name='Total bilirubin' and value_float/normal_high <=1.5)
     when 65 then bool_or(lab_test_name='Total bilirubin' and value_float/normal_high <=2)
     when 66 then bool_or(lab_test_name='Total bilirubin' and value_float/normal_high <=2.5)
-    when 67 then bool_or(lab_test_name='Total bilirubin' and value_float/normal_high <=3)
+    when 67 then bool_or(lab_test_name='Total bilirubin' and value_float/normal_high <=3
+            and nvl(gs, False))
     when 69 then --direct bilirubin
         bool_or(lab_test_name='Direct bilirubin' and value_float/normal_high <=1)
     when 70 then bool_or(lab_test_name='Direct bilirubin' and value_float/normal_high <=1.5)
@@ -104,8 +115,8 @@ select person_id, '' as patient_value
     when 416 then bool_or(lab_test_name='Potasium' and value_float>=3.5) -- mmol/L
     when 304 then bool_or(lab_test_name='FPG' and value_float between 100 and 240) --mg/dL
     end as match
-from crit_attribute_used
-cross join _latest_lab_normal_range
+from (crit_attribute_used_raw cross join _latest_lab_normal_range)
+left join _como using (person_id)
 where lower(attribute_group)~'labs?'
     and lower(value) not in ('min', 'max')
 group by attribute_id, person_id
@@ -113,7 +124,7 @@ group by attribute_id, person_id
 
 /*qc
 select attribute_name, value, count(distinct person_id)
-from _p_a_lab join crit_attribute_used using (attribute_id)
+from _p_a_lab join crit_attribute_used_raw using (attribute_id)
 where match
 group by attribute_name, value
 order by attribute_name, value
