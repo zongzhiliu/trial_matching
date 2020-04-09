@@ -1,4 +1,4 @@
-set search_path=ct_${cancer_type};
+--set search_path=ct_${cancer_type};
 
 -- lab min/max
 drop table if exists _p_a_t_lab;
@@ -18,7 +18,7 @@ cross join latest_lab
 --where attribute_id in (409, 384, 386, 387)
 where lower(attribute_group)~'labs?'
     and lower(value) in ('min', 'max')
-    and nvl(inclusion, exclusion) ~ '^[0-9]+([.][0-9]+)?$'
+    and nvl(inclusion, exclusion) ~ '^[0-9]+([.][0-9]+)?$' --Fixme
 group by attribute_id, person_id, trial_id, inclusion, exclusion
 ;
 /*-- check

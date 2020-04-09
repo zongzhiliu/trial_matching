@@ -4,13 +4,7 @@ Dependencies
     cplus_from_aplus
 Results:
     gleason
-settings:
-    @set cancer_type=PCA
-    @set cancer_type_icd=^(C61|185)
 */
-set search_path=ct_${cancer_type};
-show search_path;
-
 create table gleason as
 select person_id, gleason_grade, gleason_score, gleason_primary, gleason_secondary
 from (select *, row_number() over (

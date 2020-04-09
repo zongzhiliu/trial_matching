@@ -14,3 +14,4 @@ from tmp
 order by logic
 ;
 
+-- put logic into the trial_attribute table
