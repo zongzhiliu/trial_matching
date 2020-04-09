@@ -13,13 +13,7 @@ Requires:
     gene_alterations_pivot
 Results:
     _master_match
-Settings:
-    @set cancer_type=
-    @set cancer_type_icd=
 */
-set search_path=ct_${cancer_type};
-
-
 /***
  * match stage, status: multiple sele
  */
@@ -27,22 +21,22 @@ drop table if exists _p_a_stage;
 create table _p_a_stage as
 select person_id, stage as patient_value
 , attribute_id
-, case value
+, case attribute_value
      when '0' then stage_base='0'
      when 'I' then stage_base='I'
-     when 'IA' then stage_base='I' and stage_ext like 'A%'
-     when 'IB' then stage_base='I' and stage_ext like 'B%'
+     when 'IA' then stage like 'IA%'
+     when 'IB' then stage like 'IB%'
      when 'II' then stage_base='II'
-     when 'IIA' then stage_base='II' and stage_ext like 'A%'
-     when 'IIB' then stage_base='II' and stage_ext like 'B%'
-     when 'IIC' then stage_base='II' and stage_ext like 'C%'
+     when 'IIA' then stage like 'IIA%'
+     when 'IIB' then stage like 'IIB%'
+     when 'IIC' then stage like 'IIC%'
      when 'III' then stage_base='III'
-     when 'IIIA' then stage_base='III' and stage_ext like 'A%'
-     when 'IIIB' then stage_base='III' and stage_ext like 'B%'
-     when 'IIIC' then stage_base='III' and stage_ext like 'C%'
+     when 'IIIA' then stage like 'IIIA%'
+     when 'IIIB' then stage like 'IIIB%'
+     when 'IIIC' then stage like 'IIIC%'
      when 'IV' then stage_base='IV'
-     when 'IVA' then stage_base='IV' and stage_ext like 'A%'
-     when 'IVB' then stage_base='IV' and stage_ext like 'B%'
+     when 'IVA' then stage like 'IVA%'
+     when 'IVB' then stage like 'IVB%'
      when 'limited stage' then stage_base between 'I' and 'III'
      when 'extensive stage' then stage_base = 'IV'
      end as match
@@ -51,11 +45,11 @@ cross join crit_attribute_used
 where attribute_name='stage'
 ;
 /*-- check
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 from _p_a_stage join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value
-order by attribute_name, value
+group by attribute_name, attribute_value
+order by attribute_name, attribute_value
 ;
 */
 
@@ -80,11 +74,11 @@ where attribute_id in (205, 206)
     and nvl(inclusion, exclusion) ~ '^[0-9]+$' -- Fixme: invalid age
 ;
 /*-- check
-select attribute_name, value, clusion, count(distinct person_id)
+select attribute_name, attribute_value, clusion, count(distinct person_id)
 from _p_a_t_age join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value, clusion
-order by attribute_name, value, clusion::int
+group by attribute_name, attribute_value, clusion
+order by attribute_name, attribute_value, clusion::int
 ;
 
 /***
@@ -95,18 +89,18 @@ drop table if exists _p_a_ecog;
 create table _p_a_ecog as
 select person_id, ecog_ps as patient_value
 , attribute_id
-, patient_value=value::int as match
+, patient_value=attribute_value::int as match
 from latest_ecog
 cross join crit_attribute_used
 where lower(attribute_name)='ecog'
 ;
 --select * from _p_a_ecog;
 /*-- check
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 --select patient_value
 from _p_a_ecog join ct.crit_attribute using (attribute_id)
 where match
-group by attribute_name, value
+group by attribute_name, attribute_value
 ;
 */
 
@@ -122,10 +116,10 @@ where lower(attribute_name)='karnofsky'
 ;
 
 /*-- check
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 from _p_a_karnofsky join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value
+group by attribute_name, attribute_value
 ;
 */
 
@@ -160,11 +154,11 @@ where attribute_id in (300, 301)
     and nvl(inclusion, exclusion) ~ '^[0-9]+(\\.[0-9]+)?$' --Fixme
 ;
 /*-- check
-select attribute_name, value, clusion, count(distinct person_id)
+select attribute_name, attribute_value, clusion, count(distinct person_id)
 from _p_a_t_weight join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value, clusion
-order by attribute_name, value, clusion::int
+group by attribute_name, attribute_value, clusion
+order by attribute_name, attribute_value, clusion::int
 ;
 */
 create table _latest_blood_pressure as
@@ -174,10 +168,10 @@ with syst as (
             order by -age_in_days, -value)
     from vital
     where procedure_description='Systolic Blood Pressure'
-        and value ~'^[0-9]+(\\.[0-9]+)?$' --float: '152/'
+        and attribute_value ~'^[0-9]+(\\.[0-9]+)?$' --float: '152/'
 )
 , last_syst as (
-    select person_id, age_in_days, value as systolic
+    select person_id, age_in_days, attribute_value as systolic
     from syst where row_number=1
 ) --select * from last_syst;
 , diast as (
@@ -186,10 +180,10 @@ with syst as (
             order by -age_in_days, -value)
     from vital
     where procedure_description='Diastolic Blood Pressure'
-        and value ~'^[0-9]+(\\.[0-9]+)?$'  -- debug: invalid digit '/65'
+        and attribute_value ~'^[0-9]+(\\.[0-9]+)?$'  -- debug: invalid digit '/65'
 )
 , last_diast as (
-    select person_id, age_in_days, value as diastolic
+    select person_id, age_in_days, attribute_value as diastolic
     from diast where row_number=1
 )
 select *
@@ -213,11 +207,11 @@ where attribute_id in (268, 269)
     and nvl(inclusion, exclusion) ~ '^[0-9]+$' --Fixme
 ;
 /*-- check
-select attribute_name, value, clusion, count(distinct person_id)
+select attribute_name, attribute_value, clusion, count(distinct person_id)
 from _p_a_t_blood_pressure join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value, clusion
-order by attribute_name, value, clusion::int
+group by attribute_name, attribute_value, clusion
+order by attribute_name, attribute_value, clusion::int
 ;
 */
 
@@ -277,11 +271,11 @@ group by attribute_id, person_id
 order by person_id, attribute_id
 ;
 /*qc
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 from _p_a_disease join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value
-order by attribute_name, value
+group by attribute_name, attribute_value
+order by attribute_name, attribute_value
 ;
 -- more than 50% of patiets have cancer icds other thab LCA.
 select regexp_substr(icd_code, '^...') icd, count(distinct person_id) patients
@@ -345,11 +339,11 @@ cross join crit_attribute_used
 where attribute_id between 147 and 151
 ;
 /*-- check
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 from _p_a_lot join crit_attribute_used ca using (attribute_id)
 where match
-group by attribute_name, value
-order by attribute_name, value
+group by attribute_name, attribute_value
+order by attribute_name, attribute_value
 ;
 */
 
@@ -414,11 +408,11 @@ cross join crit_attribute_used
 where lower(attribute_group)~'hormone.?therapy'
 ;
 /*qc
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 from _p_a_hormone_therapy join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value
-order by attribute_name, value
+group by attribute_name, attribute_value
+order by attribute_name, attribute_value
 ;
 */
 drop table if exists _p_a_chemotherapy cascade;
@@ -439,11 +433,11 @@ cross join crit_attribute_used
 where lower(attribute_group)='chemotherapy'
 ;
 /*qc
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 from _p_a_chemotherapy join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value
-order by attribute_name, value
+group by attribute_name, attribute_value
+order by attribute_name, attribute_value
 ;
 */
 
@@ -470,11 +464,11 @@ cross join crit_attribute_used
 where lower(attribute_group) ~ 'immun?otherapy' -- typo
 ;
 /*qc
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 from _p_a_immunotherapy join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value
-order by attribute_name, value
+group by attribute_name, attribute_value
+order by attribute_name, attribute_value
 ;
 select * from person_lot_drug_cats where immuno and not pd_1_ab; --sipuleucel-t
 */
@@ -513,11 +507,11 @@ cross join crit_attribute_used
 where lower(attribute_group)='targeted therapy'
 ;
 /*qc
-select attribute_name, value, count(*)
+select attribute_name, attribute_value, count(*)
 from _p_a_targetedtherapy join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value
-order by attribute_name, value
+group by attribute_name, attribute_value
+order by attribute_name, attribute_value
 ;
 select distinct drugname from _line_of_therapy; --none
 */
