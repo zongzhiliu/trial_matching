@@ -35,8 +35,23 @@ select * from ct.pca_histology_category;
 -- trial_attribute_used
 drop table if exists trial_attribute_used;
 create table trial_attribute_used as
-select * from _trial_attribute_raw
-where nvl(inclusion, exclusion) is not null
+select *
+, inclusion is not null as ie_flag
+, nvl(inclusion, exclusion) ie_value
+from _trial_attribute_raw
+where ie_value is not null
+    and ie_value !~ 'yes <[24]W' --quickfix
+;
+/*
+with tmp as (
+    select attribute_id
+    , listagg(distinct nvl(inclusion, exclusion), '| ') ie_values
+    from trial_attribute_used
+    group by attribute_id
+)
+select attribute_id, ie_values, a.*
+from tmp join crit_attribute_raw a using (attribute_id)
+order by attribute_id
 ;
 -- crit_attribute_used
 drop table if exists crit_attribute_used cascade;
