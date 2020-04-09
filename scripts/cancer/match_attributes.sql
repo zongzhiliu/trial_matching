@@ -77,7 +77,7 @@ from trial_attribute_used
 join crit_attribute_used using (attribute_id)
 cross join demo
 where attribute_id in (205, 206)
-    and nvl(inclusion, exclusion) ~ '^[0-9]+$'
+    and nvl(inclusion, exclusion) ~ '^[0-9]+$' -- Fixme: invalid age
 ;
 /*-- check
 select attribute_name, value, clusion, count(distinct person_id)
@@ -157,7 +157,7 @@ select attribute_id, trial_id, person_id
 from trial_attribute_used
 cross join _latest_bmi
 where attribute_id in (300, 301)
-    and nvl(inclusion, exclusion) ~ '^[0-9]+(\\.[0-9]+)?$' --float
+    and nvl(inclusion, exclusion) ~ '^[0-9]+(\\.[0-9]+)?$' --Fixme
 ;
 /*-- check
 select attribute_name, value, clusion, count(distinct person_id)
@@ -210,7 +210,7 @@ from trial_attribute_used t
 join crit_attribute_used a using (attribute_id)
 cross join _latest_blood_pressure p
 where attribute_id in (268, 269)
-    and nvl(inclusion, exclusion) ~ '^[0-9]+$' --int
+    and nvl(inclusion, exclusion) ~ '^[0-9]+$' --Fixme
 ;
 /*-- check
 select attribute_name, value, clusion, count(distinct person_id)
@@ -236,17 +236,17 @@ select person_id, NULL as patient_value
             and icd_code !~ '${cancer_type_icd}')
     -- when 199 then --autoimmune not implemented NULL
     when 194 then --brain met
-        bool_or(icd_code ~ '^(C79\\.31|198\\.3)')
+        bool_or(icd_code ~ '^(C79[.]31|198[.]3)')
     when 195 then --brain met active ignored: to be improved later
-        bool_or(icd_code ~ '^(C79\\.31|198\\.3)')
+        bool_or(icd_code ~ '^(C79[.]31|198[.]3)')
     when 196 then --Leptomeningeal
         bool_or(icd_code ~ '^(G93|348)')
     when 197 then --Carcinomatous meningitis
-        bool_or(icd_code ~ '^(C70\\.9|192\\.1)')
+        bool_or(icd_code ~ '^(C70[.]9|192[.]1)')
     when 198 then --Spinal cord compression
-        bool_or(icd_code ~ '^(G95\\.20|336\\.9)')
+        bool_or(icd_code ~ '^(G95[.]20|336[.]9)')
     when 200 then --Immunodeficiency/HIV infection
-        bool_or(icd_code ~ '^(D84\\.9|279\\.3)')
+        bool_or(icd_code ~ '^(D84[.]9|279[.]3)')
     when 202 then --Cardiovascular disease
         bool_or(icd_code ~ '^(I50)')
     when 203 then --Interstitial lung disease
@@ -254,7 +254,7 @@ select person_id, NULL as patient_value
     when 204 then --organ/bm tranplant
         bool_or(icd_code ~ '^(Z94)')
     when 255 then --HBV, HCV: icd9 to be added
-        bool_or(icd_code ~ '^(B18\\.[0-2]|B16|B17\\.1)')
+        bool_or(icd_code ~ '^(B18[.][0-2]|B16|B17[.]1)')
     when 421 then --non infectious pseumonitis
         bool_or(icd_code ~ '^(J84[.]89)')
     when 313 then --diabetic ketoacidosis
@@ -338,7 +338,7 @@ create table _p_a_lot as
 select person_id, n_lot as patient_value
 , attribute_id
 , case when attribute_id between 147 and 150 then n_lot=value::int
-    when attribute_id=151 then n_lot>=4  -- to be fixed in attribute excel
+    when attribute_id=151 then n_lot>=4
     end as match
 from lot
 cross join crit_attribute_used
@@ -362,7 +362,7 @@ create table person_lot_drug_cats as
 select person_id
 , listagg(distinct drug_name, '| ') within group (order by drug_name)
     as lot_drugs
-, bool_or(modality ilike 'chemotherapy') chemo
+, bool_or(modality ilike '%chemotherapy%') chemo
 , bool_or(modality ilike '%immunotherapy%') immuno
 , bool_or(modality ilike '%targeted%') targeted
 , bool_or(moa ~ 'platinum_based_chemo') platin
@@ -485,28 +485,28 @@ select person_id, '' as patient_value
 , case attribute_id
     when 170 then targeted
     when 171 then egfr_targeted
-    when 172 then patient_value ilike '%afatinib%'
-    when 173 then patient_value ilike '%gefitinib%'
-    when 174 then patient_value ilike '%erlotinib%'
-    when 175 then patient_value ilike '%osimertinib%'
-    when 176 then patient_value ilike '%cetuximab%'
+    when 172 then lot_drugs ilike '%afatinib%'
+    when 173 then lot_drugs ilike '%gefitinib%'
+    when 174 then lot_drugs ilike '%erlotinib%'
+    when 175 then lot_drugs ilike '%osimertinib%'
+    when 176 then lot_drugs ilike '%cetuximab%'
     when 177 then alk_targeted
-    when 178 then patient_value ilike '%crizotinib%'
-    when 179 then patient_value ilike '%alectinib%'
-    when 180 then patient_value ilike '%ceritinib%'
+    when 178 then lot_drugs ilike '%crizotinib%'
+    when 179 then lot_drugs ilike '%alectinib%'
+    when 180 then lot_drugs ilike '%ceritinib%'
     when 181 then met_targeted --c-met
     when 182 then ret_targeted
-    when 183 then patient_value ilike '%carbozantinib%'
+    when 183 then lot_drugs ilike '%carbozantinib%'
     when 184 then parp_targeted
-    when 185 then patient_value ilike '%olaparib%'
+    when 185 then lot_drugs ilike '%olaparib%'
     when 186 then vegf_targeted or vegfr_targeted
     when 187 then ros1_targeted
     when 188 then braf_targeted
-    when 189 then patient_value ilike '%vemurafenib%'
+    when 189 then lot_drugs ilike '%vemurafenib%'
     when 190 then raf_targeted
-    when 191 then patient_value ilike '%sorafenib%'
+    when 191 then lot_drugs ilike '%sorafenib%'
     when 192 then mek_targeted
-    when 193 then patient_value ilike '%cobimetinib%'
+    when 193 then lot_drugs ilike '%cobimetinib%'
     end as match
 from person_lot_drug_cats
 cross join crit_attribute_used
