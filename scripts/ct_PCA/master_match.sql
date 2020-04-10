@@ -10,15 +10,15 @@ Results:
 drop table if exists _p_a_t_match cascade;
 create table _p_a_t_match as
 select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_age
-union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_weight
-union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_lab
-union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_blood_pressure
-union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_gleason
-union select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_psa_at_diagnosis
+union all select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_weight
+union all select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_lab
+union all select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_blood_pressure
+union all select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_gleason
+union all select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_psa_at_diagnosis
 ;
 /*
-select * from _p_a_t_lab join crit_attribute_used using (attribute_id)
-order by person_id, trial_id, attribute_id limit 99;
+select distinct(attribute_id) from _p_a_t_match;
+--14
 */
 
 -- default match to false for medications and icds
@@ -40,20 +40,24 @@ from (cohort cross join a_all)
 left join pa using (person_id, attribute_id)
 ;
 /*
+select distinct(attribute_id) from _p_a_default_false;
+    --49
 select match, count(*) from _p_a_default_false group by match;
 */
 drop table if exists _p_a_match cascade;
-create temporary table _p_a_match as
+create table _p_a_match as
 select attribute_id, person_id, patient_value::varchar, match from _p_a_stage
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_lab
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_lot
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_ecog
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_karnofsky
-union select attribute_id, person_id, patient_value::varchar, match from _p_a_mutation
+--union select attribute_id, person_id, patient_value::varchar, match from _p_a_mutation
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_histology
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_default_false
 ;
 /*
+select distinct(attribute_id) from _p_a_match;
+    --137
 select attribute_id, attribute_name, attribute_value
 , match, count(*)
 from _p_a_match
@@ -82,8 +86,21 @@ with mm as (
 select mm.*
 from mm join a_good using (attribute_id)
 ;
-/*
+------------------------------------------------------------
+-- qc
 select count(*), count(distinct attribute_id) from _master_match;
-    --31216668 |   159
-    --28567046 |   143
+    -- 36248441 |   148
+with unimpl as (
+    select distinct attribute_id from trial_attribute_used except
+    select distinct attribute_id from _master_match
+)
+select attribute_id, attribute_group, attribute_name, attribute_value
+from unimpl join crit_attribute_used using (attribute_id)
+;
+    --22 unimplemented
+/*
+select * from _master_match
+order by person_id, trial_id, attribute_id
+limit 100;
 */
+

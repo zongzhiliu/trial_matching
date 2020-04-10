@@ -2,7 +2,7 @@
 # requires:
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
 
-source bca/config.sh
+source ct_BCA/config.sh
 export db_conn=rimsdw
 pgsetup $db_conn
 source util/util.sh
@@ -23,7 +23,7 @@ psql_w_envs cancer/prepare_biomarker.sql
 #psql_w_envs caregiver/icd_physician.sql
 
 # prepare attribute
-ipython bca/load_attribute.ipy
+ipython ct_BCA/load_attribute.ipy
 psql_w_envs cancer/prepare_attribute.sql
     #later: to move stage code to attribute_value, stage code_type to code
     #later: rescue stage using TNM c/p
@@ -33,17 +33,17 @@ psql_w_envs cancer/prepare_attribute.sql
 psql_w_envs cancer/match_icd.sql #later: make a _p_a table, and a _p_a_t view
 psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
 psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
-psql_w_envs bca/prepare_misc_measurement.sql #mv to cancer later
+psql_w_envs ct_BCA/prepare_misc_measurement.sql #mv to cancer later
 psql_w_envs cancer/match_misc_measurement.sql
-psql_w_envs bca/prepare_cat_measurement.sql #menopausal to be cleaned
-psql_w_envs bca/match_cat_measurement.sql #mv to cancer later
+psql_w_envs ct_BCA/prepare_cat_measurement.sql #menopausal to be cleaned
+psql_w_envs ct_BCA/match_cat_measurement.sql #mv to cancer later
 psql_w_envs cancer/match_icdo_rex.sql
 psql_w_envs cancer/match_stage.sql
 psql_w_envs cancer/match_variant.sql
 psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
 
 # compile the matches
-psql_w_envs bca/master_match.sql  #> master_match
+psql_w_envs ct_BCA/master_match.sql  #> master_match
 psql_w_envs cancer/master_sheet.sql  #> master_sheet
 # match to patients
 psql_w_envs cancer/master_patient.sql #> trial2patients

@@ -1,8 +1,10 @@
 /* impute stage from TNM, PSA, gleason
 Required: cohort, cplus_from_aplus
-Result: stage_plus
+Result: stage_plus, stage
+    note that one person can have 2+ stages.
 Reference: NCCN guideline
 */
+
 drop table if exists stage_plus cascade;
 create table stage_plus as
 with cd as (
@@ -31,14 +33,11 @@ with cd as (
 	, case when p_m in ('Not Reported', 'Not Applicable', 'Mx')
 	    then null else p_m end as p_m
 	from cd
-), sim as (
+), imputed as (
     select person_id, st, psa, gg
     , greatest(p_t, c_t) t
     , greatest(p_n, c_n) n
     , greatest(p_m, c_m) m
-    from converted
-), imputed as (
-    select person_id
     , case
         when m like 'M1%' then 'IVB' --M0/x here after
         when n like 'N1%' then 'IVA' --N0/x here after
@@ -47,23 +46,28 @@ with cd as (
         when psa >= 20 then 'IIIA' --psa<20/x here after
         when gg>=3 then 'IIC' -- gg<3 here after
         when gg=2 then 'IIB' -- gg1/x here after
-        when psa>=10 then 'IIA' --psa<10 here after
+        when t ~ '^T2[bc]' or psa>=10 then 'IIA' --psa<10 here after
         when t ~ '^T[12]' then 'I' --T required
         end stage_imputed
-    from sim
+    from converted
 )
-/*select distinct st, t, n, m, psa, gg, stage_imputed 
-from imputed join sim using (person_id)
-order by stage_imputed
+/*
+select st stage_extracted, t, n, m, gg, stage_imputed
+, listagg(distinct psa::varchar, '| ') within group (order by -psa)
+from imputed
+group by stage_extracted, t, n, m, gg, stage_imputed
+order by stage_imputed desc nulls last, m, n, gg, t
+;
 */
 select person_id
 , st stage_extracted
 , stage_imputed
-, t, n, m, psa, gg
+, t, n, m, gg, psa
 , nvl(st, stage_imputed) stage
 , regexp_substr(stage, '^[IV]+') stage_base
-from sim left join imputed using (person_id)
---limit 99
+from imputed
 ;
 
-create view stage as select * from stage_plus;
+create view stage as
+select * from stage_plus
+order by person_id;

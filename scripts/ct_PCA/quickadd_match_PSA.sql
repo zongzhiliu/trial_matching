@@ -21,9 +21,19 @@ where psa is not null
 group by person_id, attribute_id, trial_id, ie_value
 ;
 /*
-select attribute_id, match
+select attribute_id, attribute_value, value, match
 , count(distinct person_id)
 from _p_a_t_psa_at_diagnosis
-group by attribute_id, match
+join crit_attribute_used using (attribute_id)
+where match
+group by attribute_id, attribute_value, value, match
+order by attribute_id, attribute_value, value, match
 ;
+select count(distinct person_id)
+from cohort
+join cplus_from_aplus.cancer_diagnoses using (person_id)
+join cplus_from_aplus.cancer_diagnoses_pca using (cancer_diagnosis_id)
+where psa is not null
+;
+--1643
 */

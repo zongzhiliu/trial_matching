@@ -17,8 +17,8 @@ join crit_attribute_used using (attribute_id)
 cross join latest_lab
 --where attribute_id in (409, 384, 386, 387)
 where lower(attribute_group)~'labs?'
-    and lower(value) in ('min', 'max')
-    and nvl(inclusion, exclusion) ~ '^[0-9]+([.][0-9]+)?$' --Fixme
+    and lower(attribute_value) in ('min', 'max')
+--    and nvl(inclusion, exclusion) ~ '^[0-9]+([.][0-9]+)?$' --Fixme
 group by attribute_id, person_id, trial_id, inclusion, exclusion
 ;
 /*-- check
@@ -26,11 +26,11 @@ select * from _p_a_t_lab
 order by person_id, trial_id, attribute_id
 limit 10
 ;
-select attribute_name, value, clusion
+select attribute_name, attribute_value, clusion
 , count(distinct person_id) patients, count(distinct trial_id) trials
 from _p_a_t_lab join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, value, clusion
-order by attribute_name, value, clusion::int
+group by attribute_name, attribute_value, clusion
+order by attribute_name, attribute_value, clusion::int
 ;
 */

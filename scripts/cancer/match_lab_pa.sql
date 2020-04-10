@@ -79,11 +79,13 @@ select person_id, '' as patient_value
     when 91 then bool_or(lab_test_name = 'Hemoglobin' and value_float>=8.5)
     when 92 then bool_or(lab_test_name = 'Hemoglobin' and value_float>=9)
     when 93 then bool_or(lab_test_name = 'Hemoglobin' and value_float>=10)
+    when 94 then bool_or(lab_test_name = 'Hemoglobin' and value_float>=11)
     when 418 then bool_or(lab_test_name = 'Hemoglobin' and value_float>=9.5)
     when 274 then --HemoglobinA1C %
         bool_or(lab_test_name='HemoglobinA1c' and value_float<=8.5)
     when 275 then bool_or(lab_test_name='HemoglobinA1c' and value_float<=9)
     when 276 then bool_or(lab_test_name='HemoglobinA1c' and value_float<=9.5)
+    when 277 then bool_or(lab_test_name='HemoglobinA1c' and value_float<=10)
     when 281 then --Lab eGFR>=30 
         bool_or(lab_test_name='eGFR' and value_float>=30)
     when 413 then bool_or(lab_test_name='eGFR' and value_float>=35)
@@ -115,10 +117,10 @@ select person_id, '' as patient_value
     when 416 then bool_or(lab_test_name='Potasium' and value_float>=3.5) -- mmol/L
     when 304 then bool_or(lab_test_name='FPG' and value_float between 100 and 240) --mg/dL
     end as match
-from (crit_attribute_used_raw cross join _latest_lab_normal_range)
+from (crit_attribute_used cross join _latest_lab_normal_range)
 left join _como using (person_id)
 where lower(attribute_group)~'labs?'
-    and lower(value) not in ('min', 'max')
+    and lower(attribute_value) not in ('min', 'max')
 group by attribute_id, person_id
 ;
 

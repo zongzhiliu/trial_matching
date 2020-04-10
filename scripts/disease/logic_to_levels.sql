@@ -1,4 +1,7 @@
-
+/* a quick add
+next: put logic into the trial_attribute table
+see: ct_PCA/quickadd_attribute_plus.sql
+*/
 drop table if exists _crit_attribute_logic;
 create table _crit_attribute_logic as
 with tmp as (
@@ -14,4 +17,3 @@ from tmp
 order by logic
 ;
 
--- put logic into the trial_attribute table
