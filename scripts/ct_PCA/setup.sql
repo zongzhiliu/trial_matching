@@ -5,17 +5,13 @@ Results:
     crit_attribute_used
 */
 
-
-/***
-* trial, crit, attributes
-*/
 -- trial_attribute_used
 drop table if exists trial_attribute_used cascade;
 create table trial_attribute_used as
 select *
 , inclusion is not null as ie_flag
-, nvl(inclusion, exclusion) ie_value
-from _trial_attribute_raw
+, btrim(nvl(inclusion, exclusion)) ie_value
+from (select distinct * from _trial_attribute_raw) --quickfix
 where ie_value is not null
     and ie_value !~ 'yes <[24]W' --quickfix
 ;
@@ -36,7 +32,7 @@ order by attribute_id
 drop table if exists crit_attribute_used cascade;
 create table crit_attribute_used as
 select attribute_id, attribute_group, attribute_name, attribute_value
-, mandatory_default, logic_default
+--, mandatory_default, logic_default
 from _crit_attribute_raw c
 join (select distinct attribute_id
     from trial_attribute_used) using (attribute_id)

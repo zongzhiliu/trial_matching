@@ -4,6 +4,7 @@ export cancer_type_icd='^(C61|185)'
 
 export db_conn=rimsdw
 export working_schema="ct_${cancer_type}"
+export working_dir="$HOME/Sema4/${db_conn}/${working_schema}"
 export last_visit_within=99 #years
 export protocal_date=$(date +%Y-%m-%d)
 
@@ -17,5 +18,3 @@ export PLATELETS_MIN=100
 export WBC_MIN=3
 export IRN_MAX=99999
 
-export working_dir="$HOME/Sema4/rimsdw/${working_schema}"
-export script_dir="$HOME/git/trial_matching/scripts"

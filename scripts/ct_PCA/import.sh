@@ -13,7 +13,7 @@ psql -c "create schema if not exists ${working_schema}"
 # psql_w_envs caregiver/icd_physician.sql
 #psql_w_envs cancer/prepare_reference.sql
 psql_w_envs ct_PCA/quickfix_prepare_reference.sql  #> ref tables
-psql_w_envs ct_PCA/setup.sql  #> ref tables, crit_attribute_used
+psql_w_envs ct_PCA/setup.sql  #> ref tables, trial/crit_attribute_used
 
 # prepare patient tables
 psql_w_envs cancer/prepare_patients.sql  #> demo and other patient tables
@@ -24,6 +24,7 @@ psql_w_envs cancer/prepare_histology.sql  #> histology
 #psql_w_envs cancer/prepare_alterations.sql  #> _variant_significant
 psql_w_envs ct_PCA/prepare_patients.sql  #> gleason
 psql_w_envs ct_PCA/quickfix_prepare_drug.sql #> _drug
+    #not used in the pipeline yet
 
 # match to attributes
 psql_w_envs cancer/match_attributes.sql #>_pa_stage/ecog/karnofsky/lot
@@ -40,23 +41,26 @@ psql_w_envs ct_PCA/quickadd_match_PSA.sql #>pat_psa_at_diagnosis
 ### Runable
 # compile the matches
 psql_w_envs ct_PCA/master_match.sql  #> master_match
-psql_w_envs ct_PCA/quickadd_attribute_plus.sql #> v_crit_attribute_used, v_trial_attribute_used
-psql_w_envs disease/master_sheet.sql  #> master_sheet
-#psql_w_envs disease/logic_to_levels.sql
+psql_w_envs ct_PCA/quickadd_update_attribute.sql #> crit/trial_attribute_updated
+psql_w_envs ct_PCA/master_sheet.sql  #> master_sheet
+psql_w_envs ct_PCA/quickadd_trial_logic_levels.sql #> trial_attribute_w_levels
 #psql_w_envs disease/master_patient.sql #> trial2patients
+
+psql_w_envs ct_PCA/quickadd_expand_attribute.sql #> crit/trial_attribute_expanded
+#psql_w_envs cancer/quickfix_master_sheet_lca_pca.sql
+source ct_PCA/download_master_sheet_new.sh
+source ct_PCA/deliver_master_sheet_new.sh
+#export logic_cols='logic_l1_id'
+#export disease=${cancer_type}
+#mysql_w_envs disease/expand_master_sheet.sql
+
+#psql_w_envs disease/logic_to_levels.sql
 # python cancer/master_tree.py generate patient counts at each logic branch,
 # and dynamic visualization file for each trial.
 
 ### Runnable
 # download and deliver
-ipython cancer/download_master_patient.ipy
-psql_w_envs disease/master_sheet_mapping.sql
-psql_w_envs cancer/quickfix_master_sheet_lca_pca.sql
-source cancer/download_master_sheet.sh
-source cancer/deliver_master_sheet.sh
-export logic_cols='logic_l1_id'
-export disease=${cancer_type}
-mysql_w_envs disease/expand_master_sheet.sql
+#ipython cancer/download_master_patient.ipy
 
 ##############################################################
 # never run

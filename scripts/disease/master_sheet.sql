@@ -10,10 +10,12 @@ Settings:
 -- set match as null by default for each patient
 drop view if exists master_match;
 create view master_match as
-select attribute_id, trial_id, person_id, match
+select attribute_id, trial_id, person_id
+, bool_or(match) as attribute_match --quick fix: multiple matches
 from (trial_attribute_used
     cross join cohort)
 left join _master_match using (attribute_id, trial_id, person_id)
+group by attribute_id, trial_id, person_id
 ;
 
 drop table if exists _master_sheet cascade;
@@ -21,7 +23,7 @@ create table _master_sheet as
 select trial_id, person_id, attribute_id
 , attribute_group, attribute_name, attribute_value
 , inclusion, exclusion
-, match as attribute_match
+, attribute_match
 --, nvl(ie_mandatory, mandatory_default) ilike 'y%' as mandatory
 , nvl(mandatory, mandatory_default) ilike 'y%' as mandatory
 from master_match
