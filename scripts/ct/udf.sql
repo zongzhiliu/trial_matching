@@ -26,3 +26,11 @@ create function py_contains(txt varchar(64000), patt varchar, flags varchar(9))
     res = reg.search(txt)
     return bool(res)
 $$ language plpythonu;
+
+CREATE OR REPLACE FUNCTION ct.assert(
+  a bool,
+  description VARCHAR
+) RETURNS BOOLEAN IMMUTABLE AS $$
+  assert a, '{description}. see {a}'.format(**locals())
+  return True
+$$ LANGUAGE plpythonu;

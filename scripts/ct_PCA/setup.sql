@@ -15,6 +15,17 @@ from (select distinct * from _trial_attribute_raw) --quickfix
 where ie_value is not null
     and ie_value !~ 'yes <[24]W' --quickfix
 ;
+
+with obs as(
+    select count(*) from trial_attribute_used
+), exp as (
+    select count(*) from (select distinct trial_id, attribute_id
+        from trial_attribute_used)
+)
+select ct.assert(
+    (select count from obs) = (select count from exp)
+    , 'records should be have distinct keys')
+;
 /*
 with tmp as (
     select attribute_id
@@ -38,7 +49,9 @@ join (select distinct attribute_id
     from trial_attribute_used) using (attribute_id)
 ;
 -- assert
-select count(*), count(distinct attribute_id) from crit_attribute_used;
+select ct.assert(count(*)=count(distinct attribute_id),
+    'No redundant attribute_ids')
+from crit_attribute_used;
 --drop view v_crit_attribute_used;
 --create or replace view v_crit_attribute_used as
 --select attribute_id, attribute_group, attribute_name, attribute_value
