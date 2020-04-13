@@ -42,6 +42,7 @@ select person_id, '' as patient_value
 , attribute_id
 , case attribute_id
     when 393 then adt
+    when 394 then adt -- ongoing
     when 395 then adt -- prior
     when 396 then adt -- progressed on
     when 397 then Second_gen_anti_androgen
@@ -56,7 +57,8 @@ select person_id, '' as patient_value
     end as match
 from person_lot_drug_cats
 cross join crit_attribute_used
-where lower(attribute_group)~'hormone.?therapy'
+-- where lower(attribute_group)~'hormone.?therapy' -- bug for 394 if not implemented
+where attribute_id in (393, 394, 395, 396, 397, 422, 423, 424, 425, 398, 399, 400)
 ;
 /*qc
 select attribute_name, attribute_value, count(distinct person_id)
@@ -81,8 +83,10 @@ select person_id, '' as patient_value
     end as match
 from person_lot_drug_cats
 cross join crit_attribute_used
-where lower(attribute_group)='chemotherapy'
+--where lower(attribute_group)='chemotherapy'
+where attribute_id in ( 152, 153, 154, 155, 156, 407, 403)
 ;
+
 /*qc
 select attribute_name, attribute_value, count(distinct person_id)
 from _p_a_chemotherapy join crit_attribute_used using (attribute_id)
@@ -112,8 +116,11 @@ select person_id, '' as patient_value
     end as match
 from person_lot_drug_cats
 cross join crit_attribute_used
-where lower(attribute_group) ~ 'immun?otherapy' -- typo
-;
+--where lower(attribute_group) ~ 'immun?otherapy' -- typo
+where attribute_id in (
+    157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167
+);
+
 /*qc
 select attribute_name, attribute_value, count(distinct person_id)
 from _p_a_immunotherapy join crit_attribute_used using (attribute_id)
@@ -155,14 +162,16 @@ select person_id, '' as patient_value
     end as match
 from person_lot_drug_cats
 cross join crit_attribute_used
-where lower(attribute_group)='targeted therapy'
-;
+--where lower(attribute_group)='targeted therapy'
+where attribute_id in (
+    170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188
+);
 /*qc
-select attribute_name, attribute_value, count(distinct person_id)
-from _p_a_targetedtherapy join crit_attribute_used using (attribute_id)
-where match
-group by attribute_name, attribute_value
-order by attribute_name, attribute_value
+189select attribute_name, attribute_value, count(distinct person_id)
+190from _p_a_targetedtherapy join crit_attribute_used using (attribute_id)
+191where match
+192group by attribute_name, attribute_value
+193order by attribute_name, attribute_value
 ;
 select distinct drugname from _line_of_therapy; --none
 */

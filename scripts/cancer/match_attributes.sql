@@ -5,15 +5,11 @@ Requires:
     ref_drug_mapping
     ref_lab_mapping
 
-    demo, stage, histology
-    latest_loh_drug
+    demo, stage
     latest_ecog, latest_karnofsky
-    latest_lab, latest_icd
-    vital, vital_bmi
     gene_alterations_pivot
 Results:
-    pa_stage, ecog, karnofsky, disease, lot, homon/immuno/chemo/targeted
-    pat_age, weight, bloodpressure
+    pa_stage, ecog, karnofsky, lot
 */
 /***
  * match stage, status: multiple sele

@@ -15,9 +15,9 @@ select attribute_id, trial_id, person_id
 from trial_attribute_used
 join crit_attribute_used using (attribute_id)
 cross join latest_lab
---where attribute_id in (409, 384, 386, 387)
-where lower(attribute_group)~'labs?'
-    and lower(attribute_value) in ('min', 'max')
+where attribute_id in (409, 384) --, 386, 387)
+--where lower(attribute_group)~'labs?'
+--    and lower(attribute_value) in ('min', 'max')
 --    and nvl(inclusion, exclusion) ~ '^[0-9]+([.][0-9]+)?$' --Fixme
 group by attribute_id, person_id, trial_id, inclusion, exclusion
 ;

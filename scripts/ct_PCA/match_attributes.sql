@@ -24,8 +24,9 @@ from histology h
 join ref_histology_mapping m using (histologic_type_name)
 cross join crit_attribute_used
 where lower(attribute_group)='histology'
+where attribute_id in (402, 419, 420)
 ;
-/*-- check
+/*
 select attribute_name, value, count(*)
 from _p_a_histology join crit_attribute_used ca using (attribute_id)
 where match
@@ -50,7 +51,7 @@ select attribute_id, trial_id, person_id
 from trial_attribute_used
 join crit_attribute_used using (attribute_id)
 cross join gleason
-where attribute_name ilike 'gleason%'
+where attribute_id in (388, 389) --name ilike 'gleason%'
 ;
 /*-- check
 select attribute_name, value, clusion

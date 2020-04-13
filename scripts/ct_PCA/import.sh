@@ -44,7 +44,7 @@ psql_w_envs ct_PCA/master_match.sql  #> master_match
 psql_w_envs ct_PCA/quickadd_update_attribute.sql #> crit/trial_attribute_updated
 psql_w_envs ct_PCA/master_sheet.sql  #> master_sheet
 psql_w_envs ct_PCA/quickadd_trial_logic_levels.sql #> trial_attribute_w_levels
-#psql_w_envs disease/master_patient.sql #> trial2patients
+psql_w_envs ct_PCA/master_patient.sql #> trial2patients
 
 psql_w_envs ct_PCA/quickadd_expand_attribute.sql #> crit/trial_attribute_expanded
 #psql_w_envs cancer/quickfix_master_sheet_lca_pca.sql
