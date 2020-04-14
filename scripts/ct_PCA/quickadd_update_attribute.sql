@@ -30,17 +30,17 @@ select * from crit_attribute_updated;
 drop table if exists trial_attribute_updated cascade;
 create table trial_attribute_updated as
 select ta.*
-, case lower(mandatory_default)
+, case btrim(lower(mandatory_default))
     when 'yes' then True
     when 'no' then False
     when 'yes if exc' then not ie_flag
     end as mandatory
 , case
     when logic_default ~ ' if inc$' then
-        case when ie_flag then regexp_replace(logic_default, ' if inc$')
-            else attribute_id::varchar
-            end
-    else logic_default
+        case when ie_flag then
+            regexp_replace(logic_default, ' if inc$')
+        else '' end
+    else nvl(logic_default, '')
     end as logic
 from _trial_attribute_pruned ta
 join crit_attribute_updated using (attribute_id)

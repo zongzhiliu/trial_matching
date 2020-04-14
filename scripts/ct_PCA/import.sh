@@ -41,9 +41,8 @@ psql_w_envs ct_PCA/quickadd_match_PSA.sql #>pat_psa_at_diagnosis
 ### Runable
 # compile the matches
 psql_w_envs ct_PCA/master_match.sql  #> master_match
-
 psql_w_envs ct_PCA/quickadd_update_attribute.sql #> crit/trial_attribute_updated
-psql_w_envs cancer/trial_logic_levels.sql #> trial_attribute_w_levels
+psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
 psql_w_envs ct_PCA/master_sheet.sql  #> master_sheet
 
 psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary

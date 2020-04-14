@@ -1,20 +1,18 @@
 /***
-Requires:
+Requires: master_sheet
     crit_attribute_updated
-    master_sheet
-    trial_logic_w_levels
+    trial_logic_levels
 Results:
-    trial_patient_match
+    master_patient_summary
 */
 -- match adjusted with i/e and then mandatory
 drop table if exists _ie_match cascade;
 create table _ie_match as
 select trial_id, person_id, attribute_id
-, ie_flag
-, ie_value
 , attribute_match
-, mandatory
+, ie_flag
 , decode(ie_flag, True, attribute_match, not attribute_match) match_negated
+, mandatory
 , nvl(match_negated, not mandatory) as match_imputed
 from master_sheet
 ;
@@ -41,13 +39,14 @@ select * from trial_attribute_updated where trial_id='NCT03748641';
 */
 
 -- collase the ie_match to levels of logic
-drop table if exists _crit_l1 cascade;
-create temporary table _crit_l1 as
+-- summary of logic_l1 matches
+drop view if exists _crit_l1;
+create view _crit_l1 as
 with _crit_l2 as (
     select trial_id, person_id, logic_l1, logic_l2
     , bool_and(match_imputed) l2_match
     from _ie_match
-    join trial_attribute_w_levels using (trial_id, attribute_id)
+    join trial_logic_levels using (trial_id, attribute_id)
     group by trial_id, person_id, logic_l1, logic_l2
 )
 select trial_id, person_id, logic_l1
@@ -55,21 +54,18 @@ select trial_id, person_id, logic_l1
 from _crit_l2
 group by trial_id, person_id, logic_l1
 ;
--- summary of logic_l1 matches
-drop view if exists logic_l1_summary;
+
 create view logic_l1_summary as
-with tmp as (
-    select logic_l1, trial_id
-    , sum(l1_match::int) patients
-    from _crit_l1
-    group by trial_id, logic_l1
-) select *
-from tmp join trial_attribute_w_levels using (trial_id, logic_l1)
-order by attribute_id
+select logic_l1, trial_id
+, sum(l1_match::int) patients
+from _crit_l1
+group by trial_id, logic_l1
+order by trial_id, logic_l1
 ;
 /*
 select distinct l1_match from _crit_l1;
 select * from logic_l1_summary where trial_id='NCT03748641'
+;
 order by ie_flag desc, attribute_id;
 select count(*), count(distinct logic_l1), count(distinct trial_id) from v_logic_l1_summary;
     -- different trial using a variety number of logic1s
@@ -92,17 +88,15 @@ where adt_match and testo_match and aa2_match --285
 ;
 */
 
---drop table if exists trial_patient_match cascade;
-create table _crit_l0 as
-select trial_id, person_id
-, bool_and(l1_match) patient_match
-from _crit_l1
-group by trial_id, person_id
-;
-
 --drop view if exists trial_patient_count cascade;
 drop view if exists trial_patient_count;
 create view trial_patient_count as
+with _crit_l0 as (
+    select trial_id, person_id
+    , bool_and(l1_match) patient_match
+    from _crit_l1
+    group by trial_id, person_id
+)
 select trial_id
 , sum(patient_match::int) patients
 from _crit_l0
@@ -114,7 +108,7 @@ drop view if exists master_patient_summary;
 create view master_patient_summary as
 with iec as (
     select trial_id, attribute_id
-    , sum(attribute_match::int) raw_count
+    , nvl(sum(attribute_match::int), 0) raw_count
     , sum(match_imputed::int) adjusted_count
     from _ie_match
     group by trial_id, attribute_id
@@ -127,7 +121,9 @@ select trial_id
 , attribute_group || '>> ' || attribute_name || '>> ' || attribute_value || '>> ' || ie_value as attribute_title
 from trial_patient_count l0
 join logic_l1_summary l1 using (trial_id)
+    join trial_logic_levels using (trial_id, logic_l1)
 join iec using (trial_id, attribute_id)
+join trial_attribute_updated using (trial_id, attribute_id)
 join crit_attribute_updated using (attribute_id)
 order by final_count desc, trial_id, ie_flag desc, logic_l1, attribute_id
 ;

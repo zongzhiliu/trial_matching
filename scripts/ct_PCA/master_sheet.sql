@@ -1,6 +1,7 @@
 /***
 Requires: master_match 
 , trial_attribute_updated, crit_attribute_updated 
+, trial_logic_levels
 Results: master_sheet
 Settings:
 */
@@ -11,8 +12,10 @@ select trial_id, person_id, attribute_id
 , ie_value, ie_flag
 , attribute_match
 , mandatory, logic
+, logic_l1, logic_l2
 from master_match
 join trial_attribute_updated using (attribute_id, trial_id)
+join trial_logic_levels using (attribute_id, trial_id)
 join crit_attribute_updated using (attribute_id)
 order by person_id, trial_id, attribute_id
 ;
