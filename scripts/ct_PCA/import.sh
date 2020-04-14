@@ -1,5 +1,4 @@
 ############################################################## 
-# incomplete do not run
 # the workflow to create and populate ct_${cancer} schema
 # requires:
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
@@ -16,7 +15,7 @@ psql_w_envs ct_PCA/quickfix_prepare_reference.sql  #> ref tables
 psql_w_envs ct_PCA/setup.sql  #> ref tables, trial/crit_attribute_used
 
 # prepare patient tables
-psql_w_envs cancer/prepare_patients.sql  #> demo and other patient tables
+# psql_w_envs cancer/prepare_patients.sql  #> demo and other patient tables
     #prepare_patients.sql is incomplete, to be replaced with other prepare_ modules
 # psql_w_envs cancer/prepare_stage.sql  #> stage
 psql_w_envs ct_PCA/quickadd_impute_stage.sql  #> stage
@@ -38,7 +37,6 @@ psql_w_envs ct_PCA/match_attributes.sql  #> pat_gleason, pa_histology
 psql_w_envs ct_PCA/quickadd_match_disease_status.sql #> pa_disease_status
 psql_w_envs ct_PCA/quickadd_match_PSA.sql #>pat_psa_at_diagnosis
 
-### Runable
 # compile the matches
 psql_w_envs ct_PCA/master_match.sql  #> master_match
 psql_w_envs ct_PCA/quickadd_update_attribute.sql #> crit/trial_attribute_updated
@@ -51,13 +49,6 @@ psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary
 psql_w_envs ct_PCA/quickadd_expand_attribute.sql #> crit/trial_attribute_expanded
 source ct_PCA/download_master_sheet_new.sh
 source ct_PCA/deliver_master_sheet_new.sh
-#export logic_cols='logic_l1_id'
-#export disease=${cancer_type}
-#mysql_w_envs disease/expand_master_sheet.sql
-
-#psql_w_envs disease/logic_to_levels.sql
-# python cancer/master_tree.py generate patient counts at each logic branch,
-# and dynamic visualization file for each trial.
 
 ### Runnable
 # download and deliver
