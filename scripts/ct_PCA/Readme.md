@@ -20,7 +20,7 @@ _trial_attribute_raw=trial_attribute_raw_20200223;
 * trial_attribute_used: filter, deduplicate, ie_flag, ie_value
 * crit_attribute_used: filter by tau, deduplicate
 
-## prepare patient data
+## prepare patient data from cplus/dev_patient/msdw
 * demo, demo_plus
 * stage: imputed from tnm, psa, gleason
 * histology, gleason
@@ -29,23 +29,24 @@ _trial_attribute_raw=trial_attribute_raw_20200223;
 * latest_lot_drug
 * lasest_ecog, karnofsky
 
-## match the attributes
+## match the attributes for each patient and trial
 * _p_a_disease, disease_status (metastates)
 * _p_a_chemotherapy, hormone_therapy, targetedtherapy, immunotherapy
 * _p_a_lab, stage, lot, ecog, karnofsky
 * _p_a_t_lab, gleason, blood_pressure, weight, psa_at_diagnosis
 
-## compile and update
+## compile and update the match, ca, ta
 * master_match
 * crit_attribute_updated: pruned by match, updated by ca_raw_updated
 * trial_attribute_updated: pruned by match, mandatory, logic updated with cau
 
-## match the patients
-* master_sheet
+## match the patients after applying negation, mandatory and logic
 * trial_logic_levels
 * master_patient_summary
 
-## deliver to external
+## deliver to external (person_id masked)
 * crit_attribute_expanded
 * master_sheet_expanded
+* demo_w_zip
+* caregiver_zip
 
