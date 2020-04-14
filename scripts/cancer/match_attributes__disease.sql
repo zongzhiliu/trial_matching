@@ -15,8 +15,9 @@ select person_id, NULL as patient_value
         and icd_code !~ '${cancer_type_icd}'
         and datediff(day, dx_date, '${protocal_date}')/365.25 <= 2
     -- when 199 then --autoimmune not implemented NULL
-    when 194 then --brain met
+    when 194 then --brain met -- always requite a tempo
         icd_code ~ '^(C79[.]31|198[.]3)'
+            and datediff(day, dx_date, '${protocal_date}')/365.25 <= 1
     when 195 then --brain met active ignored: to be improved later
         icd_code ~ '^(C79[.]31|198[.]3)'
             and datediff(day, dx_date, '${protocal_date}')/365.25 <= 1

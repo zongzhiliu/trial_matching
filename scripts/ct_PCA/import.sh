@@ -41,13 +41,15 @@ psql_w_envs ct_PCA/quickadd_match_PSA.sql #>pat_psa_at_diagnosis
 ### Runable
 # compile the matches
 psql_w_envs ct_PCA/master_match.sql  #> master_match
-psql_w_envs ct_PCA/quickadd_update_attribute.sql #> crit/trial_attribute_updated
-psql_w_envs ct_PCA/master_sheet.sql  #> master_sheet
-psql_w_envs ct_PCA/quickadd_trial_logic_levels.sql #> trial_attribute_w_levels
-psql_w_envs ct_PCA/master_patient.sql #> trial2patients
 
-psql_w_envs ct_PCA/quickadd_expand_attribute.sql #> crit/trial_attribute_expanded
+psql_w_envs ct_PCA/quickadd_update_attribute.sql #> crit/trial_attribute_updated
+psql_w_envs cancer/trial_logic_levels.sql #> trial_attribute_w_levels
+psql_w_envs ct_PCA/master_sheet.sql  #> master_sheet
+
+psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary
+
 #psql_w_envs cancer/quickfix_master_sheet_lca_pca.sql
+psql_w_envs ct_PCA/quickadd_expand_attribute.sql #> crit/trial_attribute_expanded
 source ct_PCA/download_master_sheet_new.sh
 source ct_PCA/deliver_master_sheet_new.sh
 #export logic_cols='logic_l1_id'

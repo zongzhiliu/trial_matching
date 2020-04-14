@@ -110,7 +110,7 @@ select person_id, '' as patient_value
     when 320 then lab_test_name='WBC' and value_float>=3.5
     when 289 then lab_test_name='Hamatocrit' and value_float/normal_high<=1 --x ULN
     when 291 then lab_test_name='Alkaline phosphatase' and value_float/normal_high<=2 --xUNL
-    when 292 then lab_test_name='PAS' and value_float<=4) -- mg/ml
+    when 292 then lab_test_name='PAS' and value_float<=4 -- mg/ml
     when 293 then lab_test_name='Prolactin' and value_float/normal_high<=1 --x ULN
     when 302 then lab_test_name='Serum lipase' and value_float/normal_high<=1 --x ULN
     when 303 then lab_test_name='Serum amylase' and value_float/normal_high<=1 --x ULN

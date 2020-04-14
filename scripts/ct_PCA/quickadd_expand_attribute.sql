@@ -1,6 +1,10 @@
 /*
 Results: crit_attribute_used_new
 , master_sheet_new
+Requires: trial_attribute_updated
+, crit_attribute_updated
+, master_match
+, trial_attribute_w_levels
 */
 drop table _attr_value;
 create table _attr_value as

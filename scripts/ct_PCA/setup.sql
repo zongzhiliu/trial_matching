@@ -26,15 +26,16 @@ select ct.assert(
     (select count from obs) = (select count from exp)
     , 'records should be have distinct keys')
 ;
-/*
+/* summary
 with tmp as (
-    select attribute_id
-    , listagg(distinct nvl(inclusion, exclusion), '| ') ie_values
+    select attribute_id, ie_value
+    , count(trial_id) trials
     from trial_attribute_used
-    group by attribute_id
+    group by attribute_id, ie_value
 )
-select attribute_id, ie_values, a.*
-from tmp join crit_attribute_raw a using (attribute_id)
+select attribute_id, ie_value, trials
+, attribute_group || '| ' || attribute_name || '| ' || attribute_value
+from tmp join _crit_attribute_raw a using (attribute_id)
 order by attribute_id
 ;
 */
@@ -52,15 +53,16 @@ join (select distinct attribute_id
 select ct.assert(count(*)=count(distinct attribute_id),
     'No redundant attribute_ids')
 from crit_attribute_used;
---drop view v_crit_attribute_used;
---create or replace view v_crit_attribute_used as
---select attribute_id, attribute_group, attribute_name, attribute_value
---, mandatory_default, logic_default
---from crit_attribute_used
---order by attribute_id
---;
 /*qc
 select count(*) from crit_attribute_used;
     --170
     --183
+-- to be updated later using all-null matches
+drop view v_crit_attribute_used;
+create or replace view v_crit_attribute_used as
+select attribute_id, attribute_group, attribute_name, attribute_value
+, mandatory_default, logic_default
+from crit_attribute_used
+order by attribute_id
+;
 */

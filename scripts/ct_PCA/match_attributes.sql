@@ -23,7 +23,7 @@ select person_id, histologic_type_name as patient_value
 from histology h
 join ref_histology_mapping m using (histologic_type_name)
 cross join crit_attribute_used
-where lower(attribute_group)='histology'
+--where lower(attribute_group)='histology'
 where attribute_id in (402, 419, 420)
 ;
 /*

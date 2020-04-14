@@ -1,22 +1,9 @@
 /***
-Requires:
-    _master_match
-    , trial_attribute_updated, crit_attribute_updated
-Results:
-    master_match, master_sheet
+Requires: master_match 
+, trial_attribute_updated, crit_attribute_updated 
+Results: master_sheet
 Settings:
 */
--- set match as null by default for each patient
-drop table if exists master_match;
-create table master_match as
-select attribute_id, trial_id, person_id
-, bool_or(match) as attribute_match --quick fix: multiple matches
-from (trial_attribute_updated
-    cross join cohort)
-left join _master_match using (attribute_id, trial_id, person_id)
-group by attribute_id, trial_id, person_id
-;
-
 drop view if exists master_sheet cascade;
 create view master_sheet as
 select trial_id, person_id, attribute_id
