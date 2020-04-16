@@ -14,20 +14,11 @@ def test_get_branch_size():
 def test_each_total():
     assert list(mm.each_total(df)) == exp_total
 
-def test_each_ancestor():
-    assert list(mm.each_ancestor('a.b.c')) == ['a.b', 'a', 'root']
-
-def test_main_d3_tree():
-    incsv = 'test_s3_tree.csv'
-    with open('treeData.js', 'w') as outjs:
-        mm.main_d3_tree(incsv, outjs)
-    sp.call('open test_mesh_counting.html', shell=True)
 
 def test__main():
     res=df
     res['total'] = list(mm.each_total(df))
     print (res)
-
 
 def test_get_size_and_total():
     assert mm.get_size_and_total(df) == (exp_size, exp_total)
