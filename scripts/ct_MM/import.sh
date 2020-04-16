@@ -11,9 +11,6 @@ psql -c "create schema if not exists ${working_schema}"
 ipython mm/load_attribute.py
 psql_w_envs cancer/prepare_attribute.sql
 
-# load updated drug/lab mapping table
-#no run: load_into_db_schema_some_csvs.py rimsdw ct drug_mapping_cat_expn3_20200308.csv
-
 # prepare patient data
 #psql_w_envs cancer/prepare_patients.sql
 psql_w_envs cancer/prepare_cohort.sql

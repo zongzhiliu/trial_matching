@@ -8,6 +8,9 @@ pgsetup $db_conn
 source util/util.sh
 psql -c "create schema if not exists ${working_schema}"
 psql_w_envs cancer/prepare_reference.sql
+# prepare attribute
+ipython ct_BCA/load_attribute.ipy
+psql_w_envs cancer/prepare_attribute.sql
 
 # prepare patient data
 #psql_w_envs cancer/prepare_vital.sql #! divide by zero error
@@ -21,12 +24,6 @@ psql_w_envs cancer/prepare_histology.sql
 psql_w_envs cancer/prepare_variant.sql
 psql_w_envs cancer/prepare_biomarker.sql
 #psql_w_envs caregiver/icd_physician.sql
-
-# prepare attribute
-ipython ct_BCA/load_attribute.ipy
-psql_w_envs cancer/prepare_attribute.sql
-    #later: to move stage code to attribute_value, stage code_type to code
-    #later: rescue stage using TNM c/p
 
 # perform the attribute matching
 #psql_w_envs cancer/match_loinc.sql

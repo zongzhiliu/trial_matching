@@ -13,13 +13,12 @@ source util/util.sh
 pgsetup ${db_conn}
 psql -c "create schema if not exists ${working_schema}"
 
-# prepare reference tables as defined in config, then
-psql_w_envs disease/prepare_reference.sql
-
 # prepare attribute tables as csv (crit_attribute, trial_attribute)
 ipython ct_CD/load_trial_attribute.ipy
 ipython disease/load_crit_attribute.ipy
 psql_w_envs cancer/prepare_attribute.sql
+# prepare reference tables as defined in config, then
+psql_w_envs disease/prepare_reference.sql
 
 # prepare patient data
 psql_w_envs disease/prepare_cohort.sql

@@ -1,9 +1,11 @@
 
 // ************** Generate the tree diagram     *****************
-var margin = {top: 20, right: 120, bottom: 20, left: 120},
-    width = 960 - margin.right - margin.left,
-    height = 500 - margin.top - margin.bottom;
-    
+var margin = {top: 20, right: 120, bottom: 20, left: 120};
+    //width = 960 - margin.right - margin.left,
+    //height = 5500 - margin.top - margin.bottom;
+var width = $(document).width();
+var height = 5000; //$(document).height();
+
 var i = 0,
     duration = 750,
     root;
@@ -24,9 +26,21 @@ root = treeData[0];
 root.x0 = height / 2;
 root.y0 = 0;
   
+// Collapse after the second level
+root.children.forEach(collapse);
+
 update(root);
 
 d3.select(self.frameElement).style("height", "500px");
+
+// Collapse the node and all it's children
+function collapse(d) {
+  if(d.children) {
+    d._children = d.children
+    d._children.forEach(collapse)
+    d.children = null
+  }
+}
 
 function update(source) {
 

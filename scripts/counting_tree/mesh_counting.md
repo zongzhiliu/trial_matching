@@ -16,6 +16,11 @@ sele = res.index[res['count']>1]
 tmp[tmp.MeSH_code.isin(sele)]
 ```
 # counting each branch
-```
-!python /Users/zongzhiliu/git/trial_matching/scripts/mesh_counting.py <Top50trial_mesh_pc.csv > Top50trial_mesh_pc_branch_total.csv
+```bash
+working_dir="$PWD"
+script_dir='/Users/zongzhiliu/git/trial_matching/scripts/counting_tree'
+python ${script_dir}/mesh_counting.py <Top50trial_mesh_pc.csv > Top50trial_mesh_pc_branch_total.csv
+cd ${script_dir}
+python tree_display.py < ${working_dir}/Top50trial_mesh_pc_branch_total.csv > treeData.js
+open test_mesh_counting.html
 ```
