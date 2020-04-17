@@ -1,2 +1,2 @@
-source nsclc/config.sh
-source nsclc/import_lca.sh
+source ct_NSCLC/config.sh
+source ct_NSCLC/import_lca.sh

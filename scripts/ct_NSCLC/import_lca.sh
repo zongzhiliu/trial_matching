@@ -4,10 +4,9 @@
 # requires:
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
 ###
-# source nsclc/config.sh
-# source sclc/config.sh
+# source ct_NSCLC/config.sh
+# source ct_SCLC/config.sh
 source util/util.sh
-export db_conn=rimsdw
 pgsetup $db_conn
 psql -c "create schema if not exists ${working_schema}"
 psql_w_envs cancer/prepare_reference.sql
