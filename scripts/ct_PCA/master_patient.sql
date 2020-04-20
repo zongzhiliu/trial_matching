@@ -1,7 +1,8 @@
 /***
-Requires: master_sheet
-    crit_attribute_updated
-    trial_logic_levels
+Requires: master_match
+, crit_attribute_updated
+, trial_attribute_updated
+, trial_logic_levels
 Results:
     master_patient_summary
 */
@@ -14,7 +15,8 @@ select trial_id, person_id, attribute_id
 , decode(ie_flag, True, attribute_match, not attribute_match) match_negated
 , mandatory
 , nvl(match_negated, not mandatory) as match_imputed
-from master_sheet
+from master_match
+join trial_attribute_updated using (trial_id, attribute_id)
 ;
 /*
 select * from _ie_match
@@ -40,7 +42,7 @@ select * from trial_attribute_updated where trial_id='NCT03748641';
 
 -- collase the ie_match to levels of logic
 -- summary of logic_l1 matches
-drop view if exists _crit_l1;
+drop view if exists _crit_l1 cascade;
 create view _crit_l1 as
 with _crit_l2 as (
     select trial_id, person_id, logic_l1, logic_l2

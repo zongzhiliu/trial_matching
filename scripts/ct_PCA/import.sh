@@ -39,62 +39,13 @@ psql_w_envs ct_PCA/quickadd_match_PSA.sql #>pat_psa_at_diagnosis
 
 # compile the matches
 psql_w_envs ct_PCA/master_match.sql  #> master_match
-psql_w_envs ct_PCA/quickadd_update_attribute.sql #> crit/trial_attribute_updated
+psql_w_envs ct_PCA/update_attributes.sql #> crit/trial_attribute_updated
 psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
-psql_w_envs ct_PCA/master_sheet.sql  #> master_sheet
-
 psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary
 
 #psql_w_envs cancer/quickfix_master_sheet_lca_pca.sql
-psql_w_envs ct_PCA/quickadd_expand_attribute.sql #> crit/trial_attribute_expanded
-source ct_PCA/download_master_sheet_new.sh
-source ct_PCA/deliver_master_sheet_new.sh
-
-### Runnable
-# download and deliver
-#ipython cancer/download_master_patient.ipy
-
-##############################################################
-# never run
-#psql_w_envs ct_PCA/master_match.sql  #> master_match
-#psql_w_envs cancer/master_sheet.sql  #> master_sheet
-#todo
-#python compile_matches.py | psql #compile all the _p_a_tables and _p_a_t_talbles to master_match
-
-# match to patients
-#psql_w_envs trial2patients.sql  #> trial2patients
-# ### !! donot run
-# # prepare attribute
-# ipython pca/load_attribute.ipy
-# psql_w_envs cancer/prepare_attribute.sql
-# 
-# ### !! donot run
-# # prepare patient data
-# psql_w_envs ${working_schema}/quickfix_prepare_drug.sql # drug mapping needed
-# #psql_w_envs cancer/prepare_vital.sql #! divide by zero error
-# psql_w_envs cancer/prepare_cohort.sql
-# psql_w_envs cancer/prepare_diagnosis.sql
-# psql_w_envs cancer/prepare_performance.sql
-# psql_w_envs cancer/prepare_lab.sql
-# psql_w_envs cancer/prepare_lot.sql # drug mapping needed
-# psql_w_envs cancer/prepare_stage.sql
-# psql_w_envs cancer/prepare_histology.sql
-# psql_w_envs cancer/prepare_variant.sql
-# psql_w_envs cancer/prepare_biomarker.sql
-# #psql_w_envs caregiver/icd_physician.sql
-# 
-# ### !!do not run
-# # perform the attribute matching
-# #psql_w_envs cancer/match_loinc.sql
-# psql_w_envs cancer/match_icd.sql #later: make a _p_a table, and a _p_a_t view
-# psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
-# psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
-# psql_w_envs pca/prepare_misc_measurement.sql #mv to cancer later
-# psql_w_envs cancer/match_misc_measurement.sql
-# psql_w_envs pca/prepare_cat_measurement.sql #menopausal to be cleaned
-# psql_w_envs pca/match_cat_measurement.sql #mv to cancer later
-# psql_w_envs cancer/match_icdo_rex.sql
-# psql_w_envs cancer/match_stage.sql
-# psql_w_envs cancer/match_variant.sql
-# psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
+#psql_w_envs ct_PCA/master_sheet.sql  #> master_sheet to be deprecated
+psql_w_envs ct_PCA/expand_attributes.sql #> crit_attribute_expanded, master_sheet_expanded
+source ct_PCA/download_master_sheet_expanded.sh
+source ct_PCA/deliver_master_sheet_expanded.sh
 
