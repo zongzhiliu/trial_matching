@@ -1,14 +1,12 @@
 ###
 # config and setup
-source mm/config.sh
-
-export db_conn=rimsdw
+source ct_MM/config.sh
 pgsetup $db_conn
 source util/util.sh
 psql -c "create schema if not exists ${working_schema}"
 
 # prepare attribute
-ipython mm/load_attribute.py
+ipython ct_MM/load_attribute.py
 psql_w_envs cancer/prepare_attribute.sql
 
 # prepare patient data
