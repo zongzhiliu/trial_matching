@@ -21,6 +21,9 @@ from ct.crit_attribute_used_lca_pca_20200410;
 create or replace view _trial_attribute_raw as
 select * from trial_attribute_raw_20200223;
 
+select ct.assert(bool_and(inclusion is null or exclusion is null), 'one of inc/exc must be null')
+from _trial_attribute_raw;
+
 create or replace view ref_drug_mapping as
 select * from ${ref_drug_mapping}; --ct.drug_mapping_cat_expn3;
 

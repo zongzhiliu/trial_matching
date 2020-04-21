@@ -8,7 +8,8 @@ Results:
 -- trial_attribute_used
 drop table if exists trial_attribute_used cascade;
 create table trial_attribute_used as
-select *
+select btrim(trial_id) trial_id
+, attribute_id
 , inclusion is not null as ie_flag
 , btrim(nvl(inclusion, exclusion)) ie_value
 from (select distinct * from _trial_attribute_raw) --quickfix
