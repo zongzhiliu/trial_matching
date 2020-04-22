@@ -3,7 +3,6 @@
 # ct.py_contains, .ref_drug_mapping .ref_lab_mapping
 
 source ct_BCA/config.sh
-export db_conn=rimsdw
 pgsetup $db_conn
 source util/util.sh
 psql -c "create schema if not exists ${working_schema}"
