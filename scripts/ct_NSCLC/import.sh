@@ -2,9 +2,10 @@ source ct_NSCLC/config.sh
 source util/util.sh
 pgsetup $db_conn
 psql -c "create schema if not exists ${working_schema}"
-psql_w_envs cancer/prepare_reference.sql
-ipython ct_NSCLC/load_attribute.ipy
-psql_w_envs cancer/prepare_attribute.sql
+#ipython ct_NSCLC/load_attribute.ipy
+#psql_w_envs cancer/prepare_reference.sql
+#psql_w_envs cancer/prepare_attribute.sql
+psql_w_envs ct_NSCLC/setup.sql
 
 psql_w_envs cancer/prepare_cohort.sql
 psql_w_envs cancer/prepare_histology.sql
