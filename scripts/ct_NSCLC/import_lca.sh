@@ -7,14 +7,14 @@
 # source ct_NSCLC/config.sh
 # source ct_SCLC/config.sh
 # prepare patient data
-#psql_w_envs cancer/prepare_vital.sql #! divide by zero error
-#psql_w_envs cancer/prepare_cohort.sql
-#psql_w_envs cancer/prepare_histology.sql
-#psql_w_envs cancer/prepare_stage.sql
+psql_w_envs cancer/prepare_demo.sql
+
 psql_w_envs cancer/prepare_diagnosis.sql
 psql_w_envs cancer/prepare_performance.sql
 psql_w_envs cancer/prepare_lab.sql
-psql_w_envs cancer/prepare_lot.sql # drug mapping needed
+psql_w_envs cancer/prepare_vital.sql
+psql_w_envs cancer/prepare_lot.sql
+
 psql_w_envs cancer/prepare_variant.sql
 psql_w_envs cancer/prepare_biomarker.sql
 #psql_w_envs caregiver/icd_physician.sql

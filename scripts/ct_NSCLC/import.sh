@@ -11,7 +11,6 @@ psql_w_envs cancer/prepare_cohort.sql
 psql_w_envs cancer/prepare_histology.sql
 # subset the cohort with histology: NSCLC
 psql_w_envs ct_NSCLC/update_cohort_histology.sql
-psql_w_envs cancer/prepare_demo.sql
 
 # complement the stage with imputed ones
 psql_w_envs ct_NSCLC/update_stage.sql

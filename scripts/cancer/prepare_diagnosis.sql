@@ -3,8 +3,6 @@ Requires:
     cohort, cplus, dev_patient_info
 Results:
     latest_icd
-Settings:
-    cancer_type
 */
 drop table if exists latest_icd;
 create table latest_icd as
@@ -24,9 +22,9 @@ from (select *, row_number() over (
     )
 where row_number=1
 ;
+select count(*) records, count(distinct person_id) patients from latest_icd;
 /*qc
 select count(distinct person_id) from _all_dx; --v1:4997 v2:5430 v3:3446
-select count(*) from latest_icd; --v1: 316791, v2: 327904 v3: 199662
 */
 
 

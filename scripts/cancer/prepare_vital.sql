@@ -1,6 +1,6 @@
---set search_path=ct_${cancer_type};
 /***
- * vital
+Results: vital, vital_bmi
+Requires: cohort, dev_patient_info
  */
 drop table if exists vital;
 create table vital as
@@ -12,11 +12,10 @@ select distinct person_id
     , context_name
     , value
     , unit_of_measure
-from demo
+from cohort
 join prod_references.person_mrns using (person_id)
 join dev_patient_info_${cancer_type}.vitals on (medical_record_number=mrn)
 ;
---select count(distinct person_id) from vital; -- 12140/ v2: 12728
 
 create temporary table _vital_weight_height_by_day as
 select person_id, age_in_days, procedure_description
@@ -58,3 +57,14 @@ where row_number=1
 order by person_id, weight_age
 ;
 
+create view qc_vital as
+select  context_name, context_procedure_code, procedure_description, unit_of_measure
+, count(*) records, count(distinct person_id) patients
+from vital
+group by context_name, context_procedure_code, procedure_description, unit_of_measure
+;
+select count(*) measures from qc_vital
+;
+select count(*) records, count(distinct person_id) patients
+from vital
+;

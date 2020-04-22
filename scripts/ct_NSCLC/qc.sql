@@ -31,3 +31,30 @@ select_from_db_schema_table.py rimsdw ${working_schema}.v_NCT04032704 \
 */
 
 
+/*qc of lot
+-- debug
+select distinct lot from m_lot;
+select modality, count(*)
+from m_lot
+group by modality ;
+--ok
+select count(distinct person_id) from lot where n_lot>0;
+select count(distinct person_id) from modality_lot where n_lot>0;
+
+select modality, count(distinct person_id) patients
+from modality_lot
+where n_lot>0
+group by modality
+;
+-- debug
+with tmp as(
+select distinct drug_name from _line_of_therapy
+left join ${ref_drug_mapping} using (drug_name)
+where modality is null
+)
+select * 
+from resource.all_cancer_drugs_list ac
+--from ${ref_drug_mapping}
+join tmp on lower(ac.drug_name)=tmp.drug_name
+;
+*/
