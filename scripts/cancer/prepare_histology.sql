@@ -1,8 +1,7 @@
 /***
- * histology
- * requires: $cancer_type
- */
---set search_path=ct_${cancer_type};
+Results: histology
+Requires: cohort, cplus
+*/
 
 drop table if exists histology;
 create table histology as
