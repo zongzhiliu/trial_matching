@@ -1,8 +1,8 @@
-/***
- * match vital: weight, bmi, bloodpressure
- * require: vital, vital_bmi
+/*** * match vital: weight, bmi, bloodpressure
+ * Require: vital, vital_bmi
+ Result: _p_a_t_weight, _p_a_t_blood_pressure
  */
-drop table if exists _latest_bmi;
+drop table if exists _latest_bmi cascade;
 create table _latest_bmi as
 select person_id, weight_age, weight_kg, height_m, bmi
 from (select *, row_number() over (
@@ -12,7 +12,7 @@ from (select *, row_number() over (
     )
 where row_number=1
 ;
-drop table _p_a_t_weight;
+drop table if exists _p_a_t_weight cascade;
 create table _p_a_t_weight as
 select attribute_id, trial_id, person_id
 , ie_value::float as value
@@ -26,16 +26,17 @@ select attribute_id, trial_id, person_id
 from trial_attribute_used
 cross join _latest_bmi
 where attribute_id in (300, 301)
---    and nvl(inclusion, exclusion) ~ '^[0-9]+(\\.[0-9]+)?$' --Fixme
 ;
-/*-- check
-select attribute_name, attribute_value, clusion, count(distinct person_id)
+--    and nvl(inclusion, exclusion) ~ '^[0-9]+(\\.[0-9]+)?$' --Fixme
+create view qc_match_weight as
+select attribute_name, attribute_value, value
+, count(distinct person_id)
 from _p_a_t_weight join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, attribute_value, clusion
-order by attribute_name, attribute_value, clusion::int
+group by attribute_name, attribute_value, value
+order by attribute_name, attribute_value, value
 ;
-*/
+
 drop table if exists _latest_blood_pressure;
 create table _latest_blood_pressure as
 with syst as (
@@ -67,7 +68,7 @@ from last_syst
 join last_diast using (person_id, age_in_days)
 ;
 
-drop table _p_a_t_blood_pressure;
+drop table if exists _p_a_t_blood_pressure cascade;
 create table _p_a_t_blood_pressure as
 select attribute_id, trial_id, person_id
 , ie_value::int value
@@ -82,12 +83,12 @@ cross join _latest_blood_pressure p
 where attribute_id in (268, 269)
 --    and nvl(inclusion, exclusion) ~ '^[0-9]+$' --Fixme
 ;
-/*-- check
-select attribute_name, attribute_value, clusion, count(distinct person_id)
+create view qc_match_blood_pressure as
+select attribute_name, attribute_value, value, count(distinct person_id)
 from _p_a_t_blood_pressure join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, attribute_value, clusion
-order by attribute_name, attribute_value, clusion::int
+group by attribute_name, attribute_value, value
+order by attribute_name, attribute_value, value
 ;
-*/
-
+--select * from qc_match_blood_pressure;
+--select * from qc_match_weight;

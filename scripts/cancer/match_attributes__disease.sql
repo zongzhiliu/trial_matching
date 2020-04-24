@@ -1,15 +1,14 @@
-/***
- * match diseases: matching using icd codes
+/*** * match diseases: matching using icd codes
  * requires: latest_icd
- * to be improved with the icd mapping
+ , crit_attribute_used (attribute_id only)
+ * results: _p_a_disease
  */
--- alter table _p_a_disease rename to _p_a_disease_old;
-drop table if exists _p_a_disease;
+drop table if exists _p_a_disease cascade;
 create table _p_a_disease as
 select person_id, NULL as patient_value
 , attribute_id
 , bool_or (case attribute_id
-    when 201 then --Other malignancy: to exclude secondary C7[7-9B]
+    when 201 then --Other primary malignancy: to exclude secondary C7[7-9B]
         icd_code ~ '^(C[0-6]|C7[0-6]|C8[1-9]|C9[1-6])'
         --'^(C[0-689]|C7[0-6A]|C80|1[4-8]|19[0-59]|20)'
         and icd_code !~ '${cancer_type_icd}'
@@ -27,6 +26,7 @@ select person_id, NULL as patient_value
         icd_code ~ '^(C70[.]9|192[.]1)'
     when 198 then --Spinal cord compression
         icd_code ~ '^(G95[.]20|336[.]9)'
+    -- when 199 then --autoimmune_disease
     when 200 then --Immunodeficiency/HIV infection
         icd_code ~ '^(D84[.]9|279[.]3)'
     when 202 then --Cardiovascular disease
@@ -51,17 +51,18 @@ select person_id, NULL as patient_value
         icd_code ~'^(C79[.]5|98[.]5)'
     end) as match
 from (crit_attribute_used cross join latest_icd)
-where attribute_id in (201, 194, 195, 196, 197, 198, 200, 202, 203, 204, 255, 421, 313, 404, 385, 410, 411)
+where attribute_id in (194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204
+    , 255, 313, 385, 404, 410, 411, 421)
 group by attribute_id, person_id
 ;
-/*qc: other maligancy, ILD, CHF has double numbers if not by person_id??
-select attribute_name, attribute_value, count(distinct person_id)
+create view qc_match_disease as
+select attribute_id, attribute_name, attribute_value
+, count(distinct person_id)
 from _p_a_disease join crit_attribute_used using (attribute_id)
 where match
-group by attribute_name, attribute_value
-order by attribute_name, attribute_value
+group by attribute_id, attribute_name, attribute_value
+order by attribute_id, attribute_name, attribute_value
 ;
-*/
 
 /*** more diseases
 where attribute_id=233 --value='IV (cirrhosis)'

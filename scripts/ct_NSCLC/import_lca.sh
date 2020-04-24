@@ -19,7 +19,6 @@ psql_w_envs cancer/prepare_biomarker.sql
 
 
 # match to attributes
-############################################################ next
 #psql_w_envs cancer/match_attributes.sql #>_pa_stage/ecog/karnofsky/lot
 psql_w_envs cancer/match_attributes__stage.sql #>_pa_stage
 psql_w_envs cancer/match_attributes__performance.sql #>_pa_ecog/karnofsky
@@ -27,12 +26,11 @@ psql_w_envs cancer/match_attributes__lot.sql #>_pa_lot
 psql_w_envs cancer/match_attributes__age.sql #> pat_age
 psql_w_envs cancer/match_attributes__vital.sql #> pat_weight/bloodpressure
 psql_w_envs cancer/match_attributes__disease.sql #> pa_disease
+############################################################ next
 psql_w_envs cancer/match_attributes__drug_therapy.sql #> pa_/chemo/immuno/hormon/targeted
 psql_w_envs cancer/match_lab_pa.sql #>pa_lab
 psql_w_envs cancer/match_lab_pat.sql #>pat_lab
-psql_w_envs ct_PCA/match_attributes.sql  #> pat_gleason, pa_histology
 psql_w_envs ct_PCA/quickadd_match_disease_status.sql #> pa_disease_status
-psql_w_envs ct_PCA/quickadd_match_PSA.sql #>pat_psa_at_diagnosis
 
 # compile the matches
 psql_w_envs ct_PCA/master_match.sql  #> master_match
