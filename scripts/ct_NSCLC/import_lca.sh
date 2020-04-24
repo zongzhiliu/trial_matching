@@ -23,6 +23,7 @@ psql_w_envs cancer/prepare_biomarker.sql
 #psql_w_envs cancer/match_attributes.sql #>_pa_stage/ecog/karnofsky/lot
 psql_w_envs cancer/match_attributes__stage.sql #>_pa_stage
 psql_w_envs cancer/match_attributes__performance.sql #>_pa_ecog/karnofsky
+psql_w_envs cancer/match_attributes__lot.sql #>_pa_lot
 psql_w_envs cancer/match_attributes__age.sql #> pat_age
 psql_w_envs cancer/match_attributes__vital.sql #> pat_weight/bloodpressure
 psql_w_envs cancer/match_attributes__disease.sql #> pa_disease
