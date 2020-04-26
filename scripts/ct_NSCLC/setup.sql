@@ -26,6 +26,10 @@ select attribute_id
 , attribute_group
 , nvl(attribute_name, '_') attribute_name
 , nvl(value, '_') attribute_value -- quickfix
+, code_type, code_raw, code_ext, code_transform
+, case when code_type like 'icd%' then
+    '^('+code_raw+'|'+code_ext+')'
+    when code_type
 from ${crit_attribute}
 ;
 select ct.assert(count(*) = count(distinct attribute_id)
