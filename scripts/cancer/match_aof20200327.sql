@@ -21,7 +21,7 @@ drop table if exists _p_aof cascade;
 create table _p_aof as
 with como as (
     select person_id
-    , bool_or(icd_code ~ '^(C787[.]7|197[.]7)') as livermet
+    , bool_or(icd_code ~ '^(C78[.]7|197[.]7)') as livermet -- a typo fix here
     , bool_or(icd_code ~ '^(E80[.]4|277[.]4)') as gs
     from latest_icd
     group by person_id

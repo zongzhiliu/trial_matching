@@ -19,18 +19,23 @@ psql_w_envs cancer/prepare_biomarker.sql
 
 
 # match to attributes
-#psql_w_envs cancer/match_attributes.sql #>_pa_stage/ecog/karnofsky/lot
 psql_w_envs cancer/match_attributes__stage.sql #>_pa_stage
 psql_w_envs cancer/match_attributes__performance.sql #>_pa_ecog/karnofsky
 psql_w_envs cancer/match_attributes__lot.sql #>_pa_lot
 psql_w_envs cancer/match_attributes__age.sql #> pat_age
 psql_w_envs cancer/match_attributes__vital.sql #> pat_weight/bloodpressure
-psql_w_envs cancer/match_attributes__disease.sql #> pa_disease
-############################################################ next
-psql_w_envs cancer/match_attributes__drug_therapy.sql #> pa_/chemo/immuno/hormon/targeted
 psql_w_envs cancer/match_lab_pa.sql #>pa_lab
-psql_w_envs cancer/match_lab_pat.sql #>pat_lab
-psql_w_envs ct_PCA/quickadd_match_disease_status.sql #> pa_disease_status
+############################################################ next
+psql_w_envs ct_NSCLC/match_attributes__histology.sql  #> pa_histology
+psql_w_envs cancer/match_variant.sql
+psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
+#psql_w_envs cancer/match_loinc.sql
+psql_w_envs cancer/match_icd.sql #later: make a _p_a table, and a _p_a_t view
+psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
+psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
+psql_w_envs cancer/match_attributes__disease.sql #> pa_disease
+psql_w_envs cancer/match_attributes__drug_therapy.sql #> pa_/chemo/immuno/hormon/targeted
+#psql_w_envs ct_PCA/quickadd_match_disease_status.sql #> pa_disease_status
 
 # compile the matches
 psql_w_envs ct_PCA/master_match.sql  #> master_match
@@ -45,12 +50,6 @@ source ct_PCA/download_master_sheet_expanded.sh
 source ct_PCA/deliver_master_sheet_expanded.sh
 
 # perform the attribute matching
-psql_w_envs cancer/match_variant.sql
-psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
-#psql_w_envs cancer/match_loinc.sql
-psql_w_envs cancer/match_icd.sql #later: make a _p_a table, and a _p_a_t view
-psql_w_envs cancer/match_aof20200311.sql #update match_aof.. later
-psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
 psql_w_envs bca/prepare_misc_measurement.sql #mv to cancer later
 psql_w_envs cancer/match_misc_measurement.sql
 psql_w_envs bca/prepare_cat_measurement.sql #menopausal to be cleaned

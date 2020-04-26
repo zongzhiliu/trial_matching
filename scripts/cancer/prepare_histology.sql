@@ -10,7 +10,7 @@ from cohort
 join cplus_from_aplus.cancer_diagnoses cd using (person_id)
 join prod_references.cancer_types using (cancer_type_id)
 join prod_references.histologic_types ht using (histologic_type_id, cancer_type_id)
-where nvl(cd.status, '')!='deleted'
+where nvl(cd.status, '') not like '%deleted'
     and cancer_type_name='${cancer_type}'
 ;
 

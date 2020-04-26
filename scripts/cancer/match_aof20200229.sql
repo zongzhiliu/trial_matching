@@ -1,3 +1,4 @@
+select assert(False, 'Deprecated, use cancer/match_aof20200327.sql instead');
 /***
 Requires:
     latest_lab, $ref_lab_mapping
