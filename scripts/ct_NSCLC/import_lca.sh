@@ -28,10 +28,9 @@ psql_w_envs ct_NSCLC/match_attributes__histology.sql  #> pa_histology
 #load attribute table with code columns
 psql_w_envs ct_NSCLC/match_code_icd.sql # > pa_icd_rex
 psql_w_envs ct_NSCLC/match_code_variant.sql #> pa_variant
+psql_w_envs ct_NSCLC/match_code_biomarker.sql #> pa_biomarker
 ############################################################ next
-#psql_w_envs ct_PCA/quickadd_match_disease_status.sql #> pa_disease_status
 psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
-psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
 
 # compile the matches
 psql_w_envs ct_NSCLC/master_match.sql  #> master_match

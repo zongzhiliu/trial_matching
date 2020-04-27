@@ -2,13 +2,13 @@ drop table if exists _p_a_t_biomarker;
 CREATE TABLE _p_a_t_biomarker as
 with cau as (
     SELECT attribute_id, attribute_value, code_type, code
-    from ct_bca.crit_attribute_used
+    from crit_attribute_used
     WHERE code_type = 'protein_biomarker'
     --WHERE attribute_id ~ 'BCA4[78]'
 ), tau as (
     SELECT trial_id, attribute_id,
     nvl(inclusion, exclusion)::float marker_level
-    from ct_bca.trial_attribute_used
+    from trial_attribute_used
 )
 SELECT person_id, trial_id, attribute_id
 , marker_level as ie_value
