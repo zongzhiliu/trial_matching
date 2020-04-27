@@ -25,13 +25,13 @@ psql_w_envs cancer/match_attributes__age.sql #> pat_age
 psql_w_envs cancer/match_attributes__vital.sql #> pat_weight/bloodpressure
 psql_w_envs cancer/match_lab_pa.sql #>pa_lab
 psql_w_envs ct_NSCLC/match_attributes__histology.sql  #> pa_histology
+psql_w_envs ct_NSCLC/match_code_icd.sql # > pa_icd
 ############################################################ next
 #load attribute table with code columns
-psql_w_envs cancer/match_icd.sql #later: make a _p_a table, and a _p_a_t view
-psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
 psql_w_envs cancer/match_variant.sql
 #psql_w_envs ct_PCA/quickadd_match_disease_status.sql #> pa_disease_status
 psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
+psql_w_envs cancer/match_biomarker.sql #later: code_type=cat/num_measurement
 
 # compile the matches
 psql_w_envs ct_NSCLC/master_match.sql  #> master_match

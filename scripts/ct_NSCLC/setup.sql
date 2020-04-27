@@ -16,7 +16,8 @@ create or replace view ref_lab_mapping as
 select * from ${ref_lab_mapping}
 ; --ct.ref_lab_loinc_mapping;
 
-create or replace view ref_histology_mapping as
+drop view if exists ref_histology_mapping;
+create view ref_histology_mapping as
 select * from ${ref_histology_mapping}
 ;
 
@@ -25,13 +26,22 @@ create view _crit_attribute_raw as
 select attribute_id
 , attribute_group
 , nvl(attribute_name, '_') attribute_name
-, nvl(value, '_') attribute_value -- quickfix
-, code_type, code_raw, code_ext, code_transform
+, nvl(attribute_value, '_') attribute_value -- quickfix
+, code_type
+, nvl(code_base, '_') code_raw
+, code_ext
+, code_transform
 , case when code_type like 'icd%' then
-    '^('+code_raw+'|'+code_ext+')'
-    when code_type
+        replace('^('+code_raw+'|'+nvl(code_ext, '__')+')', '.', '[.]') -- quickfix code_ext null
+    when code_type like 'gene%' then
+        '^('+code_raw+')$'
+    when code_type in ('drug_name') then
+        lower(code_raw)
+    else code_raw
+    end code
 from ${crit_attribute}
 ;
+
 select ct.assert(count(*) = count(distinct attribute_id)
 , 'attribute_id should be unique') from _crit_attribute_raw
 ;
@@ -96,6 +106,7 @@ order by attribute_id, ie_value
 drop table if exists crit_attribute_used cascade;
 create table crit_attribute_used as
 select attribute_id, attribute_group, attribute_name, attribute_value
+, code_type, code, code_ext, code_transform
 from _crit_attribute_raw c
 join (select distinct attribute_id
     from trial_attribute_used) using (attribute_id)
