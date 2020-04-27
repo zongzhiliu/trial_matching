@@ -30,10 +30,9 @@ psql_w_envs ct_NSCLC/match_code_icd.sql # > pa_icd_rex
 psql_w_envs ct_NSCLC/match_code_variant.sql #> pa_variant
 psql_w_envs ct_NSCLC/match_code_biomarker.sql #> pa_biomarker
 psql_w_envs ct_NSCLC/match_code_drug.sql #> pa_drug
-############################################################ next
-
 # compile the matches
 psql_w_envs ct_NSCLC/master_match.sql  #> master_match
+############################################################ next
 psql_w_envs ct_NSCLC/update_attributes.sql #> crit/trial_attribute_updated
 psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
 psql_w_envs ct_NSCLC/master_patient.sql #> master_pathient_summary

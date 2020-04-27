@@ -58,3 +58,22 @@ from resource.all_cancer_drugs_list ac
 join tmp on lower(ac.drug_name)=tmp.drug_name
 ;
 */
+
+/*
+select * from _master_match
+order by person_id, trial_id, attribute_id
+limit 100;
+with total as (
+select count(*) from _master_match
+), uniq as (
+select count(*) from (select distinct * from _master_match)
+), pat as (
+select count(*) from (select distinct person_id, trial_id, attribute_id from _master_match)
+)
+select * from total union all
+select * from uniq union all
+select * from pat
+;
+
+*/
+

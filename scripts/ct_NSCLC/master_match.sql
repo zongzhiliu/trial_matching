@@ -76,31 +76,18 @@ from mm join a_good using (attribute_id)
 -- qc
 select count(*), count(distinct attribute_id) from _master_match;
     -- 36248441 |   148
+
+create view qc_master_match__unimplemented as
 with unimpl as (
     select distinct attribute_id from trial_attribute_used except
     select distinct attribute_id from _master_match
 )
 select attribute_id, attribute_group, attribute_name, attribute_value
 from unimpl join crit_attribute_used using (attribute_id)
+order by attribute_id
 ;
-    --24 unimplemented
-/*
-select * from _master_match
-order by person_id, trial_id, attribute_id
-limit 100;
-with total as (
-select count(*) from _master_match
-), uniq as (
-select count(*) from (select distinct * from _master_match)
-), pat as (
-select count(*) from (select distinct person_id, trial_id, attribute_id from _master_match)
-)
-select * from total union all
-select * from uniq union all
-select * from pat
-;
+select * from qc_master_match__unimplemented;
 
-*/
 -- set match as null by default for each patient
 drop table if exists master_match cascade;
 create table master_match as
