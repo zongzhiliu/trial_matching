@@ -2,13 +2,14 @@
 ## round 1
 * cat result files with the file prefix as trial_index column
 ```bash
-head -n1 191582.txt | gsed 's/^/trial_index\t/' | gsed 's/Start/iStart/;s/End/iEnd/' > res.tsv
+head -n1 NCT02221739-New-IC.txt | gsed 's/^/trial_index\t/' | gsed 's/Start/iStart/;s/End/iEnd/' > res.tsv
 for f in *.txt; do a=${f%.txt}; cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; done
-mv res.tsv round3.tsv
+mv res.tsv nsclc.tsv
 ```
 * debug
 ```ipython
-df = pd.read_csv('round3.tsv', delimiter='\t', encoding='latin1')
+import sqlite3
+df = pd.read_csv('nsclc.tsv', delimiter='\t', encoding='latin1')
 conn = sqlite3.connect(':memory:')
 df.to_sql('df', conn, index=False, if_exists='replace')
 
@@ -18,7 +19,7 @@ pd.read_sql("""
     from df
     group by semantic, entity
     order by trials desc, records desc
-    """, conn).to_csv('round3_entity_summary.csv', index=False)
+    """, conn).to_csv('nsclc_entity_summary.csv', index=False)
 
 pd.read_sql("""
     select semantic, count(distinct entity) entities
