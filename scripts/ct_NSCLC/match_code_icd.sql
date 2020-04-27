@@ -1,4 +1,4 @@
-/*** match attribute using ICD codes: icd_rex, icd_rex_other
+/*** match attribute using ICD codes
 Requires: crit_attribute_used
 , latest_icd
 Results: _p_a_icd_rex
