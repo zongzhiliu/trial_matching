@@ -29,8 +29,8 @@ psql_w_envs ct_NSCLC/match_attributes__histology.sql  #> pa_histology
 psql_w_envs ct_NSCLC/match_code_icd.sql # > pa_icd_rex
 psql_w_envs ct_NSCLC/match_code_variant.sql #> pa_variant
 psql_w_envs ct_NSCLC/match_code_biomarker.sql #> pa_biomarker
+psql_w_envs ct_NSCLC/match_code_drug.sql #> pa_drug
 ############################################################ next
-psql_w_envs cancer/match_rxnorm_wo_modality.sql #: check missing later
 
 # compile the matches
 psql_w_envs ct_NSCLC/master_match.sql  #> master_match
