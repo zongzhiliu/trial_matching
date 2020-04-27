@@ -21,3 +21,10 @@ function mysql_w_envs {
 function today_stamp {
     date +%Y%m%d
 }
+
+function load_to_pharma { tv=$1
+    cd ${working_dir}
+    ln -s ${tv}_$(today_stamp).csv ${working_schema}.${tv}_$(today_stamp).csv
+    load_into_db_schema_some_csvs.py pharma db_data_bridge ${working_schema}.${tv}_$(today_stamp).csv -d
+    cd -
+}

@@ -32,15 +32,17 @@ psql_w_envs ct_NSCLC/match_code_biomarker.sql #> pa_biomarker
 psql_w_envs ct_NSCLC/match_code_drug.sql #> pa_drug
 # compile the matches
 psql_w_envs ct_NSCLC/master_match.sql  #> master_match
-############################################################ next
 psql_w_envs ct_NSCLC/update_attributes.sql #> crit/trial_attribute_updated
 psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
-psql_w_envs ct_NSCLC/master_patient.sql #> master_pathient_summary
+psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary
+export_w_today master_patient_summary
 
-#psql_w_envs cancer/quickfix_master_sheet_lca_pca.sql
-#psql_w_envs ct_PCA/master_sheet.sql  #> master_sheet to be deprecated
 psql_w_envs ct_NSCLC/expand_attributes.sql #> crit_attribute_expanded, master_sheet_expanded
-source ct_NSCLC/download_master_sheet_expanded.sh
-source ct_NSCLC/deliver_master_sheet_expanded.sh
+export_w_today qc_attribute_match_summary
+export_w_today v_crit_attribute_expanded
+export_w_today v_master_sheet_expanded
+load_to_pharma v_crit_attribute_expanded
+############################################################ next
+load_to_pharma v_master_sheet_expanded
 
 
