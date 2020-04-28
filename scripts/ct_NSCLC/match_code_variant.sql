@@ -15,7 +15,7 @@ select person_id, attribute_id
     when 'gene_variant' then ct.py_contains(nvl(variant, ''), code_ext) --quickfix
     when 'gene_display' then ct.py_contains(nvl(variant_display_name, ''), code_ext) --quickfix
     when 'gene_vtype' then lower(variant_type) = lower(code_ext) --quickfix
-    when 'gene_rtype' then ct.py_contains(nvl(reported_occurrence_type, ''), code_ext) --quickfix
+    when 'gene_rtype' then ct.py_contains(nvl(reported_occurrence_type, ''), code_ext, 'i') --quickfix
     end) as match
 from _variant_significant
 join cau on ct.py_contains(gene, cau.code)
