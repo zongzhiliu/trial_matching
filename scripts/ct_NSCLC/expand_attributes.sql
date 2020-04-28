@@ -80,21 +80,33 @@ from master_sheet_expanded
 ;
 
 create or replace view qc_attribute_match_summary as
-with av as (
+with cp as (
     select new_attribute_id, attribute_match
     , count(distinct person_id) patients
     from v_master_sheet_expanded
     group by new_attribute_id, attribute_match
-), pivot as (
+), ct as (
+    select new_attribute_id, inclusion
+    , count(distinct trial_id) trials
+    from v_master_sheet_expanded
+    group by new_attribute_id, inclusion
+), cp_pivot as (
     select new_attribute_id
     , nvl(sum(case when attribute_match is True then patients end), 0) patients_true
     , nvl(sum(case when attribute_match is False then patients end), 0) patients_false
     , nvl(sum(case when attribute_match is Null then patients end), 0) patients_null
-    from av group by new_attribute_id
+    from cp group by new_attribute_id
+), ct_pivot as (
+	select new_attribute_id
+    , nvl(sum(case when inclusion then trials end), 0) trials_inc
+    , nvl(sum(case when not inclusion then trials end), 0) trials_exc
+    from ct group by new_attribute_id
 )
 select new_attribute_id, attribute_id
+, trials_inc, trials_exc
 , patients_true, patients_false, patients_null
 , attribute_group+'| '+attribute_name+'| '+attribute_value as attribute_title
-from pivot join v_crit_attribute_expanded using (new_attribute_id)
+from ct_pivot join cp_pivot using (new_attribute_id) 
+join v_crit_attribute_expanded using (new_attribute_id)
 order by regexp_substr(attribute_id, '[0-9]+')::int, new_attribute_id
 ;
