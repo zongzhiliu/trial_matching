@@ -36,13 +36,13 @@ psql_w_envs ct_NSCLC/update_attributes.sql #> crit/trial_attribute_updated
 psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
 psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary
 export_w_today master_patient_summary
-
+# deliver
 psql_w_envs ct_NSCLC/expand_attributes.sql #> crit_attribute_expanded, master_sheet_expanded
 export_w_today qc_attribute_match_summary
 export_w_today v_crit_attribute_expanded
-export_w_today v_master_sheet_expanded
 load_to_pharma v_crit_attribute_expanded
-############################################################ next
+export_w_today v_master_sheet_expanded
 load_to_pharma v_master_sheet_expanded
+############################################################ next
 
 

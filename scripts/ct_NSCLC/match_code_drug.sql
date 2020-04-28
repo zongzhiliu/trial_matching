@@ -19,12 +19,12 @@ group by person_id, attribute_id
 ;
 
 create view qc_match_drug as
-select attribute_id, attribute_group, attribute_name
+select attribute_id, attribute_group, attribute_name, attribute_value
 , count(distinct person_id) patients
 from _p_a_drug
 join crit_attribute_used using (attribute_id)
 where match
-group by attribute_id, attribute_group, attribute_name
+group by attribute_id, attribute_group, attribute_name, attribute_value
 order by attribute_id
 ;
 select * from qc_match_drug;
