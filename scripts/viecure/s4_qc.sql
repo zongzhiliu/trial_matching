@@ -73,7 +73,7 @@ select count(*), count(distinct pt_id) from patient_gene_report_details p;
 	-- 47	39
 select count(*), count(distinct patient_id) from patient_histology ph 
 join histology_list hl on ph.histology_list_id = hl.id;
-
+grant all on schema viecure_ct to mingwei_zhang;
 grant all on all tables in schema viecure_ct to mingwei_zhang;
 grant all on all tables in schema ct to mingwei_zhang;
 grant all on all tables in schema ct_lca to mingwei_zhang;

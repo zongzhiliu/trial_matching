@@ -12,6 +12,10 @@ function export_w_today { tv=$1
     select_from_db_schema_table.py ${db_conn} ${working_schema}.${tv} > ${working_dir}/${tv}_$(today_stamp).csv
 }
 
+function load_from_csv { fname=$1
+    load_into_db_schema_some_csvs.py ${db_conn} ${working_schema} ${working_dir}/${fname}
+}
+
 function mysql_w_envs {
     cat $1 \
     | substitute_env_vars_in_pipe.py \
