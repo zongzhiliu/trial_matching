@@ -8,40 +8,32 @@ select id diagnosis_id
 , pt_id person_id
 , 'ICD' as dx_code_type
 , diagnosis_code dx_code
-, date_ dx_date, icd, icd_code, description
+, date_diagnosed dx_date
+, diagnosis_text 
 from viecure_emr.patient_diagnosis_current
 ;
+select count(*) FROM all_dx ad ; --143044
 
 drop table if exists latest_icd;
 create table latest_icd as
-select person_id, dx_code icd_code, dx_code_type as context_name, description, dx_date
+select diagnosis_id, person_id
+, dx_code_type, dx_code, dx_date
+, diagnosis_text 
 from (select *, row_number() over (
         partition by person_id, dx_code
-        order by dx_date desc nulls last, description)
-    from _all_dx
-    where dx_code_type like 'ICD%'
-    )
+        order by dx_date desc nulls last)
+    from all_dx
+    --where dx_code_type = 'ICD'
+)
 where row_number=1
 ;
+select count(*) FROM latest_icd ; --139394
 
 create table cancer_dx as
-with tmp as (
-    select person_id
-    , cancer_type_name
-    , dx_code, dx_code_type
-    , dx_date
-    from all_dx d
-    join ct.cancer_type_id c on ct.py_contains(d.dx_code, icd_9) or ct_contains(d.dx_code, icd_10)
-    where d.dx_code_type like 'ICD%'
-)
 select person_id, cancer_type_name, dx_code icd_code, dx_date
-from (select *, row_number() over (
-        partition by person_id, dx_code
-        order by dx_date)
-    from tmp)
-where row_number=1
+from latest_icd d
+join ct.ref_cancer_icd r on ct.py_contains(nvl(dx_code,''), icd_10) -- or ct.py_contains(d.dx_code, icd_9)
 ;
-
 create table cancer_stage as
 select person_id
 , cancer_type_name
