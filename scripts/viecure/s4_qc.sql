@@ -30,7 +30,7 @@ join loinc ic on lower(btrim(pdc.code)) = lower(btrim(ic.loinc_num));
 -- medications
 select count(*), count(distinct patient_id) from patient_medications_current pc;
 	-- 315899	16759
-select count(*), count(distinct patient_id) 
+select count(*), count(distinct patient_id)
 from patient_medications_current pc
 join drug_list d on btrim(pc.code)=btrim(d.fdb_id);
 	-- 5744	3932
