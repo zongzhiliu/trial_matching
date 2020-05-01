@@ -11,8 +11,9 @@ select id diagnosis_id
 , date_diagnosed dx_date
 , diagnosis_text 
 from viecure_emr.patient_diagnosis_current
+WHERE diagnosis_code is not null
 ;
-select count(*) FROM all_dx ad ; --143044
+select count(*) FROM all_dx ad ; -- original 143044 After clear null 141500
 
 drop table if exists latest_icd;
 create table latest_icd as
@@ -27,13 +28,24 @@ from (select *, row_number() over (
 )
 where row_number=1
 ;
-select count(*) FROM latest_icd ; --139394
+select count(*) FROM latest_icd ; --139394 -- 138042
 
+drop table if exists cancer_dx;
 create table cancer_dx as
 select person_id, cancer_type_name, dx_code icd_code, dx_date
-from latest_icd d
-join ct.ref_cancer_icd r on ct.py_contains(nvl(dx_code,''), icd_10) -- or ct.py_contains(d.dx_code, icd_9)
-;
+from ( select *, row_number() over (
+		partition by person_id, cancer_type_name
+		order by dx_date
+	) from all_dx ad 
+	join ct.ref_cancer_icd r on ct.py_contains(dx_code, icd_10) or ct.py_contains(dx_code, icd_9)
+)
+where row_number = 1;
+
+select count(*) records, count(distinct person_id) patients from latest_icd;
+/*qc
+select count(distinct person_id) from _all_dx; --v1:4997 v2:5430 v3:3446
+*/
+
 create table cancer_stage as
 select person_id
 , cancer_type_name
