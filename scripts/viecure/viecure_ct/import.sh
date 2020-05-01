@@ -13,7 +13,7 @@ psql_w_envs gen_demo.sql
 #     -- patient_demographic
 #     -- patient_history_items
 
-psql_w_envs gen_cancer_dx.sql
+psql_w_envs viecure/viecure_ct/gen_cancer_dx.sql
 # cancer_dx: person_id, cancer_type_name
 # , histologic_type_name, histologic_icdo
 # , overall_stage, imputed_stage
