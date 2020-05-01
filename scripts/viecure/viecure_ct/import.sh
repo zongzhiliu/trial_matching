@@ -24,7 +24,7 @@ psql_w_envs gen_cancer_dx.sql
 #     patient_histology and references
 #     patient_stage and references
 
-psql_w_envs gen_test.sql
+psql_w_envs viecure/viecure_ct/gen_tests.sql
 # select distinct person_id, result_date::date
 # , loinc_code, loinc_display_name
 # , value_float, unit
