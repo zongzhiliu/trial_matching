@@ -8,6 +8,7 @@ Results:
     crit_attribute_used
     _crit_attribute_mapped
 */
+/*
 create or replace view ref_drug_mapping as
 select * from ${ref_drug_mapping}
 ; --ct.drug_mapping_cat_expn3;
@@ -16,6 +17,7 @@ drop view if exists ref_histology_mapping;
 create view ref_histology_mapping as
 select * from ${ref_histology_mapping}
 ;
+*/
 
 drop view if exists _crit_attribute_raw cascade;
 create view _crit_attribute_raw as

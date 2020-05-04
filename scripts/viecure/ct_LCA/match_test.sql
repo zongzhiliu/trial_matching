@@ -3,8 +3,8 @@
 * require: cohort, ct.latest_test, ct.ref_test
 , ct.latest_icd
 */
---drop table _latest_lab_normal_range;
-CREATE temporary TABLE _latest_lab_normal_range AS
+--drop table _latest_test_normal_range;
+CREATE temporary TABLE _latest_test_normal_range AS
 SELECT ct_test_name, loinc_code
 , normal_low, normal_high
 , person_id
@@ -25,8 +25,8 @@ create temporary table _como as
 ;
 
 -- improve with mapping table integrated with attribute id
-drop table if exists _p_a_lab cascade;
-create table _p_a_lab as
+drop table if exists _p_a_test cascade;
+create table _p_a_test as
 select person_id, '' as patient_value
 , attribute_id
 , bool_or(case attribute_id
@@ -136,12 +136,11 @@ where attribute_id in ( 49, 50, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 63, 64,
     302, 303, 416, 304)
 group by attribute_id, person_id
 ;
-
-create view qc_lab as
+create view qc_test as
 with tmp as (
     select attribute_id, attribute_name, attribute_value, match
     , count(distinct person_id)
-    from _p_a_lab join crit_attribute_used using (attribute_id)
+    from _p_a_test join crit_attribute_used using (attribute_id)
     group by attribute_id, attribute_name, attribute_value, match
 )
 select attribute_id, attribute_name, attribute_value
@@ -152,7 +151,7 @@ from tmp
 group by attribute_id, attribute_name, attribute_value
 order by attribute_name, attribute_value
 ;
-select * from qc_lab;
+select * from qc_test;
 
 /* no vitals for lca, do it later
  Require: vital, vital_bmi
