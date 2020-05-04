@@ -21,8 +21,8 @@ group by loinc_num, long_common_name
 order by patients desc, records desc
 ;
 
-drop table if exists latest_test cascade;
-create table latest_test as
+drop table if exists latest_loinc cascade;
+create table latest_loinc as
 select person_id
 , loinc_num, long_common_name
 , test_time
@@ -36,6 +36,7 @@ from (select *, row_number() over (
     )
 where row_number=1
 ;
+
 drop view qc_latest_test_excluded_values;
 create view qc_latest_test_excluded_values as
 select value

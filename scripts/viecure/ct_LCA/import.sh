@@ -2,9 +2,9 @@ source viecure/ct_LCA/config.sh
 source util/util.sh
 pgsetup $db_conn
 
+psql_w_envs viecure/ct_LCA/setup.sql
 ############################################################ next
 psql_w_envs viecure/ct_LCA/prepare_cohort.sql
-psql_w_envs viecure/ct_LCA/setup.sql
 
 #psql_w_envs cancer/prepare_lot.sql
 #psql_w_envs cancer/prepare_variant.sql
@@ -16,9 +16,10 @@ psql_w_envs cancer/match_attributes__age.sql #> pat_age
 psql_w_envs cancer/match_attributes__stage.sql #>_pa_stage
 psql_w_envs ct_NSCLC/match_attributes__histology.sql  #> pa_histology
 
-psql_w_envs cancer/match_attributes__performance.sql #>_pa_ecog/karnofsky
+psql_w_envs viecure/ct_lca/match_test.sql
 psql_w_envs cancer/match_attributes__vital.sql #> pat_weight/bloodpressure
 psql_w_envs cancer/match_lab_pa.sql #>pa_lab
+psql_w_envs cancer/match_attributes__performance.sql #>_pa_ecog/karnofsky
 
 #load attribute table with code columns
 psql_w_envs ct_NSCLC/match_code_icd.sql # > pa_icd_rex
