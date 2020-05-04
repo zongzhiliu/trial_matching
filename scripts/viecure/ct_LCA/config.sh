@@ -6,7 +6,7 @@ export db_conn=viecure
 export working_schema=ct_LCA
 export working_dir="$HOME/Sema4/${db_conn}/${working_schema}"
 
-export last_visit_within=3 #years
+export last_visit_within=5 #years
 export protocal_date=$(date +%Y-%m-%d)
 
 export trial_attribute=ct.nsclc_trial_attribute_raw_20200223
