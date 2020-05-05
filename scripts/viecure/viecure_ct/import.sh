@@ -35,3 +35,4 @@ psql_w_envs viecure/viecure_ct/gen_tests.sql
 #     and value_float is not null
 # 
 # 
+psql_w_envs viecure/viecure_ct/gen_others.sql
