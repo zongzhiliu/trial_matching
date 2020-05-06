@@ -13,7 +13,8 @@ select id diagnosis_id
 from viecure_emr.patient_diagnosis_current
 WHERE diagnosis_code is not null
 ;
-select count(*) FROM all_dx ad ; -- original 143044 After clear null 141500
+--qc
+select count(distinct person_id) FROM all_dx ad ; -- original 143044 After clear null 141500
 
 drop table if exists latest_icd;
 create table latest_icd as
@@ -28,11 +29,12 @@ from (select *, row_number() over (
 )
 where row_number=1
 ;
+--qc
 select count(*) FROM latest_icd ; --139394 -- 138042
 
 drop table if exists cancer_dx;
 create table cancer_dx as
-select person_id, cancer_type_name, dx_code icd_code, dx_date
+select diagnosis_id, person_id, cancer_type_name, dx_code icd_code, dx_date
 from ( select *, row_number() over (
 		partition by person_id, cancer_type_name
 		order by dx_date
@@ -40,38 +42,36 @@ from ( select *, row_number() over (
 	join ct.ref_cancer_icd r on ct.py_contains(dx_code, icd_10) or ct.py_contains(dx_code, icd_9)
 )
 where row_number = 1;
+--qc
+select count(distinct person_id) patients, cancer_type_name 
+from cancer_dx cd
+GROUP BY cancer_type_name;
 
-select count(*) records, count(distinct person_id) patients from latest_icd;
-/*qc
-select count(distinct person_id) from _all_dx; --v1:4997 v2:5430 v3:3446
-*/
-
+drop table if exists cancer_stage;
 create table cancer_stage as
-select person_id
+select person_id, diagnosis_id 
 , cancer_type_name
-, dx_code, dx_code_type
-, stage_overall
+, dx_code
+, stage_list.description as stage
 , t, n, m
 , date_staged
-from patient_stage 
-join all_dx using (diagnosis_id)
-join stage_list on stage_list_id=stage_list.id
+from viecure_emr.patient_stage 
+join viecure_ct.all_dx using (diagnosis_id)
+join viecure_emr.stage_list on stage_list_id=stage_list.id
+join ct.ref_cancer_icd r on ct.py_contains(dx_code, icd_10) or ct.py_contains(dx_code, icd_9)
 ;
 -- later impute stage from t, n, m
 
-create table cancer_histology as
+drop table cancer_histology;
+create table cancer_histology as;
 select person_id
 , cancer_type_name
-, dx_code, dx_code_type
-, histologic_name, histologic_icdo
+, icd_code
+, histology_behavior.description as histologic_name
+, code as histologic_icdo
 , histologic_grade
 , date_staged
-from patient_stage 
-join all_dx using (diagnosis_id)
-join stage_list on stage_list_id=stage_list.id
+from cancer_dx  
+join viecure_emr.patient_histology using (diagnosis_id)
+join viecure_emr.histology_behavior using (histology_id)
 ;
-select count(*) records, count(distinct person_id) patients from latest_icd;
-/*qc
-select count(distinct person_id) from _all_dx; --v1:4997 v2:5430 v3:3446
-*/
-
