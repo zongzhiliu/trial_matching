@@ -25,14 +25,5 @@ psql_w_envs viecure/viecure_ct/gen_cancer_dx.sql
 #     patient_stage and references
 
 psql_w_envs viecure/viecure_ct/gen_tests.sql
-# select distinct person_id, result_date::date
-# , loinc_code, loinc_display_name
-# , value_float, unit
-# , source_value, source_unit
-# from prod_msdw.all_labs
-# join cohort using (person_id)
-# where loinc_code is not null
-#     and value_float is not null
-# 
-# 
+psql_w_envs viecure/viecure_ct/gen_rx.sql
 psql_w_envs viecure/viecure_ct/gen_others.sql
