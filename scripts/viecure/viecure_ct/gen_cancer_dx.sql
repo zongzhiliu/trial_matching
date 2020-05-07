@@ -49,17 +49,27 @@ GROUP BY cancer_type_name;
 
 drop table if exists cancer_stage;
 create table cancer_stage as
-select person_id, diagnosis_id 
-, cancer_type_name
-, dx_code
-, stage_list.description as stage
-, t, n, m
-, date_staged
-from viecure_emr.patient_stage 
-join viecure_ct.all_dx using (diagnosis_id)
-join viecure_emr.stage_list on stage_list_id=stage_list.id
-join ct.ref_cancer_icd r on ct.py_contains(dx_code, icd_10) or ct.py_contains(dx_code, icd_9)
-;
+with _cancer as(
+	select person_id, diagnosis_id 
+	, cancer_type_name
+	, dx_code
+	, stage_list.description as stage
+	, t, n, m
+	, date_staged
+	from viecure_emr.patient_stage 
+	join viecure_ct.all_dx using (diagnosis_id)
+	join viecure_emr.stage_list on stage_list_id=stage_list.id
+	join ct.ref_cancer_icd r on ct.py_contains(dx_code, icd_10) or ct.py_contains(dx_code, icd_9)
+	WHERE cancer_type_name != 'PAN'
+)
+SELECT * 
+FROM (SELECT *, row_number() over (
+		PARTITION BY person_id 
+		ORDER BY date_staged DESC NULLS last
+	) FROM _cancer
+)
+WHERE row_number = 1;
+
 -- later impute stage from t, n, m
 
 drop table cancer_histology;
