@@ -5,6 +5,9 @@ create or replace function py_contains(
     ) returns bool stable as $$
     """ txt ~ patt
     """
+    if txt is None:
+        return None
+
     import re
     res = re.search(patt, txt)
     return bool(res)
@@ -15,6 +18,9 @@ create or replace function py_contains(
     ) returns bool stable as $$
     """ txt ~ patt with re flags
     """
+    if txt is None:
+        return None
+
     import re
 
     re_patt = r'%s' % patt
