@@ -1,20 +1,26 @@
-set search_path=ct;
+-- set search_path=ct;
 
-drop function py_contains(varchar, varchar);
-create function py_contains(txt varchar(64000), patt varchar)
-    returns bool stable as $$
+create or replace function py_contains(
+    txt varchar(64000), patt varchar
+    ) returns bool stable as $$
     """ txt ~ patt
     """
+    if txt is None:
+        return None
+
     import re
     res = re.search(patt, txt)
     return bool(res)
 $$ language plpythonu;
 
-drop function py_contains(varchar, varchar, varchar);
-create function py_contains(txt varchar(64000), patt varchar, flags varchar(9))
-    returns bool stable as $$
+create or replace function py_contains(
+    txt varchar(64000), patt varchar, flags varchar(9)
+    ) returns bool stable as $$
     """ txt ~ patt with re flags
     """
+    if txt is None:
+        return None
+
     import re
 
     re_patt = r'%s' % patt
@@ -28,9 +34,8 @@ create function py_contains(txt varchar(64000), patt varchar, flags varchar(9))
 $$ language plpythonu;
 
 CREATE OR REPLACE FUNCTION ct.assert(
-  a bool,
-  description VARCHAR
-) RETURNS BOOLEAN IMMUTABLE AS $$
-  assert a, '{description}. see {a}'.format(**locals())
-  return True
+    a bool, description VARCHAR
+    ) RETURNS BOOLEAN IMMUTABLE AS $$
+    assert a, '{description}. see {a}'.format(**locals())
+    return True
 $$ LANGUAGE plpythonu;

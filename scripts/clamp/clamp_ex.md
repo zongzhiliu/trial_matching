@@ -1,15 +1,21 @@
 # the excise to parse criteria using clamp
+
 ## round 1
 * cat result files with the file prefix as trial_index column
 ```bash
+cd '/Users/zongzhiliu/Downloads/Split NCT-IE Clamp Results'
 head -n1 NCT02221739-New-IC.txt | gsed 's/^/trial_index\t/' | gsed 's/Start/iStart/;s/End/iEnd/' > res.tsv
-for f in *.txt; do a=${f%%-*.txt}; cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; done
+for f in *.txt; do
+    #a=${f%%-*.txt};
+    a=${f%%.txt};
+    cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; 
+done
 mv res.tsv nsclc.tsv
 ```
 * debug
 ```ipython
 import sqlite3
-df = pd.read_csv('nsclc.tsv', delimiter='\t', encoding='latin1')
+df = pd.read_csv('res.tsv', delimiter='\t', encoding='latin1')
 conn = sqlite3.connect(':memory:')
 df.to_sql('df', conn, index=False, if_exists='replace')
 
