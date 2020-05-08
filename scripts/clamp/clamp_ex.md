@@ -10,7 +10,6 @@ for f in *.txt; do
     a=${f%%.txt};
     cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; 
 done
-mv res.tsv nsclc.tsv
 ```
 * debug
 ```ipython
