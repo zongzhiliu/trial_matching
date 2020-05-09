@@ -50,3 +50,12 @@ pd.read_sql("""
     group by ie_flag
     """, conn)
 ```
+* have the attributes coded
+* load the coded attribute table
+* update the nsclc_histology_mapping
+## next
+* set up the pipeline ana start matching
+    * icd_
+    * gene_
+    * lab_
+* load the updated drug_mapping table
