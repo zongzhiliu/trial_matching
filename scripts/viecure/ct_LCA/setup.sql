@@ -18,6 +18,7 @@ create view ref_histology_mapping as
 select * from ${ref_histology_mapping}
 ;
 */
+create view lastest_icd as select * from ct.latest_icd;
 
 drop view if exists _crit_attribute_raw cascade;
 create view _crit_attribute_raw as

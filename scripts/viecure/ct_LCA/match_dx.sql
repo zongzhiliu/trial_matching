@@ -18,7 +18,7 @@ select person_id, attribute_id
         bool_or(icd_code !~ '${cancer_type_icd}') --bool_or or and??
     else True
     end as match
-from (cohort join ct.latest_icd li using (person_id))
+from (cohort join latest_icd li using (person_id))
 join cau on ct.py_contains(nvl(icd_code::varchar, ''), code) --quickfix
     and datediff(day, nvl(dx_date, '1900-01-01'), '${protocal_date}')/365.25 <= max_years --quickfix
 group by person_id, attribute_id, code_type
@@ -32,3 +32,5 @@ where match
 group by attribute_id, attribute_name, attribute_value
 order by attribute_id, attribute_name, attribute_value
 ;
+
+select * from qc_match_icd;
