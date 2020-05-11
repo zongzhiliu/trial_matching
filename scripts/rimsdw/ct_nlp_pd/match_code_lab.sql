@@ -25,7 +25,7 @@ select person_id, attribute_id
     when lower(comp) in ('max', 'le', '<=', '<') then
         value_float * p2c_factor <= crit_value
     when lower(comp) in ('eq', '=') then
-        value_float * p2c_factor <= crit_value
+        value_float * p2c_factor = crit_value
     end as match
 from cohort join latest_lab using (person_id)
 join ct.ref_lab_loinc_mapping using (loinc_code)
