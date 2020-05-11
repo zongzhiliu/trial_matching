@@ -37,3 +37,6 @@ with a as (
 select a.count, e.count, ct.assert(a.count>e.count, 'imputing rescues some stage')
 from a cross join e
 ;
+
+select count(*) stage_records, count (distinct person_id) patients from stage_plus where stage is not null;
+select count(*) stage_records, count (distinct person_id) patients from stage_plus where stage_extracted is not null;
