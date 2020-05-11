@@ -29,6 +29,9 @@ create view latest_lab as select * from ct_nsclc.latest_lab;
 create view histology as select * from ct_nsclc.histology;
 create view latest_lot_drug as select * from ct_nsclc.latest_lot_drug;
 create view _variant_significant as select * from ct_nsclc._variant_significant;
+create view latest_ecog as select * from ct_nsclc.latest_ecog;
+create view latest_karnofsky as select * from ct_nsclc.latest_karnofsky;
+create view lot as select * from ct_nsclc.lot;
 
 
 drop view if exists _crit_attribute_raw cascade;
