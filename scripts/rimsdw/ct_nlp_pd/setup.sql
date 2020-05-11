@@ -53,7 +53,7 @@ select attribute_id
     else code_raw
     end code
 --from ${crit_attribute}
-from ct.pd_attribute_20200508
+from ct.pd_attribute_20200511
 ;
 
 select ct.assert(count(*) = count(distinct attribute_id)
