@@ -11,10 +11,10 @@ psql_w_envs viecure/ct_LCA/match_dx.sql # > pa_icd_rex
 psql_w_envs rimsdw/ct_nlp_pd/match_code_lab.sql # > pa_loinc
 psql_w_envs rimsdw/ct_nlp_pd/match_text_mapping__histology.sql  #> pa_histology
 psql_w_envs rimsdw/ct_nlp_pd/match_text_measure__stage.sql # > pa_stage
-########################################################### next
 
 psql_w_envs rimsdw/ct_nlp_pd/prepare_numeric_measure.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_numeric_measure.sql # > pa_numeric_measure (age, ecog, karnofsky, lot)
+########################################################### next
 psql_w_envs rimsdw/ct_nlp_pd/match_code_drug.sql #> pa_drug
 
 # compile the matches
