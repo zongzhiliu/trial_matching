@@ -22,7 +22,7 @@ select * from ct.lca_histology_category
 
 create view cohort as select * from ct_nsclc.cohort;
 create view demo_plus as select * from ct_nsclc.demo_plus;
-create view stage as select * from ct_nsclc.stage;
+create view latest_stage as select * from ct_nsclc.latest_stage;
 create view biomarker as select * from ct_nsclc.biomarker;
 create view latest_icd as select * from ct_nsclc.latest_icd;
 create view latest_lab as select * from ct_nsclc.latest_lab;

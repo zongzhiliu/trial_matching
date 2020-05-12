@@ -17,7 +17,7 @@ select person_id, attribute_id
      when 'stage_base' then stage_base like code_ext
      when 'stage' then stage like code_ext
      end) as match
-from cohort join stage using (person_id)
+from cohort join latest_stage using (person_id)
 cross join cau
 group by person_id, attribute_id
 ;
