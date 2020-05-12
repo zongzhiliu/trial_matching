@@ -116,8 +116,9 @@ tmp.*
 *.bak
 *.swp
 *.old
+NULL
 
-# sublime
+# editors
 *.sublime-project
 *.sublime-workspace
-
+.vscode/

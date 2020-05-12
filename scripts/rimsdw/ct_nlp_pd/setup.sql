@@ -22,7 +22,7 @@ select * from ct.lca_histology_category
 
 create view cohort as select * from ct_nsclc.cohort;
 create view demo_plus as select * from ct_nsclc.demo_plus;
-create view stage_plus as select * from ct_nsclc.stage_plus;
+create view stage as select * from ct_nsclc.stage;
 create view biomarker as select * from ct_nsclc.biomarker;
 create view latest_icd as select * from ct_nsclc.latest_icd;
 create view latest_lab as select * from ct_nsclc.latest_lab;
@@ -53,7 +53,7 @@ select attribute_id
     else code_raw
     end code
 --from ${crit_attribute}
-from ct.pd_attribute_20200508
+from ct.pd_attribute_20200511
 ;
 
 select ct.assert(count(*) = count(distinct attribute_id)
