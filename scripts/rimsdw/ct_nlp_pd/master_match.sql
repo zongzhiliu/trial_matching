@@ -26,6 +26,7 @@ union select attribute_id, person_id, patient_value::varchar, match from _p_a_hi
 union select attribute_id, person_id, NULL, match from _p_a_variant --mutation
 union select attribute_id, person_id, NULL, match from _p_a_biomarker
 union select attribute_id, person_id, NULL, match from _p_a_loinc
+union select attribute_id, person_id, NULL, match from _p_a_query_lab
 union select attribute_id, person_id, NULL,  match from _p_a_numeric_measurement
 ;
 select count(distinct attribute_id) from _match_p_a;
@@ -73,3 +74,4 @@ from tmp
 group by  attribute_id, attribute_name, attribute_value
 order by attribute_id
 ;
+select * from qc_master_match;
