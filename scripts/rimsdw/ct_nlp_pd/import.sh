@@ -25,9 +25,9 @@ psql_w_envs rimsdw/ct_nlp_pd/prepare_numeric_measure.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_numeric_measure.sql # > pa_numeric_measure (age, ecog, karnofsky, lot)
 psql_w_envs rimsdw/ct_nlp_pd/match_code_drug.sql #> pa_drug
 
-########################################################### next
 # compile the matches
 psql_w_envs rimsdw/ct_nlp_pd/master_match.sql  #> master_match
+########################################################### next
 # psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
 # psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary
 # export_w_today master_patient_summary

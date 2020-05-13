@@ -10,7 +10,7 @@ with pa as (
     select attribute_id, person_id, NULL::varchar as patient_value, match from _p_a_drug
     union select attribute_id, person_id, NULL, match from _p_a_icd_rex
 ), a_all as (
-    select distinct attribute_id from pa
+    select distinct attribute_id from crit_attribute_used where code_type ~ '^(drug_|icd_)' --quickfix
 )
 select attribute_id, person_id, patient_value
 , nvl(match, False) as match
@@ -31,6 +31,7 @@ union select attribute_id, person_id, NULL,  match from _p_a_numeric_measurement
 ;
 select count(distinct attribute_id) from _match_p_a;
     --233?
+/*
 create view _qc_match_pa as
 with tmp as (
     select attribute_id, attribute_name, attribute_value, match
@@ -45,8 +46,8 @@ from tmp
 group by  attribute_id, attribute_name, attribute_value
 order by attribute_id
 ;
+*/
 
-------------------------------------------------------------- next
 -- set match as null by default for each patient
 create view _master_match as select * from _match_p_a;
 drop table if exists master_match cascade;
