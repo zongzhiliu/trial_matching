@@ -20,4 +20,4 @@ export ref_cancer_icd=ct.ref_cancer_icd
 # AOF value config
 export PLATELETS_MIN=100
 export WBC_MIN=3
-export IRN_MAX=99999
+export INR_MAX=99999

@@ -19,6 +19,7 @@ create view ref_histology_mapping as
 --select * from ${ref_histology_mapping}
 select * from ct.lca_histology_category
 ;
+create view ref_lab_mapping as select * from ct.ref_lab_loinc_mapping;
 
 create view cohort as select * from ct_nsclc.cohort;
 create view demo_plus as select * from ct_nsclc.demo_plus;
