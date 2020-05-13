@@ -17,9 +17,9 @@ psql_w_envs rimsdw/ct_nlp_pd/quickadd__latest_lab_mapped.sql # > _latest_lab_map
 # psql_w_envs rimsdw/ct_nlp_pd/query_lab_tbili_or_gs.sql
 # psql_w_envs rimsdw/ct_nlp_pd/query_lab_aof.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_query_lab.sql
-
 psql_w_envs rimsdw/ct_nlp_pd/match_text_mapping__histology.sql  #> pa_histology
 psql_w_envs rimsdw/ct_nlp_pd/match_text_measure__stage.sql # > pa_stage
+psql_w_envs rimsdw/ct_nlp_pd/quickadd_drug_rx_mapping.sql
 
 psql_w_envs rimsdw/ct_nlp_pd/prepare_numeric_measure.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_numeric_measure.sql # > pa_numeric_measure (age, ecog, karnofsky, lot)
