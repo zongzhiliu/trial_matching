@@ -20,6 +20,7 @@ create view ref_histology_mapping as
 select * from ct.lca_histology_category
 ;
 create view ref_lab_mapping as select * from ct.ref_lab_loinc_mapping;
+create view ref_drug_mapping as select * from ct.drug_mapping_cat_expn8_20200513;
 
 create view cohort as select * from ct_nsclc.cohort;
 create view demo_plus as select * from ct_nsclc.demo_plus;
@@ -54,7 +55,7 @@ select attribute_id
     else code_raw
     end code
 --from ${crit_attribute}
-from ct.pd_attribute_20200511
+from ct.pd_attribute_20200513
 ;
 
 select ct.assert(count(*) = count(distinct attribute_id)
