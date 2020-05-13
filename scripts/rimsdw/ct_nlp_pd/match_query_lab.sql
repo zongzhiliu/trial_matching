@@ -1,32 +1,72 @@
-/* > _p_a_query_lab
-Requires: _p_query_lab_... tables
+/* > _p_a_match_query_lab
+Requires:
+    latest_lab_mapped, latest_icd
+    PLATELETS_MIN
+    WBC_MIN
+    INR_MAX
+References:
+<=2.5x ULN AST, ALT (<=5x liver met case)
+<=1.5x ULN total bilirubin (<=3x GS case)
+1.5x ULN creatinine, >=8 hemoglobin,
+>=1,000 cells/uL ANC, >=100,000 platelets,  WBC >=3,000
+-- loinc unit of WBC/ANC/plat: x10^3/uL
 */
-
 drop table if exists _p_a_query_lab cascade;
 create table _p_a_query_lab as
-with cau as (
+with como as (
+    select person_id
+    , bool_or(icd_code ~ '^(C78[.]7|197[.]7)') as livermet -- a typo fix here
+    , bool_or(icd_code ~ '^(E80[.]4|277[.]4)') as gs
+    from latest_icd
+    group by person_id
+), lab as (
+    select person_id
+    , not bool_or(lab_test_name = 'ALT')
+        or bool_or(lab_test_name = 'ALT' and value_float/normal_high<=2.5) as alt_low
+    , not bool_or(lab_test_name = 'AST')
+        or bool_or(lab_test_name = 'AST' and value_float/normal_high<=2.5) as ast_low
+    , not bool_or(lab_test_name = 'ALT')
+        or bool_or(lab_test_name = 'ALT' and value_float/normal_high<=5) as alt_mid
+    , not bool_or(lab_test_name = 'AST')
+        or bool_or(lab_test_name = 'AST' and value_float/normal_high<=5) as ast_mid
+    , not bool_or(lab_test_name='Total bilirubin')
+        or bool_or(lab_test_name='Total bilirubin' and value_float/normal_high <=1.5) as bili_low
+    , not bool_or(lab_test_name='Total bilirubin')
+        or bool_or(lab_test_name='Total bilirubin' and value_float/normal_high <=3) as bili_mid
+    , not bool_or(lab_test_name='Serum Creatinine')
+        or bool_or(lab_test_name='Serum Creatinine' and value_float/normal_high <=1.5) as crea_ok
+    , not bool_or(lab_test_name='Hemoglobin')
+        or bool_or(lab_test_name='Hemoglobin' and value_float>=8) as hemo_ok
+    , not bool_or(lab_test_name='ANC')
+        or bool_or(lab_test_name='ANC' and value_float>=1) as anc_ok  --unit different
+    , not bool_or(lab_test_name='Platelets')
+        or bool_or(lab_test_name='Platelets' and value_float>=${PLATELETS_MIN}) as plat_ok--unit different
+    , not bool_or(lab_test_name='WBC')
+        or bool_or(lab_test_name='WBC' and value_float>=${WBC_MIN}) as wbc_ok--unit different
+    , not bool_or(lab_test_name='INR')
+        or bool_or(lab_test_name='INR' and value_float/normal_high <= ${INR_MAX}) as inr_ok
+    from _lab_w_normal_range
+    group by person_id
+), cau as (
     select attribute_id, code_type, code
-    --, regexp_substr(attribute_value, '[0-9]+([.][0-9]+)?')::float crit_value
-    --, code_ext as comp
-    --, code_transform
     from crit_attribute_used
-    where code_type = 'query_lab'
+    where code_type='query_lab'
 )
 select person_id, attribute_id
-, case when code like 'ast_or%' then
-        ast_or.match
-    when code like 'alt_or%' then
-        alt_or.match
-    when code like 'tbili_or%' then
-        tbili_or.match
-    when code ilike 'aof%' then
-        aof.match
+, case when lower(code)='aof' then (alt_low or alt_mid and nvl(livermet, False))
+        and (ast_low or ast_mid and nvl(livermet, False))
+        and (bili_low or bili_mid and nvl(gs, False))
+        and crea_ok
+        and hemo_ok and wbc_ok
+        and anc_ok and plat_ok
+        and inr_ok
+    when code = 'alt_livermet' then  alt_mid and nvl(livermet, False)
+    when code = 'ast_livermet' then  ast_mid and nvl(livermet, False)
+    when code = 'bili_gs' then  bili_mid and nvl(gs, False)
     end as match
 from (cohort cross join cau)
-join _p_query_lab_ast_or_livermet ast_or using (person_id)
-join _p_query_lab_alt_or_livermet alt_or using (person_id)
-join _p_query_lab_tbili_or_gs tbili_or using (person_id)
-join _p_query_lab_aof aof using (person_id)
+left join lab using (person_id)
+left join como using (person_id)
 ;
 
 create view qc_match_query_lab as
