@@ -30,12 +30,12 @@ group by person_id, attribute_id
 ;
 
 CREATE TABLE latest_alt_drug AS
-SELECT person_id, drug_name
+SELECT person_id, lower(drug_name) drug_name, lower(drug_generic_name) drug_generic_name
 FROM cplus_from_aplus.medications m 
 JOIN cplus_from_aplus.drugs d using (drug_id)
 JOIN cohort using (person_id);
 
-CREATE TABLE _p_a_drug_alt AS
+CREATE TABLE _p_a_drug_final AS
 SELECT person_id, attribute_id
 , bool_or(case code_type
     when 'drug_name' then dmc.drug_name=code
@@ -44,15 +44,17 @@ SELECT person_id, attribute_id
     end) as match
 from latest_alt_drug lad 
 join crit_attribute_used on code_type like 'drug_%'
-join ct.drug_mapping_cat_expn7 dmc on ct.py_contains(nvl(lower(lad.drug_name), ''), dmc.drug_name) 
+join ct.drug_mapping_cat_expn8 dmc 
+    on lad.drug_generic_name = dmc.drug_name 
+    or ct.py_contains(lad.drug_name, dmc.drug_name) 
 group by person_id, attribute_id
 ;
-select count(*) from "_p_a_drug_alt" pad2 where match; --2654 --2763 --2747
+select count(*) from "_p_a_drug_final" pad2 where match; --2654 --2763 --2747
 
-create view qc_match_drug_alt as
+create view qc_match_drug_final as
 select attribute_id, attribute_group, attribute_name, attribute_value
 , count(distinct person_id) patients
-from _p_a_drug_alt
+from _p_a_drug_final
 join crit_attribute_used using (attribute_id)
 where match
 group by attribute_id, attribute_group, attribute_name, attribute_value
