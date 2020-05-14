@@ -7,7 +7,7 @@ Results:
 -- default match to false for medications and icds
 create temporary table _match_p_a_default_false as
 with pa as (
-    select attribute_id, person_id, NULL::varchar as patient_value, match from _p_a_drug
+    select attribute_id, person_id, NULL::varchar as patient_value, match from _p_a_drug_final
     union select attribute_id, person_id, NULL, match from _p_a_icd_rex
 ), a_all as (
     select distinct attribute_id from crit_attribute_used where code_type ~ '^(drug_|icd_)' --quickfix

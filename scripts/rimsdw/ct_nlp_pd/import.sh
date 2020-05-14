@@ -12,10 +12,6 @@ psql_w_envs rimsdw/ct_nlp_pd/match_code_lab.sql # > pa_loinc
 
 # hard coded lab queries, to be reorganized later
 psql_w_envs rimsdw/ct_nlp_pd/quickadd__latest_lab_mapped.sql # > _latest_lab_mapped
-# psql_w_envs rimsdw/ct_nlp_pd/query_lab_alt_or_livermet.sql
-# psql_w_envs rimsdw/ct_nlp_pd/query_lab_ast_or_livermet.sql
-# psql_w_envs rimsdw/ct_nlp_pd/query_lab_tbili_or_gs.sql
-# psql_w_envs rimsdw/ct_nlp_pd/query_lab_aof.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_query_lab.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_text_mapping__histology.sql  #> pa_histology
 psql_w_envs rimsdw/ct_nlp_pd/match_text_measure__stage.sql # > pa_stage
@@ -28,13 +24,9 @@ psql_w_envs rimsdw/ct_nlp_pd/match_code_drug.sql #> pa_drug
 # compile the matches
 psql_w_envs rimsdw/ct_nlp_pd/master_match.sql  #> master_match
 ########################################################### next
-# psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
-# psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary
-# export_w_today master_patient_summary
 # # deliver
-# psql_w_envs ct_NSCLC/expand_attributes.sql #> crit_attribute_expanded, master_sheet_expanded
-# export_w_today qc_attribute_match_summary
-# export_w_today v_crit_attribute_expanded
-# load_to_pharma v_crit_attribute_expanded
-# export_w_today v_master_sheet_expanded
-# load_to_pharma v_master_sheet_expanded
+psql_w_envs rimsdw/ct_nlp_pd/master_sheet.sql  #> master_match
+export_w_today v_crit_attribute_expanded
+load_to_pdesign v_crit_attribute_expanded
+export_w_today v_master_sheet_expanded
+load_to_pdesign v_master_sheet_expanded
