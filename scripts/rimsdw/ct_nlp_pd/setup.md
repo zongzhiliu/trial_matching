@@ -99,8 +99,8 @@ pd.read_sql("""
 * trial_entity: trial_index, semantic+entity; CUI, assertion; trial_id, subset, section
 * trial_relation: trial_index, semantic+entity, from_type+from_value; relation_type
     * trial_entity_w_relation
-* entity_mappedd_by_self: semantic+entity, attr_rx
-* entity_mapped_by_relation: semantic+entity, relation_type, from_type+from_value; attr_rx
+* entity_mappedd_by_self: semantic+entity, attr_rex
+* entity_mapped_by_relation: semantic+entity, relation_type, from_type+from_value; attr_rex
     * entity_mapped_union
 * attributes_all: attribute_id, attribute_group, attribute_name, attribute_value
     * entity_mapped_: semantic+entity, relation_type, from_type+from_value, attribute_id
@@ -142,7 +142,7 @@ from entity_mapped_union e
 join pd_attribute_coded_20200515 on ct.py_contains(attribute_id, attr_rex)
 ;
 
-create or replace view v_trial_attribute as
+create or replace view _trial_attribute_strict as
 select distinct trial_id
 , subset, ie_flag as section
 , attribute_id
@@ -150,22 +150,59 @@ from trial_entity_w_relation t
 join entity_mapped_attr using (semantic, entity, relation_type, from_type, from_value)
 order by trial_id, section desc, attribute_id
 ;
+```
+* rescue the entities not mapped to any attributes because of an additional relation.
+```sql
+-- find candicate entity occurences to be rescued:
+create or replace view _e_candidate as
+with rel_and_nom as (
+    select distinct trial_index, semantic, entity, trial_id, subset, ie_flag
+    from trial_entity_w_relation
+    left join entity_mapped_union using (semantic, entity, relation_type, from_type, from_value)
+    where attr_rex is null and relation_type != '_'
+), e_mapped as ( -- exclude those already mapped with anothe relation (value + tempo)
+    select distinct trial_index, semantic, entity, trial_id, subset, ie_flag
+    from trial_entity_w_relation
+    join entity_mapped_union using (semantic, entity, relation_type, from_type, from_value)
+    where attr_rex is not null
+)
+select * from rel_and_nom except
+select * from e_mapped
+;
+
+-- rescure using blank relation
+create view _trial_attribute_rescue as
+select distinct trial_id, subset, ie_flag as section
+, attribute_id
+from (select trial_id, subset, ie_flag
+	, semantic, entity
+	, '_' as relation_type, '_' as from_type, '_' as from_value
+    from _e_candidate)
+join entity_mapped_attr using (semantic, entity, relation_type, from_type, from_value)
+order by trial_id, section desc, attribute_id
+;
+
+create view v_trial_attribute as
+select * from _trial_attribute_strict union
+select * from _trial_attribute_rescue
+order by trial_id, section desc, attribute_id
+;
 -- qc
 select * from v_trial_attribute;
 select count(*), count(distinct trial_id), count(distinct attribute_id) from v_trial_attribute;
-select count(*), count(distinct attribute_id) from entity_mapped_attr;
-create view qc_trial_attr_all as
+    -- 11762   | 811     | 228
+create view qc_trial_attribute as
     select attribute_id, section
     , count(distinct trial_id) trials
     from v_trial_attribute
     group by attribute_id, section
     order by attribute_id, section
 ;
-```
+select * from qc_trial_attribute;
 * deliver
 ```sh
 select_from_db_schema_table.py rimsdw ct_nlp_pd v_trial_attribute > v_trial_attribute_20200515.csv
-select_from_db_schema_table.py rimsdw ct_nlp_pd qc_trial_attr_all > qc_trial_attribute_20200515.csv
+select_from_db_schema_table.py rimsdw ct_nlp_pd qc_trial_attribute > qc_trial_attribute_20200515.csv
 load_into_db_schema_some_csvs.py pdesign db_data_bridge v_trial_attribute_20200515.csv qc_trial_attribute_20200515.csv
 ```
 
