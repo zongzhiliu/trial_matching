@@ -7,8 +7,6 @@ Results:
     trial_attribute_used
     crit_attribute_used
     _crit_attribute_mapped
-*/
-/*
 create or replace view ref_drug_mapping as
 select * from ${ref_drug_mapping}
 ; --ct.drug_mapping_cat_expn3;
@@ -18,8 +16,58 @@ create view ref_histology_mapping as
 select * from ${ref_histology_mapping}
 ;
 */
-create view lastest_icd as select * from ct.latest_icd;
+set search_path=ct_CLL;
+create view latest_icd as select * from viecure_ct.latest_icd;
+-- later: add CLL to ref_cancer_icd
+drop table if exists cohort cascade;
+create table cohort as
+select distinct person_id
+from viecure_ct.latest_icd
+join viecure_ct.demo_plus using (person_id)
+where dx_code ~ '${cancer_type_icd}'
+    and date_of_death is NULL
+    and datediff(day, last_visit_date, '${protocal_date}')/365.25 <= ${last_visit_within}
+;
 
+select dx_code
+    , count(*) records, count(distinct person_id) patients
+from cohort
+join latest_icd using (person_id)
+where dx_code ~ '${cancer_type_icd}'
+group by dx_code
+order by dx_code
+;
+
+select rx_name
+    , count(*) records, count(distinct person_id) patients
+from cohort
+join viecure_ct.all_rx using (person_id)
+where lower(rx_name) ~ '(^|\\W)(ibrutinib|pci-32765|cra-032765|imbruvica|ibrutix)(\\W|$)'
+group by rx_name
+order by rx_name
+;
+with dx as (
+    select person_id, dx_code icd
+    from cohort
+    join latest_icd using (person_id)
+    where dx_code ~ '${cancer_type_icd}'
+), rx as (
+    select distinct person_id, rx_name
+    from cohort
+    join viecure_ct.all_rx using (person_id)
+    where lower(rx_name) ~ '(^|\\W)(ibrutinib|pci-32765|cra-032765|imbruvica|ibrutix)(\\W|$)'
+)
+select case when icd ~ '0$' then 'no_remission'
+    when icd ~ '12$' then 'refactory'
+    when icd ~ '[.1]11$' then 'remission'
+    end latest_status
+, count(*) records, count(distinct mrn) patients
+from dx join rx using (person_id)
+group by latest_status
+order by latest_status
+;
+
+/* later
 drop view if exists _crit_attribute_raw cascade;
 create view _crit_attribute_raw as
 select attribute_id
@@ -111,3 +159,4 @@ join (select distinct attribute_id
     from trial_attribute_used) using (attribute_id)
 ;
 select count(*) from crit_attribute_used;
+*/

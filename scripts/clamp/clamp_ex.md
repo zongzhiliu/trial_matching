@@ -10,7 +10,6 @@ for f in *.txt; do
     a=${f%%.txt};
     cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; 
 done
-mv res.tsv nsclc.tsv
 ```
 * debug
 ```ipython
@@ -18,7 +17,33 @@ import sqlite3
 df = pd.read_csv('res.tsv', delimiter='\t', encoding='latin1')
 conn = sqlite3.connect(':memory:')
 df.to_sql('df', conn, index=False, if_exists='replace')
-
+```
+* PD_trials
+```
+cd /Users/zongzhiliu/Sema4/rimsdw/ct_nlp_pd/
+trial_entity = pd.read_csv('PD_trial_entity_20200507.csv')
+entity = pd.read_csv('PD_entity_raw_20200507.csv')
+mapped_entity = entity[entity.attribute_id.notnull()]
+trial_attr = trial_entity.merge(mapped_entity, on=['Semantic', 'Entity'])[['trial_id', 'subset', 'ie_flag', 'attribute_id']]
+conn = sqlite3.connect(':memory:')
+trial_attr.to_csv('PD_trial_attr_gene_alteration.csv', index=False)
+trial_attr.to_sql('trial_attr', conn, index=False, if_exists='replace')
+# summary
+pd.read_sql("""
+    select attribute_id, ie_flag
+    , count(distinct trial_id)
+    from trial_attr
+    group by attribute_id, ie_flag
+    """, conn).to_csv('qc_trial_attr_gene_alteration.csv')
+pd.read_sql("""
+    select ie_flag
+    , count(distinct trial_id)
+    from trial_attr
+    group by ie_flag
+    """, conn)
+```
+* summary
+```ipython
 pd.read_sql("""
     select semantic, entity
     , count(*) records, count (distinct trial_index) trials

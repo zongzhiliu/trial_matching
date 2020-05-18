@@ -21,11 +21,11 @@ select person_id
 , case when stage_ext='' then NULL else stage_ext end stage_ext
 from _stage
 ;
-/*qc
+create view qc_stage as
 select stage_base, count(distinct person_id) from stage 
 group by stage_base
 order by stage_base
-; --13220 no stage!!
-*/
-
+;
+select * from qc_stage;
+select count(*) stage_records, count (distinct person_id) patients from stage where stage is not null;
 

@@ -13,7 +13,7 @@ with cau as (
 select person_id, attribute_id
 , bool_or(case code_type
     when 'gene_variant' then ct.py_contains(nvl(variant, ''), code_ext) --quickfix
-    when 'gene_display' then ct.py_contains(nvl(variant_display_name, ''), code_ext) --quickfix
+    when 'gene_display' then ct.py_contains(nvl(variant_display_name, ''), code_ext, 'i') --quickfix
     when 'gene_vtype' then lower(variant_type) = lower(code_ext) --quickfix
     when 'gene_rtype' then ct.py_contains(nvl(reported_occurrence_type, ''), code_ext, 'i') --quickfix
     end) as match

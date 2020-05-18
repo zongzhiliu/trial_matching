@@ -2,6 +2,7 @@ set search_path=prod_msdw;
 select * from d_metadata
 where META_DATA_KEY in (3490, 5719)
 ;
+
 with tmp as (
     select medical_record_number mrn
     , context_diagnosis_code icd

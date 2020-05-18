@@ -5,7 +5,8 @@
 drop table if exists stage_plus cascade;
 create table stage_plus as
 select person_id
-, case when overall_stage in ('', 'Not Reported', 'Not Available', 'Occult Carcinoma') then
+, year_of_diagnosis dx_year, month_of_diagnosis dx_month, day_of_diagnosis dx_day
+, case when overall_stage in ('', 'Not Reported', 'Not Available') then --Occult Carcinoma is defined TXN0M0
     NULL else overall_stage end stage_extracted
 , imputed_stage_optimized as stage_imputed
 from cohort
@@ -37,3 +38,6 @@ with a as (
 select a.count, e.count, ct.assert(a.count>e.count, 'imputing rescues some stage')
 from a cross join e
 ;
+
+select count(*) stage_records, count (distinct person_id) patients from stage_plus where stage is not null;
+select count(*) stage_records, count (distinct person_id) patients from stage_plus where stage_extracted is not null;

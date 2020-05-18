@@ -73,4 +73,25 @@ order by genetic_test_name, reported_occurrence_type, gene, variant_type
 ;
 
 select * from var where variant_type='';
-
+-- total patients with any RET alterations
+create view ct._all_ret_alterations as
+select person_id, cancer_type_name
+, genetic_test_name, gene
+, variant_type
+, variant
+, variant_display_name
+, reported_occurrence_type
+, is_clinically_significant
+, cd.status cdx_status
+-- , p.status patient_status , p.date_of_death
+from cplus_from_aplus.cancer_diagnoses cd
+join cplus_from_aplus.cancer_types using (cancer_type_id)
+--join cplus_from_aplus.people p using (person_id)
+join cplus_from_aplus.genetic_test_occurrences using (person_id)
+join cplus_from_aplus.genetic_tests using (genetic_test_id)
+join cplus_from_aplus.variant_occurrences using (genetic_test_occurrence_id)
+join cplus_from_aplus.target_genes using (target_gene_id) --, genetic_test_id)
+where gene='RET'
+order by cancer_type_name, variant_type
+;
+/*
