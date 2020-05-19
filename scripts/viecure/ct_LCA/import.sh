@@ -19,10 +19,10 @@ psql_w_envs viecure/ct_LCA/match_attributes__performance.sql #>_pa_ecog/karnofsk
 
 #psql_w_envs cancer/prepare_variant.sql
 #psql_w_envs cancer/prepare_biomarker.sql --select * from all_gene_alteration where gene_name='PD-L1';
-#psql_w_envs caregiver/icd_physician.sql
 # psql_w_envs ct_NSCLC/match_code_variant.sql #> pa_variant
 # psql_w_envs ct_NSCLC/match_code_biomarker.sql #> pa_biomarker
 
+#psql_w_envs caregiver/icd_physician.sql
 # compile the matches
 psql_w_envs ct_NSCLC/master_match.sql  #> master_match
 psql_w_envs ct_NSCLC/update_attributes.sql #> crit/trial_attribute_updated
