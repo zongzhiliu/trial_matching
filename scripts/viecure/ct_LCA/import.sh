@@ -1,11 +1,11 @@
-source viecure/ct_CLL/config.sh
+source viecure/ct_LCA/config.sh
 source util/util.sh
 pgsetup $db_conn
 
 psql_w_envs viecure/ct_LCA/setup.sql
-psql_w_envs viecure/ct_LCA/match_test.sql
 psql_w_envs viecure/ct_LCA/prepare_cohort.sql
-psql_w_envs viecure/ct_LCA/match_dx.sql --ct_NSCLC/match_code_icd.sql # > pa_icd_rex
+psql_w_envs viecure/ct_LCA/match_test.sql
+psql_w_envs viecure/ct_LCA/match_dx.sql # > pa_icd_rex
 
 
 # match to attributes
