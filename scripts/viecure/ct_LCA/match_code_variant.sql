@@ -3,28 +3,30 @@ Requires: crit_attribute_used
     _variant_significant
 Results: _p_a_variant
 */
+create temporary table _variant as
+select person_id, gene_name gene
+, decode(mutation_type_name
+    , 'Mutation', 'molecular'
+    , 'Splice Site', 'splice'
+    , 'Copy Number Loss', 'cnv'
+    , mutation_type_name) variant_type
+, 'p.'+ replace(replace(replace(replace(replace(replace(replace(raw_position
+    , 'Leu', 'L')
+    , 'Gly', 'G')
+    , 'Val', 'V')
+    , 'Arg', 'R')
+    , 'Lys', 'K')
+    , 'Cys', 'S')
+    , 'Glu', 'E') as variant --quickfix
+from viecure_ct.all_gene_alteration
+;
+
 drop table if exists _p_a_variant cascade;
 create table _p_a_variant as
 with cau as (
     select attribute_id, code_type, code, code_ext
     from crit_attribute_used
     where code_type like 'gene%'
-), var as (
-    select person_id, gene_name gene
-    , decode(mutation_type_name
-        , 'Mutation', 'molecular'
-        , 'Splice Site', 'splice'
-        , 'Copy Number Loss', 'cnv'
-        , mutation_type_name) variant_type
-    , 'p.'+ replace(replace(replace(replace(replace(replace(replace(raw_position
-        , 'Leu', 'L')
-        , 'Gly', 'G')
-        , 'Val', 'V')
-        , 'Arg', 'R')
-        , 'Lys', 'K')
-        , 'Cys', 'S')
-        , 'Glu', 'E') as variant --quickfix
-    from viecure_ct.all_gene_alteration
 )
 select person_id, attribute_id
 , bool_or(case code_type
@@ -33,7 +35,8 @@ select person_id, attribute_id
     when 'gene_vtype' then ct.py_contains(nvl(variant_type, ''), code_ext, 'i') --quickfix
     when 'gene_rtype' then ct.py_contains(nvl(variant_type, ''), code_ext, 'i') --quickfix
     end) as match
-from var
+from cohort
+join _variant using (person_id)
 join cau on ct.py_contains(gene, cau.code)
 group by person_id, attribute_id, code_type, code, code_ext
 ;
