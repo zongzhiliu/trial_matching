@@ -44,45 +44,6 @@ order by attribute_id
 ;
 select * from qc_match_drug;
 
--- drug_alias need to cover all of drug_mapping
--- drug_names needed for convenience of qc
-create view _drug_alias_plus as
-with da as ( -- renaming the field names
-    select lower(generic_name) drug_name, trade_name alias
-    from ct.ref_drug_alias_v3
-) --, da_plus as ( -- add missing drug_names from ref_drug_mapping
-select drug_name, nvl(alias, drug_name) alias
-from ref_drug_mapping
-left join da using (drug_name)
-order by drug_name, alias
-;
-
-drop table if exists _rx_drug cascade;
-create table _rx_drug as
-with rx as ( -- unique rx_names
-    select distinct rx_name from _medication
-)
-select distinct rx_name, drug_name
-from rx
-join _drug_alias_plus
-on rx_name ilike '%'+drug_name+'%' or rx_name ilike '%'+alias+'%'
-;
-
-
-drop table if exists _drug_aliases cascade;
-create table _drug_aliases as
-select drug_name, listagg(distinct alias, '| ') within group (order by alias) as aliases
-from _drug_alias_plus da_plus
-group by drug_name
-;
-
-create view _rx_drug_annotating as
-select rx_name, drug_name, aliases, null:bool is_valid
-from _rx_drug
-join _drug_aliases using (drug_name)
-order by drug_name, rx_name
-;
-
 drop TABLE if exists _p_a_drug_improved cascade;
 CREATE TABLE _p_a_drug_improved AS
 SELECT person_id, attribute_id

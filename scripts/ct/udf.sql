@@ -1,11 +1,12 @@
 -- set search_path=ct;
 
+drop function py_contains(varchar, varchar);
 create or replace function py_contains(
     txt varchar(64000), patt varchar
     ) returns bool stable as $$
     """ txt ~ patt
     """
-    if txt is None:
+    if txt is None or patt is None:
         return None
 
     import re
@@ -13,12 +14,22 @@ create or replace function py_contains(
     return bool(res)
 $$ language plpythonu;
 
+drop function py_contains_debug(varchar, varchar);
+create or replace function py_contains_debug(
+    txt varchar(64000), patt varchar
+    ) returns varchar(64000) stable as $$
+    """ txt ~ patt
+    """
+    return '|{txt}|, |{patt}|'.format(**locals())
+$$ language plpythonu;
+
+drop function py_contains(varchar, varchar, varchar);
 create or replace function py_contains(
     txt varchar(64000), patt varchar, flags varchar(9)
     ) returns bool stable as $$
     """ txt ~ patt with re flags
     """
-    if txt is None:
+    if txt is None or patt is None:
         return None
 
     import re
@@ -39,3 +50,9 @@ CREATE OR REPLACE FUNCTION ct.assert(
     assert a, '{description}. see {a}'.format(**locals())
     return True
 $$ LANGUAGE plpythonu;
+
+select ct.assert(py_contains(NULL, NULL) is NULL, 'null');
+select ct.assert(py_contains('a', NULL) is NULL, 'null');
+select ct.assert(py_contains(NULL, 'a') is NULL, 'null');
+select ct.assert(py_contains('C20-avr', '\\bC20\\b') is True, 'true');
+select ct.assert(py_contains('C200-avr', '\\bC20\\b') is False, 'false');
