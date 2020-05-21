@@ -1,8 +1,7 @@
 /*** match 
 Requires: demo (date_of_birth)
 , crit_attribute_used (attribute_id)
-, trial_attribute_used (ie_value)
-Result: _pat_performance
+Result: _pa_performance
 */
 set search_path to ct_LCA;
 CREATE TABLE _p_a_performance AS
