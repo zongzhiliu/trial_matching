@@ -15,5 +15,5 @@ psql_w_envs viecure/ct/quickfix.sql
 psql_w_envs viecure/ct/qc.sql
 #############################################################next
 load_from_csv ref_disease_icd
-
+psql_w_envs viecure/ct/drug_alias.sql
 
