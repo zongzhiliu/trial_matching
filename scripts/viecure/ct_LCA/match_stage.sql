@@ -25,3 +25,10 @@ from (stage cross join cau)
 join tau using (attribute_id)
 group by person_id, trial_id, attribute_id
 ;
+
+select attribute_id, attribute_name, attribute_value
+, count(distinct person_id) patients
+from _p_a_t_stage
+join crit_attribute_used using (attribute_id)
+where match
+group by attribute_id, attribute_name, attribute_value;

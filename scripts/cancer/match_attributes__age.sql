@@ -4,7 +4,7 @@ Requires: demo (date_of_birth)
 , trial_attribute_used (ie_value)
 Result: _pat_age
 */
-drop table if exists _p_a_t_age;
+drop table if exists _p_a_t_age cascade;
 create table _p_a_t_age as
 select attribute_id, trial_id, person_id
 , datediff(day, date_of_birth, '${protocal_date}')/365.25 as patient_value

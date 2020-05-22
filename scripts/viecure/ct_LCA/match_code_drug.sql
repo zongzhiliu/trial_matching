@@ -20,7 +20,7 @@ SELECT person_id, attribute_id
     end) as match
 from crit_attribute_used
 join _medication on code_type like 'drug_%'
-join ct._rx_drug using (rx_name)
+join viecure_ct._rx_drug using (rx_name)
 join ct.ref_drug_mapping using (drug_name)
 group by person_id, attribute_id
 ;
@@ -44,7 +44,7 @@ order by attribute_id
 ;
 select * from qc_match_drug_improved;
 
-/*
+create or replace view qc_match_drug_improving as
 select attribute_id, attribute_name, attribute_value
 , v0.matched_patients patients_v0, v1.matched_patients patients_v1, v2.matched_patients patients_v2
 from qc_match_drug v0
@@ -52,6 +52,7 @@ join qc_match_drug_improved_v1 v1 using(attribute_id, attribute_name, attribute_
 join qc_match_drug_improved v2 using(attribute_id, attribute_name, attribute_value)
 order by attribute_id;
 
+/*
 drop TABLE if exists _p_a_drug cascade;
 CREATE TABLE _p_a_drug AS
 SELECT person_id, attribute_id

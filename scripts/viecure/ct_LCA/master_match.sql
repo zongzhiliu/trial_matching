@@ -8,7 +8,8 @@ Results:
 
 drop table if exists _match_p_a_t cascade;
 create table _match_p_a_t as
-select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_age
+select attribute_id, trial_id, person_id, patient_value::varchar, match from _p_a_t_age union
+select attribute_id, trial_id, person_id, NULL, match from _p_a_t_stage
 ;
 
 -- default match to false for medications and icds
@@ -28,7 +29,6 @@ left join pa using (person_id, attribute_id)
 drop table if exists _match_p_a cascade;
 create table _match_p_a as
 select attribute_id, person_id, patient_value::varchar, match from _match_p_a_default_false
--- union select attribute_id, person_id, patient_value::varchar, match from _p_a_stage
 -- union select attribute_id, person_id, patient_value::varchar, match from _p_a_histology
 union select attribute_id, person_id, NULL, match from _p_a_variant --mutation
 union select attribute_id, person_id, NULL, match from _p_a_biomarker
@@ -59,8 +59,7 @@ create view _master_match as
 ;
 ------------------------------------------------------------
 -- qc
-select count(*), count(distinct attribute_id) from _master_match;
-    -- 36248441 |   148
+-- select count(*), count(distinct attribute_id) from _master_match;
 
 -- set match as null by default for each patient
 drop table if exists master_match cascade;
@@ -92,3 +91,35 @@ select ct.assert(count(distinct trial_id) = count(*)
 from tc
 ;
 
+create or replace view qc_attribute_match_summary as
+with cp as (
+    select attribute_id, attribute_match
+    , count(distinct person_id) patients
+    from master_match
+    group by attribute_id, attribute_match
+), cp_pivot as (
+    select attribute_id
+    , nvl(sum(case when attribute_match is True then patients end), 0) patients_true
+    , nvl(sum(case when attribute_match is False then patients end), 0) patients_false
+    , nvl(sum(case when attribute_match is Null then patients end), 0) patients_null
+    from cp group by attribute_id
+), ct as (
+    select attribute_id, ie_flag inclusion
+    , count(distinct trial_id) trials
+    from trial_attribute_used
+    group by attribute_id, inclusion
+), ct_pivot as (
+	select attribute_id
+    , nvl(sum(case when inclusion then trials end), 0) trials_inc
+    , nvl(sum(case when not inclusion then trials end), 0) trials_exc
+    from ct group by attribute_id
+)
+select attribute_id
+, trials_inc, trials_exc
+, patients_true, patients_false, patients_null
+, attribute_group+'| '+attribute_name+'| '+attribute_value as attribute_title
+from ct_pivot join cp_pivot using (attribute_id) 
+join crit_attribute_used using (attribute_id)
+order by attribute_id
+;
+select * from qc_attribute_match_summary;

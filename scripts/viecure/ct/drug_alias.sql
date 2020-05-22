@@ -23,28 +23,9 @@ select drug_name, drug_name from ref_drug_mapping union --quickfix
 select drug_name, drug_name from dav
 ;
 -- select * from _drug_alias_plus order by drug_name, alias limit 99;
-
-drop table if exists _rx_drug cascade;
-create table _rx_drug as
-with rx as ( -- unique rx_names
-    select distinct rx_name from viecure_ct.all_rx
-)
-select distinct rx_name, drug_name
-from rx
-join _drug_alias_plus
-on ct.py_contains(rx_name, '\\b'+alias+'\\b', 'i')
-;
--- select * from _rx_drug order by drug_name, rx_name limit 99;
-
-create or replace view _rx_drug_annotating as
-with da as (
+create table _drug_alias_cat as (
     select drug_name, listagg(distinct alias, '| ') within group (order by alias) as aliases
     from _drug_alias_plus
     group by drug_name
-)
-select rx_name, drug_name, aliases, null::bool is_valid
-from _rx_drug
-join da using (drug_name)
-order by drug_name, rx_name
-;
--- select * from _rx_drug_annotating order by drug_name, rx_name limit 99;
+);
+
