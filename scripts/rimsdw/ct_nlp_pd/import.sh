@@ -2,6 +2,7 @@
 source rimsdw/ct_nlp_pd/config.sh
 source util/util.sh
 pgsetup $db_conn
+##source rimsdw/ct_nlp_pd/setup.md
 psql_w_envs rimsdw/ct_nlp_pd/setup.sql
 
 # match to attributes
