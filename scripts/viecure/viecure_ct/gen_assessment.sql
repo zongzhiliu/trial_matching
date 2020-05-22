@@ -1,4 +1,4 @@
-set search_path to viecure_ct;
+--set search_path to viecure_ct;
 CREATE TABLE assessment as 
 SELECT patient_id person_id, description assessment_type
 	, score, assessment_date 
