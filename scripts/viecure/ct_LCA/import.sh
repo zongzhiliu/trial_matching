@@ -4,14 +4,15 @@ pgsetup $db_conn
 
 psql_w_envs viecure/ct_LCA/setup.sql
 psql_w_envs viecure/ct_LCA/prepare_cohort.sql
+
+# match to attributes
 psql_w_envs viecure/ct_LCA/match_test.sql
 psql_w_envs viecure/ct_LCA/match_dx.sql # > pa_icd_rex
 
-
-# match to attributes
 psql_w_envs cancer/match_attributes__age.sql #> pat_age
 psql_w_envs cancer/match_attributes__stage.sql #>_pa_stage
 # psql_w_envs ct_NSCLC/match_attributes__histology.sql  #> pa_histology
+
 psql_w_envs viecure/ct_LCA/match_code_drug.sql #> pa_drug
 psql_w_envs viecure/ct_LCA/match_attributes__performance.sql #>_pa_ecog/karnofsky
 psql_w_envs viecure/ct_LCA/match_code_variant.sql #> pa_variant
@@ -21,7 +22,7 @@ psql_w_envs viecure/ct_LCA/match_code_biomarker.sql #> pa_biomarker
 
 #psql_w_envs caregiver/icd_physician.sql
 # compile the matches
-psql_w_envs ct_NSCLC/master_match.sql  #> master_match
+psql_w_envs viecure/ct_LCA/master_match.sql  #> master_match
 psql_w_envs ct_NSCLC/update_attributes.sql #> crit/trial_attribute_updated
 psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
 psql_w_envs ct_PCA/master_patient.sql #> master_pathient_summary
