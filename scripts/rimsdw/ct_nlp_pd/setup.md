@@ -30,14 +30,14 @@ cd $working_dir
 
 * extract trial_id, subset, inc/exc from file name
 ```ipython
-df = pd.read_csv('entity_raw.tsv', delimiter='\t', encoding='latin1')
+df = pd.read_csv('entity_raw.tsv', delimiter='\t') #, encoding='latin1')
 df['trial_id'] = [x.split('-')[0] for x in df.trial_index]
 df['subset'] = [x.split('-')[1] for x in df.trial_index]
 tmp = [x.split('-')[-1] for x in df.trial_index]
 df['ie_flag'] = ['IC-EC' if x not in ('EC', 'IC') else x for x in tmp]
 df.to_csv('PD_trial_entity_20200514.csv' , index=False)
 
-df = pd.read_csv('relation_raw.tsv', delimiter='\t', encoding='latin1')
+df = pd.read_csv('relation_raw.tsv', delimiter='\t') #, encoding='latin1')
 df['trial_id'] = [x.split('-')[0] for x in df.trial_index]
 df['subset'] = [x.split('-')[1] for x in df.trial_index]
 tmp = [x.split('-')[-1] for x in df.trial_index]

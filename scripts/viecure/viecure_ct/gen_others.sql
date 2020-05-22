@@ -10,6 +10,14 @@ where not nvl(inactive, False)
     and not nvl(errored, False)
 ;
 
+set search_path=viecure_ct;
+create view qc_tumor_marker as
+select test_name, count(*) records, count(distinct person_id) patients
+from viecure_ct.all_tumor_marker
+group by test_name 
+order by patients desc 
+;
+
 set search_path=viecure_emr;
 create table viecure_ct.all_gene_alteration as
 select patientid person_id, genelist.name gene_name
@@ -25,3 +33,13 @@ join genelist on genelist_id=genelist.id
 join mutation_type on mutation_type_id=mutation_type.id
 join gene_source_type on gene_source_type_id=gene_source_type.id
 ;
+
+set search_path=viecure_ct;
+create view qc_gene_alteration as
+select gene_name, mutation_type_name, gene_source_type_name
+ , count(*) records, count(distinct person_id) patients
+ from all_gene_alteration
+ group by gene_name, mutation_type_name, gene_source_type_name
+ order by gene_name, mutation_type_name, gene_source_type_name
+ ;
+

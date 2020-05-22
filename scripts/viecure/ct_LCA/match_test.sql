@@ -1,6 +1,6 @@
-/****
-* match labs
-* require: cohort, ct.latest_test, ct.ref_test
+/**** match labs
+Result: _p_a_test
+Require: cohort, ct.latest_test, ct.ref_test
 , ct.latest_icd
 */
 --drop table _latest_test_normal_range;
