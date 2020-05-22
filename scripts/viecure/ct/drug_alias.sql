@@ -3,16 +3,21 @@ Input: drug_mapping_cat_expn_v9, drug_alias_expn_v9, ref_drug_alias_v3
 */
 -- drug_alias need to cover all of drug_mapping
 -- drug_names needed for convenience of qc
+drop table if exists _drug_alias_plus cascade;
 create table _drug_alias_plus as
-with da as ( -- renaming the field names
+with dav as ( -- renaming the field names
     select lower(generic_name) drug_name, btrim(trade_name) alias
     from ref_drug_alias_v3
+), dae as ( -- renaming the field names
+    select lower(drug_name) drug_name, btrim(other_names) alias
+    from drug_alias_expn9
 )
-select drug_name, btrim(alias) from da union
-select drug_name, btrim(alias) from drug_alias_expn_v9 union
-select drug_name, drug_name from drug_alias_expn_v9 union
-select drug_name, drug_name from da
+select drug_name, alias from dav union
+select drug_name, alias from dae union
+select lower(drug_name), lower(drug_name) from drug_mapping_cat_expn9 union --quickfix
+select drug_name, drug_name from dav
 ;
+-- select * from _drug_alias_plus order by drug_name, alias limit 99;
 
 drop table if exists _rx_drug cascade;
 create table _rx_drug as
@@ -24,6 +29,7 @@ from rx
 join _drug_alias_plus
 on ct.py_contains(rx_name, '\\b'+alias+'\\b', 'i')
 ;
+-- select * from _rx_drug order by drug_name, rx_name limit 99;
 
 create view _rx_drug_annotating as
 with da as (
@@ -31,8 +37,9 @@ with da as (
     from _drug_alias_plus
     group by drug_name
 )
-select rx_name, drug_name, aliases, null:bool is_valid
+select rx_name, drug_name, aliases, null::bool is_valid
 from _rx_drug
 join da using (drug_name)
 order by drug_name, rx_name
 ;
+-- select * from _rx_drug_annotating order by drug_name, rx_name limit 99;
