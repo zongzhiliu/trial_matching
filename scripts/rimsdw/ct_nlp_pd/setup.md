@@ -71,44 +71,57 @@ def add_subset_section(in_tsv, out_csv):
 
 entity = add_subset_section(in_tsv='entity_raw.tsv', out_csv=f'PD_trial_entity_{today_stamp()}.csv')
 relation = add_subset_section(in_tsv='relation_raw.tsv', out_csv=f'PD_trial_relation_{today_stamp()}.csv')
+relation = relation.rename(str.lower, axis='columns').rename(columns={'to_type':'semantic', 'to_value':'entity', 'to_cui':'cui'})
+entity = entity.rename(str.lower, axis='columns')
 
-relation.Relation_Type.value_counts()
-relation.From_Type.value_counts()
+relation.relation_type.value_counts()
 ```
 * combine the primary and secondary entities
 ```
 # primary on the left and secondary on the right
 # rename the columns of relation
 conn = sqlite3.connect(':memory:')
-relation = relation.rename(columns={'To_Type':'Semantic', 'To_Value':'Entity', 'To_CUI':'CUI'})
 relation.to_sql('relation', conn, if_exists='replace')
-entity.to_sql('entity', conn)
-cur = conn.cursor()
-cur.execute(""" drop view entity_relation;
-    """)
-cur.execute("""create view entity_relation as
+entity.to_sql('entity', conn, if_exists='replace')
+entity_relation = pd.read_sql("""
     select distinct e.*
-    , coalesce(Relation_Type, '_') Relation_Type
-    , coalesce(From_Type, '_') From_Type
-    , coalesce(From_Value, '_') From_Value
+    , coalesce(relation_type, '_') relation_type
+    , coalesce(from_type, '_') from_type
+    , coalesce(from_value, '_') from_value
     from entity e
-    left join relation using (trial_index, Semantic, Entity)
+    left join relation using (trial_index, semantic, entity)
     order by trial_index, iStart, iEnd
-    """)
-entity_relation = pd.read_sql('select * from entity_relation', conn)
+    """, conn)
+entity_relation.to_sql('entity_relation', conn)
 entity_relation.to_csv('trial_entity_relation.csv', index=False)
 
 entity_relation_mapping = pd.read_sql("""
-    select Semantic, Entity, Relation_Type, From_Type, From_Value
+    select semantic, entity, relation_type, from_type, from_value
     , count(distinct trial_id) trials
     from entity_relation
-    group by Semantic, Entity, Relation_Type, From_Type, From_Value
-    order by Semantic, Entity, Relation_Type, From_Type, From_Value
+    group by semantic, entity, relation_type, from_type, from_value
+    order by semantic, entity, relation_type, from_type, from_value
     """, conn)
-)
 entity_relation_mapping.shape
 entity_relation_mapping.to_csv('entity_relation_mapping.csv', index=False)
+entity_relation_mapping.to_sql('entity_relation_mapping', conn)
 ```
+* retrieve mapped to the template
+```ipython
+entity_mapped_union = pd.read_csv('entity_mapped_union.csv') #, encoding='latin1')
+entity_mapped_union.to_sql('entity_mapped_union', conn)
+entity_mapping = pd.read_sql("""select semantic, entity, relation_type, from_type, from_value
+    , trials mm_trials
+    , attr_rex pd_attributes_as_regx
+    from entity_relation_mapping
+    left join entity_mapped_union using(semantic, entity, relation_type, from_type, from_value)
+    where semantic not in ('Value', 'Temporal', 'Does', 'severity', 'Negation')
+    """, conn)
+entity_mapping.shape
+entity_mapping.semantic.value_counts()
+entity_mapping.to_csv('mm_entity_mapping.csv', index=False)
+```
+############################################################# next
 * trials with mapped attribute_id
 ```
 # merge the mapped gene mutation and others (with only the PD_attribute1
