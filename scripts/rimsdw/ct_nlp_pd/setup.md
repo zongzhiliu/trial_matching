@@ -8,35 +8,41 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA ct_nlp_pd GRANT ALL on tables to mingwei_zhan
 * cat entity result files with the file prefix as trial_index column
 * cat relationship files with the file prefix as trial_index column
 ```bash
-export working_dir='/Users/zongzhiliu/Sema4/rimsdw/ct_nlp_pd/'
-export entity_dir='/Users/zongzhiliu/Sema4/Clamp/MM Clamp Processed - R1/entity'
-export relation_dir='/Users/zongzhiliu/Sema4/Clamp/MM Clamp Processed - R1/relation'
+export working_dir='/Users/zongzhiliu/Sema4/rimsdw/ct_nlp_pd/mm'
+export input_dir='/Users/zongzhiliu/Sema4/Clamp/MM Clamp Processed - R2'
 
-#cd '/Users/zongzhiliu/Downloads/Split NCT-IE Clamp Results'
-cd "$entity_dir"
+cd "$input_dir"
+mkdir relation
+mv *-relation.txt relation
+mkdir entity
+mv *.txt entity
+
+cd entity
 first_file=$(ls | head -n1)
 head -n1 "$first_file" | gsed 's/^/trial_index\t/' | gsed 's/Start/iStart/;s/End/iEnd/' > res.tsv
 for f in *.txt; do
     a=${f%%.txt};
     cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; 
 done
-#cd '/Users/zongzhiliu/Downloads/Clinical Trial R1 Relations'
-cd "$relation_dir"
+cd -
+
+cd relation
 first_file=$(ls | head -n1)
 head -n1 "$first_file" | gsed 's/^/trial_index\t/' > res.tsv
 for f in *.txt; do
     a=${f%%-relation.txt};
     cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; 
 done
+cd -
+
+ln -s "$input_dir/entity/res.tsv" "$working_dir/entity_raw.tsv" 
+ln -s "$input_dir/relation/res.tsv" "$working_dir/relation_raw.tsv" 
 cd "$working_dir"
 ```
 
 * extract trial_id, subset, inc/exc from file name
 ```ipython
-entity_dir=os.environ['entity_dir']
-relation_dir=os.environ['relation_dir']
-df = pd.read_csv(f'{entity_dir}/res.tsv', delimiter='\t')
-#, encoding='latin1')
+df = pd.read_csv('entity_raw.tsv', delimiter='\t')
     # error: UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 6: invalid continuation byte
 csv_reader = csv.reader(open(entity_dir+'/res.tsv'), delimiter='\t')
 for i, row in enumerate(csv_reader):
@@ -50,39 +56,57 @@ tmp[1238:1268].decode(errors='backslashreplace')
 tmp[1238:1268].decode(errors='xmlcharrefreplace')
 ignore
 tmp
+```
 
+```ipython
+%run -i ~/scripts/util/util.py
+def add_subset_section(in_tsv, out_csv):
+    df = pd.read_csv(in_tsv, delimiter='\t', encoding='latin1')
+    df['trial_id'] = [x.split('-')[0] for x in df.trial_index]
+    df['subset'] = [x.split('-')[1] for x in df.trial_index]
+    tmp = [x.split('-')[-1] for x in df.trial_index]
+    df['section'] = ['IC-EC' if x not in ('EC', 'IC') else x for x in tmp]
+    df.to_csv(out_csv, index=False)
+    return df
 
-df['trial_id'] = [x.split('-')[0] for x in df.trial_index]
-df['subset'] = [x.split('-')[1] for x in df.trial_index]
-tmp = [x.split('-')[-1] for x in df.trial_index]
-df['ie_flag'] = ['IC-EC' if x not in ('EC', 'IC') else x for x in tmp]
-df.to_csv('PD_trial_entity_20200514.csv' , index=False)
+entity = add_subset_section(in_tsv='entity_raw.tsv', out_csv=f'PD_trial_entity_{today_stamp()}.csv')
+relation = add_subset_section(in_tsv='relation_raw.tsv', out_csv=f'PD_trial_relation_{today_stamp()}.csv')
 
-df = pd.read_csv('relation_raw.tsv', delimiter='\t') #, encoding='latin1')
-df['trial_id'] = [x.split('-')[0] for x in df.trial_index]
-df['subset'] = [x.split('-')[1] for x in df.trial_index]
-tmp = [x.split('-')[-1] for x in df.trial_index]
-df['ie_flag'] = ['IC-EC' if x not in ('EC', 'IC') else x for x in tmp]
-df.to_csv('PD_trial_relation_20200514.csv' , index=False)
-
-df.Relation_Type.value_counts()
-df.From_Type.value_counts()
+relation.Relation_Type.value_counts()
+relation.From_Type.value_counts()
 ```
 * combine the primary and secondary entities
 ```
 # primary on the left and secondary on the right
 # rename the columns of relation
-relation = pd.read_csv('PD_trial_relation_20200514.csv')
-entity = pd.read_csv('PD_trial_entity_20200514.csv')
 conn = sqlite3.connect(':memory:')
-relation.to_sql('relation', conn)
+relation = relation.rename(columns={'To_Type':'Semantic', 'To_Value':'Entity', 'To_CUI':'CUI'})
+relation.to_sql('relation', conn, if_exists='replace')
 entity.to_sql('entity', conn)
-entity_relation = pd.read_sql("""
-    select distinct e.*, Relation_Type, From_Type, From_Value
-    from entity e join relation using (trial_index, Semantic, Entity)
-    """, conn)
+cur = conn.cursor()
+cur.execute(""" drop view entity_relation;
+    """)
+cur.execute("""create view entity_relation as
+    select distinct e.*
+    , coalesce(Relation_Type, '_') Relation_Type
+    , coalesce(From_Type, '_') From_Type
+    , coalesce(From_Value, '_') From_Value
+    from entity e
+    left join relation using (trial_index, Semantic, Entity)
+    order by trial_index, iStart, iEnd
+    """)
+entity_relation = pd.read_sql('select * from entity_relation', conn)
+entity_relation.to_csv('trial_entity_relation.csv', index=False)
 
-entity_relation_mapping = entity_relation[['Semantic', 'Entity', 'Relation_Type', 'From_Type', 'From_Value']].drop_duplicates()
+entity_relation_mapping = pd.read_sql("""
+    select Semantic, Entity, Relation_Type, From_Type, From_Value
+    , count(distinct trial_id) trials
+    from entity_relation
+    group by Semantic, Entity, Relation_Type, From_Type, From_Value
+    order by Semantic, Entity, Relation_Type, From_Type, From_Value
+    """, conn)
+)
+entity_relation_mapping.shape
 entity_relation_mapping.to_csv('entity_relation_mapping.csv', index=False)
 ```
 * trials with mapped attribute_id
