@@ -6,31 +6,52 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA ct_nlp_pd GRANT ALL on tables to mingwei_zhan
 
 ## Compile the entities from NLP
 * cat entity result files with the file prefix as trial_index column
+* cat relationship files with the file prefix as trial_index column
 ```bash
 export working_dir='/Users/zongzhiliu/Sema4/rimsdw/ct_nlp_pd/'
-cd '/Users/zongzhiliu/Downloads/Split NCT-IE Clamp Results'
-head -n1 NCT02221739-New-IC.txt | gsed 's/^/trial_index\t/' | gsed 's/Start/iStart/;s/End/iEnd/' > res.tsv
+export entity_dir='/Users/zongzhiliu/Sema4/Clamp/MM Clamp Processed - R1/entity'
+export relation_dir='/Users/zongzhiliu/Sema4/Clamp/MM Clamp Processed - R1/relation'
+
+#cd '/Users/zongzhiliu/Downloads/Split NCT-IE Clamp Results'
+cd "$entity_dir"
+first_file=$(ls | head -n1)
+head -n1 "$first_file" | gsed 's/^/trial_index\t/' | gsed 's/Start/iStart/;s/End/iEnd/' > res.tsv
 for f in *.txt; do
     a=${f%%.txt};
     cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; 
 done
-cp res.tsv $working_dir/entity_raw.tsv
-```
-* cat relationship files with the file prefix as trial_index column
-```bash
-cd '/Users/zongzhiliu/Downloads/Clinical Trial R1 Relations'
-head -n1 NCT02412371-New-IC-relation.txt | gsed 's/^/trial_index\t/' > res.tsv
+#cd '/Users/zongzhiliu/Downloads/Clinical Trial R1 Relations'
+cd "$relation_dir"
+first_file=$(ls | head -n1)
+head -n1 "$first_file" | gsed 's/^/trial_index\t/' > res.tsv
 for f in *.txt; do
     a=${f%%-relation.txt};
     cat $f | gsed '1d' | gsed "s/^/$a\t/" >>res.tsv; 
 done
-cp res.tsv $working_dir/relation_raw.tsv
-cd $working_dir
+cd "$working_dir"
 ```
 
 * extract trial_id, subset, inc/exc from file name
 ```ipython
-df = pd.read_csv('entity_raw.tsv', delimiter='\t') #, encoding='latin1')
+entity_dir=os.environ['entity_dir']
+relation_dir=os.environ['relation_dir']
+df = pd.read_csv(f'{entity_dir}/res.tsv', delimiter='\t')
+#, encoding='latin1')
+    # error: UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 6: invalid continuation byte
+csv_reader = csv.reader(open(entity_dir+'/res.tsv'), delimiter='\t')
+for i, row in enumerate(csv_reader):
+    print (i, row)
+for i, line in enumerate(io.open(f'{entity_dir}/NCT01775553-New-IC.txt', 'rb')): print (i, line)
+tmp = open(f'{entity_dir}/NCT01775553-New-IC.txt', 'rb').read()
+tmp[1248:1268].decode()
+tmp[1238:1268].decode(errors='ignore')
+tmp[1238:1268].decode(errors='replace')
+tmp[1238:1268].decode(errors='backslashreplace')
+tmp[1238:1268].decode(errors='xmlcharrefreplace')
+ignore
+tmp
+
+
 df['trial_id'] = [x.split('-')[0] for x in df.trial_index]
 df['subset'] = [x.split('-')[1] for x in df.trial_index]
 tmp = [x.split('-')[-1] for x in df.trial_index]

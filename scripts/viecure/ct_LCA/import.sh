@@ -19,7 +19,6 @@ psql_w_envs viecure/ct_LCA/match_attributes__performance.sql #>_pa_ecog/karnofsk
 psql_w_envs viecure/ct_LCA/match_code_variant.sql #> pa_variant
 psql_w_envs viecure/ct_LCA/match_code_biomarker.sql #> pa_biomarker
 
-############################################################ next
 
 #psql_w_envs caregiver/icd_physician.sql
 # compile the matches
@@ -31,6 +30,7 @@ psql_w_envs cancer/trial_logic_levels.sql #> trial_logic_levels
 psql_w_envs rimsdw/ct_PCA/master_patient.sql #> master_pathient_summary
 export_w_today master_patient_summary
 
+############################################################ next
 # deliver
 #psql_w_envs rimsdw/ct_NSCLC/expand_attributes.sql #> crit_attribute_expanded, master_sheet_expanded
 #export_w_today qc_attribute_match_summary
