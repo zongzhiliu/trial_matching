@@ -4,18 +4,19 @@ Requires:
 Results:
     latest_icd
 */
-drop table if exists _dx;
-create table _dx as
+drop table if exists dx;
+create table dx as
 select distinct mrn
 , age_in_days_key as age_in_days
-, DESCRIPTION
+-- , DESCRIPTION
 , context_diagnosis_code, context_name
-, diagnosis_role, diagnosis_weighting_factor
+-- , diagnosis_role, diagnosis_weighting_factor
 from _person
 join ${dmsdw}.fact using (person_key)
 join ${dmsdw}.b_diagnosis using (diagnosis_group_key)
 join ${dmsdw}.fd_diagnosis rd using (diagnosis_key)
-where context_name in ('ICD-10', 'ICD-9')
+where data_state_key=1
+    and context_name in ('ICD-10', 'ICD-9')
 ;
 /*
 select count(*), count(distinct mrn)
@@ -32,8 +33,8 @@ select mrn, person_id
 , dateadd(day, age_in_days::int, dob_low)::date as dx_date
 from (select *, row_number() over (
         partition by mrn, context_diagnosis_code
-        order by -age_in_days, description)
-    from _dx)
+        order by -age_in_days)
+    from dx)
 join demo using (mrn)
 where row_number=1
 ;
@@ -49,8 +50,22 @@ select mrn, person_id
 , dateadd(day, age_in_days::int, dob_low)::date as dx_date
 from (select *, row_number() over (
         partition by mrn, context_diagnosis_code
-        order by age_in_days, description)
-    from _dx)
+        order by age_in_days)
+    from dx)
+join demo using (mrn)
+where row_number=1
+;
+
+drop table if exists initial_disease_dx;
+create table initial_disease_dx as
+select mrn, person_id
+, context_diagnosis_code icd_code, context_name
+, dateadd(day, age_in_days::int, dob_low)::date as dx_date
+from (select *, row_number() over (
+        partition by mrn
+        order by age_in_days)
+    from dx
+    where context_diagnosis_code~'${disease_icd}')
 join demo using (mrn)
 where row_number=1
 ;
