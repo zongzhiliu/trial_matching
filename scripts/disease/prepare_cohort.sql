@@ -4,13 +4,14 @@ Results: demo, cohort
 */
 
 drop table if exists _cohort;
-create table _cohort as
+create temporary table _cohort as
 select medical_record_number mrn, count(*) n_icd
 from ${dmsdw}.D_PERSON
 join ${dmsdw}.FACT using (person_key)
 join ${dmsdw}.B_DIAGNOSIS using (diagnosis_group_key)
 join ${dmsdw}.fd_DIAGNOSIS rd using (diagnosis_key)
-where context_name like 'ICD%' and context_diagnosis_code ~ '${disease_icd}'
+where data_state_key=1 and person_key>3
+    and context_name like 'ICD%' and context_diagnosis_code ~ '${disease_icd}'
 group by mrn
 ;
 	--17K
@@ -34,7 +35,7 @@ select mrn, mrn person_id
 from _cohort
 join ${dmsdw}.d_person on mrn=medical_record_number
 where active_flag='Y'
-	and (not deceased or deceased is null) -- already deceased
+    --	and (not deceased or deceased is null) -- already deceased
 	and datediff(year, dob_low, '${protocal_date}')<130 -- impossible birthdate
 ;
 
