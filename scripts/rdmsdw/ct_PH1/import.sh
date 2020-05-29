@@ -12,7 +12,7 @@ psql -c "create schema if not exists ${working_schema}"
 
 # prepare patient data
 psql_w_envs disease/prepare_cohort.sql
-# psql_w_envs disease/prepare_demo_plus.sql
+psql_w_envs disease/prepare_demo_plus.sql
 psql_w_envs disease/prepare_diagnosis.sql
 # psql_w_envs disease/prepare_vital.sql
 #psql_w_envs disease/prepare_sochx.sql

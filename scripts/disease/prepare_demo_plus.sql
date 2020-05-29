@@ -50,6 +50,7 @@ select  person_id, mrn
     end as race_name
 , ethnicity
 , address_zip
+, deceased
 from demo
 left join _demo_zip using (mrn)
 left join _demo_race using (mrn)
