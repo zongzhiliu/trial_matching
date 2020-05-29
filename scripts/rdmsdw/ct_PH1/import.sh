@@ -14,11 +14,12 @@ psql -c "create schema if not exists ${working_schema}"
 psql_w_envs disease/prepare_cohort.sql
 # psql_w_envs disease/prepare_demo_plus.sql
 psql_w_envs disease/prepare_diagnosis.sql
-psql_w_envs disease/prepare_vital.sql
+# psql_w_envs disease/prepare_vital.sql
 #psql_w_envs disease/prepare_sochx.sql
-psql_w_envs disease/prepare_procedure.sql
-psql_w_envs disease/prepare_medication.sql
-psql_w_envs disease/prepare_lab.sql
+# psql_w_envs disease/prepare_procedure.sql
+# psql_w_envs disease/prepare_medication.sql
+psql_w_envs all_lab_lite.sql # >loinc_lab
+psql_w_envs rdmsdw/ct_PH1/wrapup.sql
 #psql_w_envs caregiver/icd_physician.sql
 
 # perform the attribute matching

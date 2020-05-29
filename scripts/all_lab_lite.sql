@@ -1,6 +1,5 @@
 /* a light version of all lab from msdw_lab and epic_lab
-
-using: cohort
+using: cohort, dmsdw.fact_lab, .epic_lab
 */
 create temporary table _msdw_lab as
 select distinct mrn, age_in_days_key as age_in_days
@@ -36,13 +35,12 @@ join ${dmsdw}.epic_lab using(mrn)
 ;
 
 create temporary table _all_lab AS
-select *, 'scc_lab' as source_table
-from ct_scd._scc_lab
+select *, 'MSDW' as source_table
+from _msdw_lab
 UNION
-select *, 'epic_lab' as source_table
-from ct_scd._epic_lab
+select *, 'Epic' as source_table
+from _epic_lab
 ;
-
 -- deduplicate
 create table all_lab as
 select *
@@ -53,3 +51,15 @@ from (select *, row_number() over(
 where row_number=1
 	and test_result_value is not null
 ;
+
+-- mapp to loinc without unit conversion
+drop table if exists loinc_lab cascade;
+create table loinc_lab as
+select al.*
+, loinc, default_unit loinc_unit
+from all_lab al
+join resource.all_loinc_mappings_20191018
+	on source_table=source and test_name=alias and test_code=code and unit_of_measure=unit --checklater: null
+	where factor=1
+;
+

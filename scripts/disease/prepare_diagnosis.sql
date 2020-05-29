@@ -60,6 +60,7 @@ drop table if exists initial_disease_dx;
 create table initial_disease_dx as
 select mrn, person_id
 , context_diagnosis_code icd_code, context_name
+, age_in_days
 , dateadd(day, age_in_days::int, dob_low)::date as dx_date
 from (select *, row_number() over (
         partition by mrn
