@@ -252,3 +252,29 @@ from earliest_btki join latest_btki using (mrn)
 order by btki_durated_days desc nulls last
 ;
 ```
+## plot the BTK duration
+* a customarized histogram (0, <3m, 3-6M, 6M-5Y, >=5Y)
+```ipython
+os.chdir(working_dir)
+df = pd.read_csv('qc_btki_duration_202005271316.csv') 
+x = df.btki_durated_days
+#np.log10(x).plot(kind='kde')
+#np.log10(x).plot(kind='hist')
+plt.hist(x)
+plt.hist(x, bins=[0, 0.5, 90, 180, 365*5, max(x)])
+
+bb = pd.read_csv('drug_duration_bin.csv')
+
+from pandasql import sqldf
+query = """select bin_label, count(*) patients
+    from df join bb
+        on btki_durated_days between bin_start and bin_stop
+    group by bin_label
+    order by bin_id
+    """
+res = sqldf(query, globals())
+res.plot(kind='bar')
+plt.xticks(range(res.shape[0]), labels=res.bin_label)
+plt.savefig('tmp.pdf')
+res.to_csv('patients_by_bins.csv', index=False)
+```

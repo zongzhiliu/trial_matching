@@ -1,7 +1,3 @@
-#export cancer_histology_cat=nsclc #ref_histology_mapping
-export cancer_type=LCA
-export cancer_type_icd="^(C34|162)" #use a ref table later
-
 export db_conn=rimsdw
 export working_schema=ct_nlp_pd
 export working_dir="$HOME/Sema4/${db_conn}/${working_schema}"

@@ -1,7 +1,13 @@
 # start PD attribut ematting
-source rimsdw/ct_nlp_pd/config.sh
 source util/util.sh
+source rimsdw/ct_nlp_pd/config_nsclc.sh
+source rimsdw/ct_nlp_pd/config.sh
 pgsetup $db_conn
+export cancer_type_icd=$(psql -c \
+    "select * from ct.ref_cancer_icd where cancer_type_name='$cancer_type'" \
+    | sed '1,2d' | grep -o '\^.*' | sed 's/ //g')
+echo $cancer_type_icd
+
 ##source rimsdw/ct_nlp_pd/setup.md
 psql_w_envs rimsdw/ct_nlp_pd/setup.sql
 
