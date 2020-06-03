@@ -4,19 +4,19 @@ Requires:
 Results:
     _loinc_lab, latest_lab
 */
-drop table if exists _loinc_lab;
+drop table if exists _loinc_lab cascade;
 create table _loinc_lab as
 select distinct person_id, result_date::date
 , loinc_code, loinc_display_name
 , value_float, value_range_low, value_range_high, unit
 , source_value, source_unit
-from prod_msdw.all_labs
+from dev_patient_info_pan.all_labs
 join cohort using (person_id)
 where loinc_code is not null
     and value_float is not null
 ;
 
-drop table if exists latest_lab;
+drop table if exists latest_lab cascade;
 create table latest_lab as
 select person_id, result_date
 , loinc_code, loinc_display_name
@@ -34,6 +34,8 @@ create view qc_lab as
 select loinc_code, loinc_display_name, unit
 , count(*) records, count(distinct person_id) patients
 from latest_lab
+group by loinc_code, loinc_display_name, unit
+order by loinc_display_name, loinc_code, unit
 ;
 select count(distinct person_id) from latest_lab
 ;
