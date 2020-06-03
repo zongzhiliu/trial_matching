@@ -14,10 +14,11 @@ where nvl(cd.status, '') not like '%deleted'
     and cancer_type_name='${cancer_type}'
 ;
 
-/*qc
+create view qc_histology as
 select histologic_icdo, histologic_type_name, count(distinct person_id)
 from histology --join ct.pca_histology_category using (histologic_type_name)
 group by histologic_icdo, histologic_type_name
 order by histologic_type_name
 ;
-*/
+
+select count(distinct person_id) from histology;

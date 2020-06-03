@@ -1,7 +1,7 @@
 export cancer_type="MM"
 export cancer_type_icd="^(C90|230)"
 export db_conn=rimsdw
-export working_schema="ct_${cancer_type}_new"
+export working_schema="ct_${cancer_type}"
 export working_dir="$HOME/Sema4/${db_conn}/${working_schema}"
 
 export last_visit_within=99 #years
