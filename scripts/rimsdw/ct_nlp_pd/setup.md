@@ -42,23 +42,6 @@ cd "$working_dir"
 
 * extract trial_id, subset, inc/exc from file name
 ```ipython
-df = pd.read_csv('entity_raw.tsv', delimiter='\t')
-    # error: UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 6: invalid continuation byte
-csv_reader = csv.reader(open(entity_dir+'/res.tsv'), delimiter='\t')
-for i, row in enumerate(csv_reader):
-    print (i, row)
-for i, line in enumerate(io.open(f'{entity_dir}/NCT01775553-New-IC.txt', 'rb')): print (i, line)
-tmp = open(f'{entity_dir}/NCT01775553-New-IC.txt', 'rb').read()
-tmp[1248:1268].decode()
-tmp[1238:1268].decode(errors='ignore')
-tmp[1238:1268].decode(errors='replace')
-tmp[1238:1268].decode(errors='backslashreplace')
-tmp[1238:1268].decode(errors='xmlcharrefreplace')
-ignore
-tmp
-```
-
-```ipython
 %run -i ~/scripts/util/util.py
 def add_subset_section(in_tsv, out_csv):
     df = pd.read_csv(in_tsv, delimiter='\t', encoding='latin1')
@@ -121,7 +104,26 @@ entity_mapping.shape
 entity_mapping.semantic.value_counts()
 entity_mapping.to_csv('mm_entity_mapping.csv', index=False)
 ```
+
 ############################################################# next
+* aborted efforts to resolve the unreadable characters
+```ipython
+df = pd.read_csv('entity_raw.tsv', delimiter='\t')
+    # error: UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd7 in position 6: invalid continuation byte
+csv_reader = csv.reader(open(entity_dir+'/res.tsv'), delimiter='\t')
+for i, row in enumerate(csv_reader):
+    print (i, row)
+for i, line in enumerate(io.open(f'{entity_dir}/NCT01775553-New-IC.txt', 'rb')): print (i, line)
+tmp = open(f'{entity_dir}/NCT01775553-New-IC.txt', 'rb').read()
+tmp[1248:1268].decode()
+tmp[1238:1268].decode(errors='ignore')
+tmp[1238:1268].decode(errors='replace')
+tmp[1238:1268].decode(errors='backslashreplace')
+tmp[1238:1268].decode(errors='xmlcharrefreplace')
+ignore
+tmp
+```
+
 * trials with mapped attribute_id
 ```
 # merge the mapped gene mutation and others (with only the PD_attribute1

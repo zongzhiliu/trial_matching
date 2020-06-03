@@ -6,7 +6,8 @@ source util/util.sh
 psql -c "create schema if not exists ${working_schema}"
 
 # prepare attribute
-ipython ct_MM/load_attribute.py
+# ipython ct_MM/load_attribute.py
+psql_w_envs rimsdw/ct_MM/setup.sql
 psql_w_envs cancer/prepare_attribute.sql
 
 # prepare patient data
@@ -18,6 +19,8 @@ psql_w_envs cancer/prepare_lab.sql
 psql_w_envs cancer/prepare_lot.sql
 psql_w_envs cancer/prepare_vital.sql
 psql_w_envs cancer/prepare_variant.sql
+psql_w_envs cancer/prepare_biomarker.sql
+#prepare_stage.sql
 #psql_w_envs caregiver/icd_physician.sql
 
 # perform the attribute matching
