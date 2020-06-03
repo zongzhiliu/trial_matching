@@ -263,7 +263,7 @@ x = df.btki_durated_days
 plt.hist(x)
 plt.hist(x, bins=[0, 0.5, 90, 180, 365*5, max(x)])
 
-bb = pd.read_csv('drug_duration_bin.csv')
+bb = pd.read_csv('drug_duration_bin_30.csv')
 
 from pandasql import sqldf
 query = """select bin_label, count(*) patients
@@ -275,6 +275,6 @@ query = """select bin_label, count(*) patients
 res = sqldf(query, globals())
 res.plot(kind='bar')
 plt.xticks(range(res.shape[0]), labels=res.bin_label)
-plt.savefig('tmp.pdf')
-res.to_csv('patients_by_bins.csv', index=False)
+plt.savefig('tmp.png')
+res.to_csv('patients_by_bins_30.csv', index=False)
 ```
