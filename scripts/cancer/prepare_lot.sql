@@ -51,4 +51,4 @@ from lot
 group by n_lot
 order by n_lot
 ;
-
+select count(distinct person_id) from lot where n_lot > 0;
