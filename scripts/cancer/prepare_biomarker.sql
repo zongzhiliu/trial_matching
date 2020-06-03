@@ -14,3 +14,5 @@ select protein_biomarker_name, count(distinct person_id)
 from biomarker
 group by protein_biomarker_name
 ;
+
+select count(distinct person_id) from biomarker;
