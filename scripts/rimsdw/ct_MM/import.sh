@@ -11,8 +11,10 @@ psql_w_envs rimsdw/ct_MM/setup.sql
 psql_w_envs cancer/prepare_attribute.sql
 
 # prepare patient data
-#psql_w_envs cancer/prepare_patients.sql
 psql_w_envs cancer/prepare_cohort.sql
+psql_w_envs cancer/prepare_demo.sql
+psql_w_envs cancer/prepare_histology.sql
+psql_w_envs cancer/prepare_stage.sql
 psql_w_envs cancer/prepare_diagnosis.sql
 psql_w_envs cancer/prepare_performance.sql
 psql_w_envs cancer/prepare_lab.sql
@@ -20,7 +22,6 @@ psql_w_envs cancer/prepare_lot.sql
 psql_w_envs cancer/prepare_vital.sql
 psql_w_envs cancer/prepare_variant.sql
 psql_w_envs cancer/prepare_biomarker.sql
-#prepare_stage.sql
 #psql_w_envs caregiver/icd_physician.sql
 
 # perform the attribute matching
