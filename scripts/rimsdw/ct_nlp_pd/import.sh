@@ -13,19 +13,20 @@ psql_w_envs rimsdw/ct_nlp_pd/setup.sql
 
 # match to attributes
 psql_w_envs rimsdw/ct_NSCLC/match_code_variant.sql #> pa_variant
-#TODO
+#TODO:
 psql_w_envs rimsdw/ct_NSCLC/match_code_biomarker.sql #> pa_biomarker
-#TODO
 psql_w_envs viecure/ct_LCA/match_dx.sql # > pa_icd_rex 
 psql_w_envs rimsdw/ct_nlp_pd/match_code_lab.sql # > pa_loinc
-###############################------NEXT------###############################
 
 # hard coded lab queries, to be reorganized later
 psql_w_envs rimsdw/ct_nlp_pd/quickadd__latest_lab_mapped.sql # > _latest_lab_mapped
 psql_w_envs rimsdw/ct_nlp_pd/match_query_lab.sql
+#TODO:
 psql_w_envs rimsdw/ct_nlp_pd/match_text_mapping__histology.sql  #> pa_histology
+#TODO:
 psql_w_envs rimsdw/ct_nlp_pd/match_text_measure__stage.sql # > pa_stage
 psql_w_envs rimsdw/ct_nlp_pd/quickadd_drug_rx_mapping.sql
+###############################------NEXT------###############################
 
 psql_w_envs rimsdw/ct_nlp_pd/prepare_numeric_measure.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_numeric_measure.sql # > pa_numeric_measure (age, ecog, karnofsky, lot)
