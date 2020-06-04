@@ -22,18 +22,18 @@ select * from ct.lca_histology_category
 create view ref_lab_mapping as select * from ct.ref_lab_loinc_mapping;
 create view ref_drug_mapping as select * from ct.drug_mapping_cat_expn8_20200513;
 
-create view cohort as select * from ct_nsclc.cohort;
-create view demo_plus as select * from ct_nsclc.demo_plus;
-create view latest_stage as select * from ct_nsclc.latest_stage;
-create view biomarker as select * from ct_nsclc.biomarker;
-create view latest_icd as select * from ct_nsclc.latest_icd;
-create view latest_lab as select * from ct_nsclc.latest_lab;
-create view histology as select * from ct_nsclc.histology;
-create view latest_lot_drug as select * from ct_nsclc.latest_lot_drug;
-create view _variant_significant as select * from ct_nsclc._variant_significant;
-create view latest_ecog as select * from ct_nsclc.latest_ecog;
-create view latest_karnofsky as select * from ct_nsclc.latest_karnofsky;
-create view lot as select * from ct_nsclc.lot;
+create view cohort as select * from ct_${cancer_type}.cohort;
+create view demo_plus as select * from ct_${cancer_type}.demo_plus;
+--create view latest_stage as select * from ct_${cancer_type}.latest_stage;
+--create view biomarker as select * from ct_${cancer_type}.biomarker;
+create view latest_icd as select * from ct_${cancer_type}.latest_icd;
+create view latest_lab as select * from ct_${cancer_type}.latest_lab;
+create view histology as select * from ct_${cancer_type}.histology;
+create view latest_lot_drug as select * from ct_${cancer_type}.latest_lot_drug;
+create view _variant_significant as select * from ct_${cancer_type}._variant_significant;
+create view latest_ecog as select * from ct_${cancer_type}.latest_ecog;
+create view latest_karnofsky as select * from ct_${cancer_type}.latest_karnofsky;
+create view lot as select * from ct_${cancer_type}.lot;
 
 
 drop view if exists _crit_attribute_raw cascade;
@@ -55,7 +55,7 @@ select attribute_id
     else code_raw
     end code
 --from ${crit_attribute}
-from ct.pd_attribute_20200513
+from ct.pd_attribute_raw_20200603
 ;
 
 select ct.assert(count(*) = count(distinct attribute_id)
