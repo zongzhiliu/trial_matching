@@ -1,6 +1,6 @@
 # start PD attribut ematting
 source util/util.sh
-source rimsdw/ct_nlp_pd/config_nsclc.sh
+source rimsdw/ct_nlp_pd/config_mm.sh
 source rimsdw/ct_nlp_pd/config.sh
 pgsetup $db_conn
 export cancer_type_icd=$(psql -c \
@@ -23,10 +23,10 @@ psql_w_envs rimsdw/ct_nlp_pd/match_query_lab.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_text_mapping__histology.sql  #> pa_histology
 psql_w_envs rimsdw/ct_nlp_pd/match_text_measure__stage.sql # > pa_stage
 psql_w_envs rimsdw/ct_nlp_pd/quickadd_drug_rx_mapping.sql
+psql_w_envs rimsdw/ct_nlp_pd/match_code_drug.sql #> pa_drug
 
 psql_w_envs rimsdw/ct_nlp_pd/prepare_numeric_measure.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_numeric_measure.sql # > pa_numeric_measure (age, ecog, karnofsky, lot)
-psql_w_envs rimsdw/ct_nlp_pd/match_code_drug.sql #> pa_drug
 
 # compile the matches
 psql_w_envs rimsdw/ct_nlp_pd/master_match.sql  #> master_match
