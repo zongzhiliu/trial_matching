@@ -266,3 +266,32 @@ select_from_db_schema_table.py rimsdw ct_nlp_pd qc_trial_attribute > qc_trial_at
 load_into_db_schema_some_csvs.py pdesign db_data_bridge v_trial_attribute_20200515.csv qc_trial_attribute_20200515.csv
 ```
 
+* 20200604 generate trial_attribute table
+```
+set search_path=ct_nlp_pd;
+-- b_ER_attribute
+drop view mm_entity_mapped;
+create or replace view mm_entity_mapped as
+select semantic, entity
+, relation_type, from_type, from_value
+, rtrim(attr_rex, '|') attr_rex
+from ct.mm_entity_mapping_20200604
+;
+
+-- b_ER_attribute expanded
+drop table mm_entity_mapped_attr cascade;
+create table mm_entity_mapped_attr as
+select e.*, attribute_id
+from mm_entity_mapped e
+join ct.pd_attribute_20200604 on ct.py_contains(attribute_id, attr_rex)
+;
+
+
+create or replace view mm_trial_attribute as
+select distinct trial_id
+, subset, section
+, attribute_id
+from ct.mm_trial_entity_relation t
+join mm_entity_mapped_attr using (semantic, entity, relation_type, from_type, from_value)
+order by trial_id, section desc, attribute_id
+;
