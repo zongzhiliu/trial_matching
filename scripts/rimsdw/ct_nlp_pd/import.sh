@@ -1,6 +1,6 @@
 # start PD attribut ematting
 source util/util.sh
-source rimsdw/ct_nlp_pd/config_nsclc.sh
+source rimsdw/ct_nlp_pd/config_${cancer_type}.sh
 source rimsdw/ct_nlp_pd/config.sh
 pgsetup $db_conn
 export cancer_type_icd=$(psql -c \
@@ -13,9 +13,12 @@ psql_w_envs rimsdw/ct_nlp_pd/setup.sql
 
 # match to attributes
 psql_w_envs rimsdw/ct_NSCLC/match_code_variant.sql #> pa_variant
+#TODO
 psql_w_envs rimsdw/ct_NSCLC/match_code_biomarker.sql #> pa_biomarker
-psql_w_envs viecure/ct_LCA/match_dx.sql # > pa_icd_rex
+#TODO
+psql_w_envs viecure/ct_LCA/match_dx.sql # > pa_icd_rex 
 psql_w_envs rimsdw/ct_nlp_pd/match_code_lab.sql # > pa_loinc
+###############################------NEXT------###############################
 
 # hard coded lab queries, to be reorganized later
 psql_w_envs rimsdw/ct_nlp_pd/quickadd__latest_lab_mapped.sql # > _latest_lab_mapped
