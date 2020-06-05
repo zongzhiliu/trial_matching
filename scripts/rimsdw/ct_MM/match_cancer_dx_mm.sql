@@ -6,6 +6,7 @@ drop table if exists _p_a_t_mm_cancer_dx cascade;
 create table _p_a_t_mm_cancer_dx as
 with tau as (
     select attribute_id, trial_id
+    , code_ext
     from trial_attribute_used
     join crit_attribute_used using (attribute_id)
     where code_type = 'mm_cancer_dx' and code='m_protein_type'
@@ -25,6 +26,7 @@ create view qc_mm_cancer_dx as
 select attribute_id, attribute_name, attribute_value
 , count(distinct person_id)
 from _p_a_t_mm_cancer_dx
+join crit_attribute_used using (attribute_id)
 where match
 group by attribute_id, attribute_name, attribute_value
 ;
