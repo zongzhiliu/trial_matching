@@ -3,7 +3,7 @@ Requires: crit_attribute_used
 , latest_lot_drug, $ref_drug_mapping
 Results: _p_a_drug
 */
-drop table latest_alt_drug cascade;
+drop table if exists latest_alt_drug cascade;
 CREATE TABLE latest_alt_drug AS
 SELECT person_id, lower(drug_name) drug_name, lower(drug_generic_name) drug_generic_name
 FROM cplus_from_aplus.medications m 

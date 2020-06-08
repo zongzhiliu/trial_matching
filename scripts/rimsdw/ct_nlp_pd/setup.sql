@@ -13,27 +13,27 @@ create or replace view ref_drug_mapping as
 select * from ${ref_drug_mapping}
 ; --ct.drug_mapping_cat_expn3;
 */
-
+create schema if not exists ct_nlp_pd;
 drop view if exists ref_histology_mapping;
 create view ref_histology_mapping as
 --select * from ${ref_histology_mapping}
 select * from ct.lca_histology_category
 ;
-create view ref_lab_mapping as select * from ct.ref_lab_loinc_mapping;
-create view ref_drug_mapping as select * from ct.drug_mapping_cat_expn8_20200513;
+create or replace view ref_lab_mapping as select * from ${ref_lab_mapping};
+create or replace view ref_drug_mapping as select * from ${ref_drug_mapping};
 
-create view cohort as select * from ct_${cancer_type}.cohort;
-create view demo_plus as select * from ct_${cancer_type}.demo_plus;
---create view latest_stage as select * from ct_${cancer_type}.latest_stage;
---create view biomarker as select * from ct_${cancer_type}.biomarker;
-create view latest_icd as select * from ct_${cancer_type}.latest_icd;
-create view latest_lab as select * from ct_${cancer_type}.latest_lab;
-create view histology as select * from ct_${cancer_type}.histology;
-create view latest_lot_drug as select * from ct_${cancer_type}.latest_lot_drug;
-create view _variant_significant as select * from ct_${cancer_type}._variant_significant;
-create view latest_ecog as select * from ct_${cancer_type}.latest_ecog;
-create view latest_karnofsky as select * from ct_${cancer_type}.latest_karnofsky;
-create view lot as select * from ct_${cancer_type}.lot;
+create or replace view cohort as select * from ct_${cancer_type}.cohort;
+create or replace view demo_plus as select * from ct_${cancer_type}.demo_plus;
+create or replace view latest_stage as select * from ct_${cancer_type}.latest_stage;
+create or replace view biomarker as select * from ct_${cancer_type}.biomarker;
+create or replace view latest_icd as select * from ct_${cancer_type}.latest_icd;
+create or replace view latest_lab as select * from ct_${cancer_type}.latest_lab;
+create or replace view histology as select * from ct_${cancer_type}.histology;
+create or replace view latest_lot_drug as select * from ct_${cancer_type}.latest_lot_drug;
+create or replace view _variant_significant as select * from ct_${cancer_type}._variant_significant;
+create or replace view latest_ecog as select * from ct_${cancer_type}.latest_ecog;
+create or replace view latest_karnofsky as select * from ct_${cancer_type}.latest_karnofsky;
+create or replace view lot as select * from ct_${cancer_type}.lot;
 
 
 drop view if exists _crit_attribute_raw cascade;
@@ -54,8 +54,7 @@ select attribute_id
         lower(code_raw)
     else code_raw
     end code
---from ${crit_attribute}
-from ct.pd_attribute_raw_20200603
+from ${crit_attribute}
 ;
 
 select ct.assert(count(*) = count(distinct attribute_id)
@@ -74,3 +73,6 @@ select attribute_id, attribute_group, attribute_name, attribute_value
 from _crit_attribute_raw c
 ;
 select count(*) from crit_attribute_used;
+
+create or replace view trial_attribute_used as
+select * from ct_nlp_pd_mm_test.mm_trial_attribute

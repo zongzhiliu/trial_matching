@@ -5,7 +5,7 @@ export working_dir="$HOME/Sema4/${db_conn}/${working_schema}"
 export last_visit_within=99 #years
 export protocal_date=$(date +%Y-%m-%d)
 
-export crit_attribute=ct.pd_attribute_20200606
+export crit_attribute=ct.pd_attribute_20200608
 export ref_histology_mapping=ct.lca_histology_category
 
 export ref_drug_mapping=ct.drug_mapping_cat_expn10

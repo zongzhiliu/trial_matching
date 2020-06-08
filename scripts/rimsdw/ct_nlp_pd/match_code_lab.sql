@@ -15,9 +15,9 @@ with cau as (
 )
 select person_id, attribute_id
 , case when code_transform='/normal_high' then
-        1/normal_high
+        1/normal_high::float --quickfix
     when code_transform='/normal_low' then
-        1/normal_low
+        1/normal_low::float
     else code_transform::float
     end as p2c_factor
 , case when lower(comp) in ('min', 'ge', '>=', '>') then
@@ -28,7 +28,7 @@ select person_id, attribute_id
         value_float * p2c_factor = crit_value
     end as match
 from cohort join latest_lab using (person_id)
-join ct.ref_lab_loinc_mapping using (loinc_code)
+join ref_lab_mapping using (loinc_code)
 join cau using (lab_test_name)
 ;
 
