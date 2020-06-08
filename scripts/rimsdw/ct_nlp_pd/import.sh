@@ -26,6 +26,7 @@ psql_w_envs rimsdw/ct_nlp_pd/quickadd_drug_rx_mapping.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_code_drug.sql #> pa_drug
 psql_w_envs rimsdw/ct_nlp_pd/prepare_numeric_measure.sql
 psql_w_envs rimsdw/ct_nlp_pd/match_numeric_measure.sql # > pa_numeric_measure (age, ecog, karnofsky, lot)
+psql_w_envs rimsdw/ct_mm/match_cancer_dx_mm.sql
 
 # compile the matches
 psql_w_envs rimsdw/ct_nlp_pd/master_match.sql  #> master_match
