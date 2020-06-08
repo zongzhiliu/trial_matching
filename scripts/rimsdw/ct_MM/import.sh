@@ -22,6 +22,7 @@ psql_w_envs cancer/prepare_lot.sql
 psql_w_envs cancer/prepare_vital.sql
 psql_w_envs cancer/prepare_variant.sql
 psql_w_envs cancer/prepare_biomarker.sql
+psql_w_envs disease/prepare_procedure.sql
 #psql_w_envs caregiver/icd_physician.sql
 
 # perform the attribute matching
@@ -32,6 +33,8 @@ psql_w_envs cancer/match_misc_measurement.sql
 
 psql_w_envs cancer/match_aof20200229.sql
 psql_w_envs rimsdw/ct_MM/match_mm_active_status.sql
+psql_w_envs rimsdw/ct_MM/match_cancer_dx_mm.sql
+psql_w_encs rimsdw/ct_MM/match_query_translocation.sql
 
 # compile the matches
 psql_w_envs mm/master_match.sql  #> master_match
