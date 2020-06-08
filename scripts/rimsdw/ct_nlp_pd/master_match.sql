@@ -7,7 +7,7 @@ Results:
 -- default match to false for medications and icds
 create temporary table _match_p_a_default_false as
 with pa as (
-    select attribute_id, person_id, NULL::varchar as patient_value, match from _p_a_drug_final
+    select attribute_id, person_id, NULL::varchar as patient_value, match from _p_a_drug
     union select attribute_id, person_id, NULL, match from _p_a_icd_rex
 ), a_all as (
     select distinct attribute_id from crit_attribute_used where code_type ~ '^(drug_|icd_)' --quickfix
@@ -22,15 +22,26 @@ drop table if exists _match_p_a cascade;
 create table _match_p_a as
 select attribute_id, person_id, patient_value::varchar, match from _match_p_a_default_false
 union select attribute_id, person_id, patient_value::varchar, match from _p_a_stage
-union select attribute_id, person_id, patient_value::varchar, match from _p_a_histology
+--union select attribute_id, person_id, patient_value::varchar, match from _p_a_histology
 union select attribute_id, person_id, NULL, match from _p_a_variant --mutation
 union select attribute_id, person_id, NULL, match from _p_a_biomarker
 union select attribute_id, person_id, NULL, match from _p_a_loinc
 union select attribute_id, person_id, NULL, match from _p_a_query_lab
-union select attribute_id, person_id, NULL,  match from _p_a_numeric_measurement
+union select attribute_id, person_id, NULL, match from _p_a_numeric_measurement
+union select attribute_id, person_id, NULL, match from _p_a_mm_active_status
+union select attribute_id, person_id, NULL, match from _p_a_mm_cancer_dx
+union select attribute_id, person_id, NULL, match from _p_a_translocation
 ;
-select count(distinct attribute_id) from _match_p_a;
-    --233?
+
+select count(distinct attribute_id) from _match_p_a ;
+
+create view qc_missing_crit as 
+select *
+from crit_attribute_used
+where attribute_id not in (select distinct attribute_id from _match_p_a order by attribute_id)
+Order By attribute_id;
+select * from qc_missing_crit;
+
 /*
 create view _qc_match_pa as
 with tmp as (
@@ -50,6 +61,7 @@ order by attribute_id
 
 -- set match as null by default for each patient
 create view _master_match as select * from _match_p_a;
+
 drop table if exists master_match cascade;
 create table master_match as
 select attribute_id, person_id
@@ -58,6 +70,21 @@ from (cohort cross join crit_attribute_used)
 left join _master_match using (person_id, attribute_id)
 group by attribute_id, person_id
 ;
+
+drop table if exists "_qc_master_match_used" cascade;
+create table _qc_master_match_used as
+with au as (
+	select distinct attribute_id, code_type 
+	from trial_attribute_used join crit_attribute_used using (attribute_id)
+)
+select *
+from qc_master_match 
+join au using (attribute_id)
+order by attribute_id
+;
+
+create view qc_master_match_used as
+select * from _qc_master_match_used order by attribute_id;
 
 create view qc_master_match as
 with tmp as (
