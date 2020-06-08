@@ -19,6 +19,8 @@ with tau as (
 )
 select person_id, trial_id, attribute_id
 , bool_or(case code
+    when 'mm_active_status' then
+        mm_active_status=code_ext
     when 'm_protein_type' then
         m_protein_type=code_ext
     when 'BMPCs' then
