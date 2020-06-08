@@ -1,6 +1,6 @@
 # start PD attribut ematting
 source util/util.sh
-source rimsdw/ct_nlp_pd/config_${cancer_type}.sh
+source rimsdw/ct_nlp_pd/config_mm.sh
 source rimsdw/ct_nlp_pd/config.sh
 pgsetup $db_conn
 export cancer_type_icd=$(psql -c \
