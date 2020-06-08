@@ -26,6 +26,12 @@ from tau
 cross join act_stat
 ;
 
+drop table if exists _p_a_mm_active_status cascade;
+create table _p_a_mm_active_status as 
+select distinct person_id, attribute_id, match
+from "_p_a_t_mm_active_status" patmas
+GROUP BY attribute_id, person_id, match;
+
 create view qc_mm_smoldering as
 select match, count(distinct person_id)
 from _p_a_t_mm_active_status

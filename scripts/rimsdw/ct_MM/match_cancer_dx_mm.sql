@@ -36,6 +36,12 @@ cross join cdx
 group by person_id, trial_id, attribute_id
 ;
 
+drop table if exists "_p_a_mm_cancer_dx" cascade;
+create table _p_a_mm_cancer_dx as 
+select distinct person_id, attribute_id, match
+from "_p_a_t_mm_cancer_dx" patmas
+GROUP BY attribute_id, person_id, match;
+
 create view qc_mm_cancer_dx as
 select attribute_id, attribute_name, attribute_value
 , count(distinct person_id)
@@ -45,3 +51,4 @@ where match
 group by attribute_id, attribute_name, attribute_value
 ;
 select * from qc_mm_cancer_dx;
+

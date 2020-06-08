@@ -3,13 +3,6 @@ Requires: crit_attribute_used
 , latest_lot_drug, $ref_drug_mapping
 Results: _p_a_drug
 */
-drop table if exists latest_alt_drug cascade;
-CREATE TABLE latest_alt_drug AS
-SELECT person_id, lower(drug_name) drug_name, lower(drug_generic_name) drug_generic_name
-FROM cplus_from_aplus.medications m 
-JOIN cplus_from_aplus.drugs d using (drug_id)
-JOIN cohort using (person_id);
-
 DROP TABLE IF EXISTS _p_a_drug CASCADE;
 CREATE TABLE _p_a_drug AS
 SELECT person_id, attribute_id
@@ -25,12 +18,14 @@ join ct.drug_mapping_cat_expn10 dmce on (drm.drug_name = dmce.drug_name)
 group by person_id, attribute_id
 ;
 
-create view qc_match_drug_final as
+create view qc_match_drug as
 select attribute_id, attribute_group, attribute_name, attribute_value
 , count(distinct person_id) patients
-from _p_a_drug_final
+from _p_a_drug
 join crit_attribute_used using (attribute_id)
 where match
 group by attribute_id, attribute_group, attribute_name, attribute_value
 order by attribute_id
 ;
+
+select * from qc_match_drug;
