@@ -1,4 +1,27 @@
 # utils
+# rdmsdw
+export rdmsdw_host='s4-dmsdw.cswcn2wwxepe.us-east-1.redshift.amazonaws.com'
+export rdmsdw_bastion='ec2-3-214-186-216.compute-1.amazonaws.com'
+
+# rimsdw
+export rimsdw_host='auto-abst-redshift-cluster.cpgxfro2regq.us-east-1.redshift.amazonaws.com'
+export rimsdw_bastion='auto-abst-bastion-host-lb-542f9513ec56d4ad.elb.us-east-1.amazonaws.com'
+
+function start_ssh_tunnel {
+    tunnel_name=$1; shift
+    lport_dhost_rport=$1; shift
+    user_at_remote=$1; shift
+    other_args=$@
+    cmd="AUTOSSH_DEBUG=1 autossh -g -M 0 -N -L $lport_dhost_rport $user_at_remote $other_args \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            -o ServerAliveInterval=10 -o ServerAliveCountMax=1 \
+            -o ExitOnForwardFailure=yes -o ControlMaster=no -o ControlPath=/dev/null"
+    if ! screen -ls | grep -q "[0-9]\+.$tunnel_name\s"; then
+        screen -S "$tunnel_name" -dm bash -c "$cmd"
+    fi
+}
+#usage: start_ssh_tunnel rimsdw 9999:$rimsdw_host:5439 zach_liu@$rimsdw_bastion
+
 export pgpass_prefix="$HOME/.pgpass_"
 # set up for postgre connection using PGPASSFILE
 # usage: pgsetup rdmsdw
