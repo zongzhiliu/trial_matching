@@ -35,7 +35,7 @@ union select attribute_id, person_id, NULL, match from _p_a_translocation
 
 select count(distinct attribute_id) from _match_p_a ;
 
-create view qc_missing_crit as 
+create or replace view qc_missing_crit as 
 select *
 from crit_attribute_used
 where attribute_id not in (select distinct attribute_id from _match_p_a order by attribute_id)
@@ -60,7 +60,7 @@ order by attribute_id
 */
 
 -- set match as null by default for each patient
-create view _master_match as select * from _match_p_a;
+create or replace view _master_match as select * from _match_p_a;
 
 drop table if exists master_match cascade;
 create table master_match as
@@ -71,22 +71,7 @@ left join _master_match using (person_id, attribute_id)
 group by attribute_id, person_id
 ;
 
-drop table if exists "_qc_master_match_used" cascade;
-create table _qc_master_match_used as
-with au as (
-	select distinct attribute_id, code_type 
-	from trial_attribute_used join crit_attribute_used using (attribute_id)
-)
-select *
-from qc_master_match 
-join au using (attribute_id)
-order by attribute_id
-;
-
-create view qc_master_match_used as
-select * from _qc_master_match_used order by attribute_id;
-
-create view qc_master_match as
+create or replace view qc_master_match as
 with tmp as (
     select attribute_id, attribute_name, attribute_value, attribute_match
     , count(*) records, count(distinct person_id) patients
@@ -102,4 +87,21 @@ from tmp
 group by  attribute_id, attribute_name, attribute_value
 order by attribute_id
 ;
-select * from qc_master_match;
+
+drop table if exists "_qc_master_match_used" cascade;
+create table _qc_master_match_used as
+with au as (
+	select distinct attribute_id, code_type 
+	from trial_attribute_used join crit_attribute_used using (attribute_id)
+)
+select *
+from qc_master_match 
+join au using (attribute_id)
+order by attribute_id
+;
+create or replace view qc_master_match_used as
+select * from _qc_master_match_used order by attribute_id;
+
+select * from qc_master_match_used;
+
+

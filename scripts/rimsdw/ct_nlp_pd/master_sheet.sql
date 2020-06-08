@@ -12,3 +12,4 @@ join master_match using (attribute_id)
 order by person_id, attribute_id
 ;
 
+
