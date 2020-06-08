@@ -25,9 +25,10 @@ select person_id, trial_id, attribute_id
 from tau
 cross join act_stat
 ;
-/*
+
+create view qc_mm_smoldering as
 select match, count(distinct person_id)
 from _p_a_t_mm_active_status
 group by match
 ;
-*/
+select * from qc_mm_smoldering;
