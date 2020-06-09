@@ -1,3 +1,10 @@
+/* deprecated: using gen_gene_alteration, gen_tumor_marker instead
+
+
+
+
+
+*/
 create table viecure_ct.all_tumor_marker as
 select pt_id person_id
 , name test_name
