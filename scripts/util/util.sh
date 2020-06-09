@@ -27,9 +27,9 @@ export pgpass_prefix="$HOME/.pgpass_"
 # usage: pgsetup rdmsdw
 function pgsetup {
     export PGPASSFILE="${pgpass_prefix}${1}"
-    IFS=':' read PGHOST PGPORT PGDATABASE PGUSER PGPASSWORD < ${PGPASSFILE}
-    export PGHOST; export PGPORT; export PGDATABASE; export PGUSER # Need to export for psql
-    export PGPASSWORD  # Let's just use the pgpass file instead case someone does `env`
+    chmod 600 "$PGPASSFILE"
+    IFS=':' read PGHOST PGPORT PGDATABASE PGUSER PGPASSWORD < "$PGPASSFILE"
+    export PGHOST PGPORT PGDATABASE PGUSER PGPASSWORD
 }
 
 #using $working_schema
