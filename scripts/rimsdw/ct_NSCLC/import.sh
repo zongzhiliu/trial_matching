@@ -1,7 +1,6 @@
-source rimsdw/ct_NSCLC/config.sh
 source util/util.sh
-pgsetup $db_conn
-psql -c "create schema if not exists ${working_schema}"
+source rimsdw/ct_NSCLC/config.sh
+source rimsdw/setup.sh
 psql_w_envs rimsdw/ct_NSCLC/setup.sql
 
 psql_w_envs cancer/prepare_cohort.sql

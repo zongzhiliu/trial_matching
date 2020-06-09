@@ -1,10 +1,6 @@
 #export cancer_histology_cat=nsclc #ref_histology_mapping
 export cancer_type=LCA
-export cancer_type_icd="^(C34|162)" #use a ref table later
-
-export db_conn=viecure
 export working_schema=ct_LCA
-export working_dir="$HOME/Sema4/${db_conn}/${working_schema}"
 
 export last_visit_within=5 #years
 export protocal_date=$(date +%Y-%m-%d)
