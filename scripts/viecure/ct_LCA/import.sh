@@ -33,7 +33,9 @@ export_w_today master_patient_summary
 # deliver
 psql_w_envs rimsdw/ct_NSCLC/expand_attributes.sql #> crit_attribute_expanded, master_sheet_expanded
 #export_w_today qc_attribute_match_summary
-#export_w_today v_crit_attribute_expanded
+export_w_today v_demo
+load_to_pharma v_demo
+export_w_today v_crit_attribute_expanded
 #load_to_pharma v_crit_attribute_expanded
-#export_w_today v_master_sheet_expanded
+export_w_today v_master_sheet_expanded
 #load_to_pharma v_master_sheet_expanded
