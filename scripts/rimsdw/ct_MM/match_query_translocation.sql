@@ -41,5 +41,5 @@ join crit_attribute_used using (attribute_id)
 where match
 group by attribute_id, attribute_name, attribute_value
 ;
-select * from qc_match_translocation;;
+select * from qc_match_translocation;
 
