@@ -16,8 +16,7 @@ select * from ${ref_drug_mapping}
 create schema if not exists ct_nlp_pd;
 drop view if exists ref_histology_mapping;
 create view ref_histology_mapping as
---select * from ${ref_histology_mapping}
-select * from ct.lca_histology_category
+select * from ${ref_histology_mapping}
 ;
 create or replace view ref_lab_mapping as select * from ${ref_lab_mapping};
 create or replace view ref_drug_mapping as select * from ${ref_drug_mapping};
@@ -74,5 +73,13 @@ from _crit_attribute_raw c
 ;
 select count(*) from crit_attribute_used;
 
+-- todolater: config.sh trial_attribute
+CREATE OR REPLACE VIEW trial_attribute AS
+SELECT DISTINCT t.trial_id, t.subset, t.section, mm_entity_mapped_attr.attribute_id
+   FROM ct.mm_trial_entity_relation t
+   JOIN ct.mm_entity_mapped_attr USING (semantic, entity, relation_type, from_type, from_value)
+;
 create or replace view trial_attribute_used as
 select * from ct_nlp_pd_mm_test.mm_trial_attribute
+ORDER BY trial_id, section DESC, attribute_id
+;
