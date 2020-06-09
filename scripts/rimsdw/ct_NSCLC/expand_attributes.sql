@@ -69,7 +69,7 @@ order by new_attribute_id;
 drop view if exists v_master_sheet_expanded cascade;
 create view v_master_sheet_expanded as
 select new_attribute_id, attribute_id
-, trial_id, person_id+3040 person_id
+, trial_id, person_id+${person_mask} person_id
 , attribute_group, attribute_name, attribute_value
 , ie_value, attribute_match::int
 , ie_flag::int inclusion
