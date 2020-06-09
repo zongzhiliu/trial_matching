@@ -79,7 +79,8 @@ select new_attribute_id, attribute_id
 from master_sheet_expanded
 ;
 
-create or replace view qc_attribute_match_summary as
+drop view if exists qc_attribute_match_summary;
+create view qc_attribute_match_summary as
 with cp as (
     select new_attribute_id, attribute_match
     , count(distinct person_id) patients
