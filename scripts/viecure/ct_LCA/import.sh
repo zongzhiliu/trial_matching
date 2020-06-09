@@ -1,7 +1,6 @@
 source viecure/ct_LCA/config.sh
 source util/util.sh
-pgsetup $db_conn
-
+source viecure/setup.sh
 psql_w_envs viecure/ct_LCA/setup.sql
 psql_w_envs viecure/ct_LCA/prepare_cohort.sql
 
