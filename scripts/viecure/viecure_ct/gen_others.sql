@@ -42,4 +42,5 @@ select gene_name, mutation_type_name, gene_source_type_name
  group by gene_name, mutation_type_name, gene_source_type_name
  order by gene_name, mutation_type_name, gene_source_type_name
  ;
-
+select count(*) records, count(distinct gene_name) genes, count(distinct person_id) patients
+from viecure_ct.all_gene_alteration;
